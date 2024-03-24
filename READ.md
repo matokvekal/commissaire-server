@@ -16,7 +16,7 @@ family_not_exist (Display: "Ask parent to download the app and register.")
 Last update: 34-3-2024. Updated by: Gilad.
 
 
-2)parent_connect API
+2)kid_ask_parent_connection API
 Purpose: Initiates connection with the parent's phone for OTP verification.
 Method: POST
 Header: Include JWT token for authentication.
@@ -109,4 +109,86 @@ Last update: 34-3-2024. Updated by: Gilad.
 
 -----APIs for the parent app-----
 
-1.
+1.parent_register
+urpose: Registers a parent's device with the system. The parent must enter their mobile phone number. They are allowed up to 3 attempts; upon exceeding this limit, they must wait 20 seconds before trying again.
+Method: POST
+Payload:
+{ "phone_number": "<PHONE_NUMBER>", "device_id": "<DEVICE_ID>" }
+
+Responses:
+Success: {"status": "ok"}
+Error (generic): {"status": "error", "message": "<ERROR_MESSAGE>"}
+Error (exceeding attempts): {"status": "error", "message": "Exceeded attempts, please wait 20 seconds."}
+
+2)parent_app_config API
+Purpose: Retrieves configuration settings from the server for the parent app.
+Method: GET
+Header: Authorization: Bearer <JWT_TOKEN>
+Query Parameter: unique_device_identifier=<DEVICE_ID>
+Successful Response:
+
+{
+  "status": "ok",
+  "config": {
+    "nightTimeStart": "18:00",
+    "dayTimeStart": "07:00",
+    "schoolDays": [1, 2, 3, 4, 5],
+    "minutesToCallServerAtNight": 300,
+    "minutesToCallServerAtDay": 240,
+    "listOfForbiddenApps": ["facebook", "abc", "xyz"],
+    "allowedMinutesAtSchoolDay": 120,
+    "allowedMinutesAtFreeDay": 240
+  }
+}
+Error Response:
+{
+  "status": "error",
+  "message": "<ERROR_MESSAGE>"
+}
+
+Last update: 34-3-2024. Updated by: Gilad
+
+
+3)Update parent_app_config API
+Purpose: Allows parents to update configuration settings on the server for their child's device usage.
+Method: POST
+Header: Authorization: Bearer <JWT_TOKEN>
+Payload:
+{
+  "unique_device_identifier": "<DEVICE_ID>",
+  "config": {
+    "nightTimeStart": "18:00",
+    "dayTimeStart": "07:00",
+    "schoolDays": [1, 2, 3, 4, 5],
+    "minutesToCallServerAtNight": 300,
+    "minutesToCallServerAtDay": 240,
+    "listOfForbiddenApps": ["facebook", "abc", "xyz"],
+    "allowedMinutesAtSchoolDay": 120,
+    "allowedMinutesAtFreeDay": 240
+  }
+}
+Successful Response:
+{
+  "status": "ok",
+  "message": "Configuration updated successfully."
+}
+Error Response:
+{
+  "status": "error",
+  "message": "<ERROR_MESSAGE>"
+}
+Last update: 34-3-2024. Updated by: Gilad.
+
+4) parent_log
+
+Method: POST
+
+Security: To be implemented.
+
+Payload: JSON formatted log entries,device id
+
+Header: Include JWT token for authentication.
+
+Response: Expect an "ok" upon successful receipt.
+
+Log Entry Example:  WE WILL HAVE TO TALK ABOUT THIS !
