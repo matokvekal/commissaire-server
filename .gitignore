@@ -13,3 +13,4 @@ env.json
 # Package files
 *.jar
 /config/
+.env
