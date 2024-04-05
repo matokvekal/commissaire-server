@@ -25,7 +25,7 @@ jobs:
 
       - name: Deploy to Staging Environment
         run: |
-          rsync -r -v -e "ssh -i ~/.ssh/id_rsa" . ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }}:/var/opt/greenfleet-backend --delete-before --exclude '.git'
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }} 'cd /var/opt/greenfleet-backend && sudo npm install && npm run start:staging'
+          rsync -r -v -e "ssh -i ~/.ssh/id_rsa" . ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }}:/home/ubuntu/apps/server --delete-before --exclude '.git'
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }} 'cd /home/ubuntu/apps/server && sudo npm install && npm run start:staging'
         env:
           SSH_SERVER_USER: ${{ secrets.SSH_SERVER_USER }}
