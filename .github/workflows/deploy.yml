@@ -1,0 +1,27 @@
+name: Deploy Node.js App to AWS EC2
+
+on:
+  push:
+    branches:
+      - staging # Assuming 'staging' is the branch name you use
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Staging Environment
+        run: |
+          rsync -r -v -e "ssh -i ~/.ssh/id_rsa" . ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }}:/var/opt/greenfleet-backend --delete-before --exclude '.git'
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }} 'cd /var/opt/greenfleet-backend && sudo npm install && npm run start:staging'
+        env:
+          SSH_SERVER_USER: ${{ secrets.SSH_SERVER_USER }}
