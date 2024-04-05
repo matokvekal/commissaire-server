@@ -3,7 +3,7 @@ name: Deploy Node.js App to AWS EC2
 on:
   push:
     branches:
-      - staging # Assuming 'staging' is the branch name you use
+      - staging 
 
 jobs:
   deploy:
