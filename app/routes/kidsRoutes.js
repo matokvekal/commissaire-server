@@ -6,8 +6,8 @@ export default (router, app) => {
 
   // GET /api/kids/sayhi
   router.get(`/${modelBase}/sayhi`, kidsController.hello.bind(kidsController));
-  router.post(
-    `/${modelBase}/uploadPassengersFile`,
-    customersController.uploadPassengersFile.bind(customersController)
-  );
+  // router.post(
+  //   `/${modelBase}/uploadPassengersFile`,
+  //   customersController.uploadPassengersFile.bind(customersController)
+  // );
 };
