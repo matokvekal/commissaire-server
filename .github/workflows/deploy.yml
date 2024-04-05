@@ -1,31 +1,31 @@
-name: Deploy Node.js App to AWS EC2
+# name: Deploy Node.js App to AWS EC2
 
-on:
-  push:
-    branches:
-      - staging 
-  pull_request:
-    branches:
-      - staging 
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - staging 
+#   pull_request:
+#     branches:
+#       - staging 
+#   workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
+#       - name: Set up SSH key
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#           ssh-keyscan -H ${{ secrets.SSH_STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to Staging Environment
-        run: |
-          rsync -r -v -e "ssh -i ~/.ssh/id_rsa" . ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }}:/home/ubuntu/apps/server --delete-before --exclude '.git'
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }} 'cd /home/ubuntu/apps/server && sudo npm install && npm run start:staging'
-        env:
-          SSH_SERVER_USER: ${{ secrets.SSH_SERVER_USER }}
+#       - name: Deploy to Staging Environment
+#         run: |
+#           rsync -r -v -e "ssh -i ~/.ssh/id_rsa" . ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }}:/home/ubuntu/apps/server --delete-before --exclude '.git'
+#           ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_STAGING_SERVER_IP }} 'cd /home/ubuntu/apps/server && sudo npm install && npm run start:staging'
+#         env:
+#           SSH_SERVER_USER: ${{ secrets.SSH_SERVER_USER }}
