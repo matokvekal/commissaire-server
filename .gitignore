@@ -13,3 +13,6 @@ env.json
 *.jar
 /config/
 .env
+READ.md
+API.md
+
