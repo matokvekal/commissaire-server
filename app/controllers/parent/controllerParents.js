@@ -1,7 +1,6 @@
 import BaseController from "../kid/baseController.js";
-// const { QueryTypes } = require("sequelize");
-// const { getFixedValue } = require("../utils/getFixedValues");
 import { getFixedValue } from "../../utils/getFixedValues.js";
+import config from "../../config/index.js";
 
 class ControllerParents extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -18,5 +17,6 @@ class ControllerParents extends BaseController {
       });
     }
   };
+
 }
 export default ControllerParents;

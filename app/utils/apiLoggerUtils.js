@@ -27,7 +27,7 @@ export const createSingleLog = async (sequelize, req, message, controller) => {
 };
 export const createErrorLog = async (sequelize, req, err) => {
   try {
-    debugger;
+
     const date = moment().toDate();
     const ip = req.socket.remoteAddress;
     const path = req.path ? req.path : "";

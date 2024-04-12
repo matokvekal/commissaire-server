@@ -6,12 +6,9 @@ import config from "../../config/index.js";
 import { createJwtToken } from "../../utils/authenticationUtils.js";
 import { createOTP } from "../../utils/authenticationUtils.js";
 import test from "../../routes/kid/temporarytest.js";
-import { sendRegistrationSMS } from "../../utils/smsUtil.js";
+import { kidRegistrationSMS } from "../../utils/smsUtil.js";
 
-//todo
-//1)send sms
-//2)logger like winstone to db
-//3)jwt token
+
 
 class AuthenticationController extends BaseController {
   constructor(app, modelName) {
@@ -42,7 +39,7 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       console.log("kid data",kid);
-      SQL = `select distinct  * from family where  user_phome=:parentPhone and is_active=1  `;
+      SQL = `select distinct  * from family where  parent_phone=:parentPhone and is_active=1  `;
       let family = await this.sequelize.query(SQL, {
         replacements: { parentPhone },
         type: QueryTypes.SELECT,
@@ -56,7 +53,7 @@ class AuthenticationController extends BaseController {
       family = family[0];
       if (kid.length === 0) {
         const OTP = createOTP();
-        const smsSent = await sendRegistrationSMS(
+        const smsSent = await kidRegistrationSMS(
           family.name,
           parentPhone,
           firstName,
@@ -89,7 +86,7 @@ class AuthenticationController extends BaseController {
           return res.status(400).send("some error occurred call support");
         }
         if (kid.is_register) {
-          await sendRegistrationSMS(
+          await kidRegistrationSMS(
             family.name,
             parentPhone,
             firstName,
@@ -102,14 +99,14 @@ class AuthenticationController extends BaseController {
         } else {
           if (
             kid.otp_trys >= 3 &&
-            kid.last_otp > now() - config.smsDelayMinutes
+            kid.last_otp > now() - config.otpTimeLimitSeconds
           ) {
             return res
               .status(400)
-              .send(`you have to wait ${config.smsDelayMinutes}seconds`);
+              .send(`you have to wait ${config.otpTimeLimitSeconds}seconds`);
           } else {
             const OTP = createOTP();
-            const smsSent = await sendRegistrationSMS(
+            const smsSent = await kidRegistrationSMS(
               family.name,
               parentPhone,
               firstName,
