@@ -1,6 +1,7 @@
 import Sequelize from "sequelize";
-import Logger from "../utils/Logger.js";
+// import Logger from "../utils/Logger.js";
 // import initDatabaseModels from "./initDatabaseModels";
+import Logger from "../utils/logger.js";
 
 export default async (config) => {
   console.log(
