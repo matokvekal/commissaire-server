@@ -71,6 +71,7 @@ const singleSmsSender = async (phoneNumber, messageBody, sender) => {
     const token = config.SMS_API_TOKEN;
     const url = config.sms_api_url;
     const Active = config.sms_is_active === "true" ? true : false;
+    let sendSmsResult;
 
     if (Active) {
       const Users = [{ Phone: phoneNumber }];
@@ -86,12 +87,12 @@ const singleSmsSender = async (phoneNumber, messageBody, sender) => {
         },
       };
       if (sendSms) {
-        const sendSmsResult = await axios.post(url, body, { headers });
+        sendSmsResult = await axios.post(url, body, { headers });
       } else {
         console.log("SMS not sent");
         return true;
       }
-      const { success } = sendSmsResult.data;
+      const success  = sendSmsResult.statusText;
       return success;
     }
     return false;

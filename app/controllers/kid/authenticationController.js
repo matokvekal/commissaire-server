@@ -41,13 +41,13 @@ class AuthenticationController extends BaseController {
         replacements: { kid_email },
         type: QueryTypes.SELECT,
       });
-
+      console.log("kid data",kid);
       SQL = `select distinct  * from family where  user_phome=:parentPhone and is_active=1  `;
       let family = await this.sequelize.query(SQL, {
         replacements: { parentPhone },
         type: QueryTypes.SELECT,
       });
-
+      console.log("family data",family);
       //kid not exist
       if (family.length === 0) {
         //here we can create family and kid,then sent the parent sms to download the app
