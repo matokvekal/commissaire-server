@@ -1,6 +1,6 @@
 import axios from "axios";
 import config from "../config/index.js";
-const sendSms = false;
+const sendSms = true;
 
 // const sendSms = async (Recipients = [], messageBody) => {
 //   try {
