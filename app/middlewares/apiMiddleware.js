@@ -3,7 +3,6 @@ import cors from "cors";
 import Parsing from "./payloadParsing.js";
 // import checkAuthentication from './authenticationMiddleware';
 import config from "../config/index.js";
-
 const origin = config.allowedOrigins.split(",");
 
 const middlewares = [

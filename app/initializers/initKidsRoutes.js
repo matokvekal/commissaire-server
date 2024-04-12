@@ -1,8 +1,8 @@
-import routes from "../routes/index.js";
+import kidsRoutes from "../routes/kid/index.js";
 
 export default (router, app) => {
   // Generates router initiation for each imported routing
-  Object.keys(routes).forEach((k) => {
-    routes[k](router, app);
+  Object.keys(kidsRoutes).forEach((k) => {
+    kidsRoutes[k](router, app);
   });
 };

@@ -1,47 +1,27 @@
-import { ServerErrors } from '../constants/ServerMessages.js';
-import {
-	createDebouncerForLogAction,
-	createErrorLog,
-	createLogs,
-} from '../utils/apiLoggerUtils.js';
+import { ServerErrors } from "../config/serverMessages.js";
+import { createErrorLog } from "../utils/apiLoggerUtils.js";
 
-export const loggerMiddleware = (db) => async (req, _res, next) => {
-	try {
-		createDebouncerForLogAction(createLogs)(req, db);
-		return next();
-	} catch (err) {
-		console.error(`LOGGER FAILED - ${err}`);
-		return next();
-	}
+
+export const errorLoggerMiddleware = () => async (req, res, next) => {
+  res.createErrorLogAndSend = async (db, {
+      err = { message: "Server Error" }, // Default error message
+      message = "An error occurred",    // Default log message
+      status = 500                      // Default HTTP status code for errors
+  }) => {
+      const error = `${err.message || err} - ${message}`;
+
+      // Call createErrorLog with the dynamically passed database handler
+      await createErrorLog(db, req, error);
+      return res.status(status).send({ message });
+  };
+
+  try {
+      next(); // Proceed to the next middleware or route handler
+  } catch (innerError) {
+      console.error(`ERROR LOGGER FAILED - ${innerError}`);
+      // Optionally, handle the failure of the next() call
+      next(innerError); // Ensure the error is passed on to error-handling middleware
+  }
 };
 
-export const errorLoggerMiddleware = (db) => async (req, res, next) => {
-	try {
-		res.createErrorLogAndSend = async (
-			{ err = { message: ServerErrors.GENERAL_ERROR },
-				message = ServerErrors.GENERAL_ERROR,
-				status = 500 }) => {
-			const error = `${err.message || err} - ${message}`;
-			await createErrorLog(db, req, error);
-			return res.status(status).send({
-				message,
-			});
-		};
-		return next();
-	} catch (innerError) {
-		console.error(
-			`ERROR LOGGER FAILED - ${innerError}`
-		);
-	}
-};
 
-export const systemLoggerMiddleware = (db) => async (req, _res, next) => {
-	try {
-		// TODO: system logger for micro services
-		// createDebouncerForLogAction(createLogs)(req, db);
-		return next();
-	} catch (err) {
-		console.error(`SYSTEM LOGGER FAILED - ${err}`);
-		return next();
-	}
-};

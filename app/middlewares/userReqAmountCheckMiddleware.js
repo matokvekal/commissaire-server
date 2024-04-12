@@ -1,9 +1,9 @@
-import config from '../config.js';
+import config from "../config/index.js";
 import cron from 'node-cron';
 // const { QueryTypes } = require('sequelize');
 // const db = require("./../models");
 
-import { createSingleLog, createLogs } from '../utils/apiLoggerUtils.js';
+// import { createSingleLog, createLogs } from '../utils/apiLoggerUtils.js';
 
 const allowedAmountOfRequestsForIpPerMinute =
 	config.allowedAmountOfRequestsForIpPerMinute;
@@ -124,7 +124,7 @@ const userReqAmountCheckMiddleware = (db) => async (req, res, next) => {
 		}
 		return next();
 	} catch (err) {
-		res.createErrorLogAndSend({
+		res.createErrorLogAndSend(this.sequelize, {
 			message: `${err.message || err}`,
 			status: err.status || 429,
 		});

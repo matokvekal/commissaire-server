@@ -165,7 +165,7 @@ const textValidationMiddleware = (req, res, next) => {
 		// : req.query;
 		return next();
 	} catch (err) {
-		res.createErrorLogAndSend({
+		res.createErrorLogAndSend(this.sequelize, {
 			message: `${ServerLoginMessages.FIELD_NOT_VALID} => ${
 				err.message || err
 			}`,
