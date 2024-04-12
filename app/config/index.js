@@ -1,16 +1,21 @@
 //import Logger from "../utils/logger.js";
-import Logger from "../utils/logger.js";
-const mode = process.env.MODE || "localhost";
-Logger.debug(`Server is running in ${mode} mode`);
+import dotenv from "dotenv";
+dotenv.config();
 
+import Logger from "../utils/logger.js";
+import { getModeFromEnv } from "../utils/authenticationUtils.js";
+const mode = getModeFromEnv();
+// const mode = process.env.MODE || "staging";
+const env = getModeFromEnv();
+Logger.debug(`Server is running in ${mode} mode`);
 const configByEnv = {
   staging: {
     database: {
-      HOST: "___.rds.amazonaws.com",
-      USER: "admin",
+      HOST: process.env.HOST,
+      USER: process.env.USER,
       PORT: 3306,
-      PASSWORD: process.env.PASSWORD,
-      NAME: "koal-staging",
+      PASSWORD: process.env.DBPASSWORD,
+      NAME: "koalidb",
       dialect: "mysql",
       pool: {
         max: 5,
@@ -19,16 +24,19 @@ const configByEnv = {
         idle: 10000,
       },
     },
-    port: process.env.PORT || 5000,
-    allowedOrigins: "http://",
-    TOKEN_KEY: process.env.TOKEN || "KOALY_KEY_LOCAL",
+    port: process.env.SERVER_PORT || 5000,
+    allowedOrigins: "http://localhost:5000,http:127.0.0.1:5000",
+    JWT_SECRET: process.env.JWT_SECRET || "KOALY_KEY_LOCAL",
     confirmationCodeLimit: 10,
-    tokenExpireDayLimit: 30,
+    smsDelayMinutes: 20,
+    tokenExpireDayLimit: 360,
     loggerDebounceAmountInMS: 60000,
-    smsSiteID: 35749,
-    smsSitePassword: process.env.SMSPASSWORD,
-    smsSenderPhone: "KOALI_SITE",
+    SMS_API_TOKEN: process.env.SMS_API_TOKEN,
+    sms_api_url: process.env.SMS_API_URL,
+    smsSenderPhone: "0542288530",
+    smsSenderName: "KOALI_SITE",
     smsMessageInnerName: "koali_sms",
+    sms_is_active: "true",
     allowedAmountOfRequestsForIpPerMinute: 600,
     allowedAmountOfRequestsForIpPerFullDay: 24 * 60 * 300,
     googlePhonenumber: "972111111111",
@@ -42,7 +50,7 @@ const configByEnv = {
       HOST: "___.rds.amazonaws.com",
       USER: "admin",
       PORT: 3306,
-      PASSWORD: process.env.PASSWORD,
+      PASSWORD: process.env.DBPASSWORD,
       NAME: "koal-staging",
       dialect: "mysql",
       pool: {
@@ -52,14 +60,16 @@ const configByEnv = {
         idle: 10000,
       },
     },
-    port: process.env.PORT || 5000,
+    port: process.env.SERVER_PORT || 5000,
     allowedOrigins: "http://",
-    TOKEN_KEY: process.env.TOKEN || "KOALY_KEY_LOCAL",
+    JWT_SECRET: process.env.JWT_SECRET || "KOALY_KEY_LOCAL",
     confirmationCodeLimit: 10,
-    tokenExpireDayLimit: 30,
+    tokenExpireDayLimit: 360,
+    smsDelayMinutes: 20,
     loggerDebounceAmountInMS: 60000,
     smsSiteID: 35749,
     smsSitePassword: process.env.SMSPASSWORD,
+    SMS_API_TOKEN: process.env.SMS_API_TOKEN,
     smsSenderPhone: "KOALI_SITE",
     smsMessageInnerName: "koali_sms",
     allowedAmountOfRequestsForIpPerMinute: 600,
@@ -70,39 +80,39 @@ const configByEnv = {
     alertUtilUrl: "http://0.0.0.0:8089/updateAlerts/",
     passwordIncryptSalt: 10,
   },
-  localhost: {
-    database: {
-      HOST: "___.rds.amazonaws.com",
-      USER: "admin",
-      PORT: 3306,
-      PASSWORD: process.env.PASSWORD,
-      NAME: "koal-staging",
-      dialect: "mysql",
-      pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000,
-      },
-    },
-    port: process.env.PORT || 5000,
-    allowedOrigins: "http://",
-    TOKEN_KEY: process.env.TOKEN || "KOALY_KEY_LOCAL",
-    confirmationCodeLimit: 10,
-    tokenExpireDayLimit: 30,
-    loggerDebounceAmountInMS: 60000,
-    smsSiteID: 35749,
-    smsSitePassword: process.env.SMSPASSWORD,
-    smsSenderPhone: "KOALI_SITE",
-    smsMessageInnerName: "koali_sms",
-    allowedAmountOfRequestsForIpPerMinute: 600,
-    allowedAmountOfRequestsForIpPerFullDay: 24 * 60 * 300,
-    googlePhonenumber: "972111111111",
-    gmailUserName: "_____.service@gmail.com",
-    gmailPassword: process.env.GMAIL_PASSWORD,
-    alertUtilUrl: "http://0.0.0.0:8089/updateAlerts/",
-    passwordIncryptSalt: 10,
-  },
+  // localhost: {
+  //   database: {
+  //     HOST: "___.rds.amazonaws.com",
+  //     USER: "admin",
+  //     PORT: 3306,
+  //     PASSWORD: process.env.PASSWORD,
+  //     NAME: "koal-staging",
+  //     dialect: "mysql",
+  //     pool: {
+  //       max: 5,
+  //       min: 0,
+  //       acquire: 30000,
+  //       idle: 10000,
+  //     },
+  //   },
+  //   port: process.env.PORT || 5000,
+  //   allowedOrigins: "http://",
+  //   TOKEN_KEY: process.env.TOKEN || "KOALY_KEY_LOCAL",
+  //   confirmationCodeLimit: 10,
+  //   tokenExpireDayLimit: 30,
+  //   loggerDebounceAmountInMS: 60000,
+  //   smsSiteID: 35749,
+  //   smsSitePassword: process.env.SMSPASSWORD,
+  //   smsSenderPhone: "KOALI_SITE",
+  //   smsMessageInnerName: "koali_sms",
+  //   allowedAmountOfRequestsForIpPerMinute: 600,
+  //   allowedAmountOfRequestsForIpPerFullDay: 24 * 60 * 300,
+  //   googlePhonenumber: "972111111111",
+  //   gmailUserName: "_____.service@gmail.com",
+  //   gmailPassword: process.env.GMAIL_PASSWORD,
+  //   alertUtilUrl: "http://0.0.0.0:8089/updateAlerts/",
+  //   passwordIncryptSalt: 10,
+  // },
 };
 
 export default configByEnv[mode];

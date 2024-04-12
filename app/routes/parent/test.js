@@ -1,7 +1,7 @@
-import ControllerParents from "../controllers/controllerParents.js";
+import ControllerParents from "../../controllers/parent/controllerParents.js";
 
 export default (router, app) => {
-  const modelBase = "parents";
+  const modelBase = "parent";
   const parentsController = new ControllerParents(app, modelBase);
 
   router.get(

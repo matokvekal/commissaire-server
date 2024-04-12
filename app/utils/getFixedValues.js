@@ -4,13 +4,18 @@ import moment from "moment";
 const getFixedValue = (value) => {
   const regex = /[']/g;
   const valueType = typeof value;
-  const returnValue =
-    value !== null && value !== undefined && value !== "null"
-      ? `'${(valueType === "object"
-          ? moment(value).format("YYYY-MM-DD HH:mm:ss")
-          : value.toString()
-        ).replace(regex, "\\'")}'`
-      : `null`;
+  let returnValue;
+  if (value !== null && value !== undefined && value !== "null") {
+    if (valueType === "object") {
+      returnValue = `'${moment(value)
+        .format("YYYY-MM-DD HH:mm:ss")
+        .replace(regex, "\\'")}'`;
+    } else if (valueType === "string") {
+      returnValue = `${value.toString().replace(regex, "\\'")}`;
+    } else returnValue = `'${value.toString().replace(regex, "\\'")}'`;
+  } else {
+    returnValue = "null";
+  }
   return returnValue;
 };
 
