@@ -27,7 +27,7 @@ describe("POST /api/kid/register", function () {
       .send({ firstName: "John", lastName: "Doe" }) // Missing googleToken and phone
       .expect(400)
       .end(function (err, res) {
-        assert.equal(res.text, "Google token and phone number are required.");
+        assert.equal(res.text, "Google token and phone number are required. ");
         done(err);
       });
   });
