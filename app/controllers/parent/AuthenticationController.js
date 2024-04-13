@@ -73,7 +73,7 @@ class AuthenticationController extends BaseController {
           type: QueryTypes.INSERT,
         });
       }
-      return res.status(200).send("otp sent to parent successfully.");
+      return res.status(200).send("OTP sent to parent successfully.");
     } catch (err) {
       this.handleError(res, err, "Some error occurred in register.");
     }
