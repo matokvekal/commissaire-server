@@ -1,12 +1,12 @@
 import BaseController from "./baseController.js";
 import { QueryTypes } from "sequelize";
 import { getFixedValue } from "../../utils/getFixedValues.js";
-import { getDataFromGoogleToken } from "../../utils/authenticationUtils.js";
 import config from "../../config/index.js";
-import { createJwtToken } from "../../utils/authenticationUtils.js";
-import { createOTP } from "../../utils/authenticationUtils.js";
 import test from "../../routes/kid/temporarytest.js";
 import { kidRegistrationSMS } from "../../utils/smsUtil.js";
+import { verifyIdToken, getUserData } from "../../utils/fireBaseAuthUtil.js"; // Import Firebase utilities
+import {getDataFromGoogleToken, createJwtToken, createOTP,} from "../../utils/authenticationUtils.js";
+import { ServerMessages } from "../../constants/ServerMessages.js";
 
 class AuthenticationController extends BaseController {
   constructor(app, modelName) {
@@ -17,23 +17,21 @@ class AuthenticationController extends BaseController {
     console.log("at kid register controller");
     try {
       let { firstName, lastName, parentPhone, googleToken } = req.body;
-      firstName = getFixedValue(firstName);
-      lastName = getFixedValue(lastName);
-      parentPhone = getFixedValue(parentPhone);
-
-      // const kid_email = await getDataFromGoogleToken(googleToken);
-      const kid_email = "test@gmail.com";
-      if (!kid_email) {
-        return res.status(400).send("Invalid or expired Google token.");
+      if (!googleToken) {
+        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
       }
-      //TODO
-      //1.get google token,kid name, parent name and parent phone from client
-      //2Send a Request to Google's TokenInfo Endpoint: Using the received token, your server makes a request to Google's token validation endpoint (https://oauth2.googleapis.com/tokeninfo?id_token=XYZ123) or uses a Google client library to validate the token.
-      //Receive Token Information: Google's service responds with the token's information, including the user's unique identifier (sub) and any other user details your app requested access to (and the user consented to share), such as email address, profile info, etc.
-      //3.serch table users to see if kid email exists .
-      let SQL = `select distinct * from users where  email=:kid_email and user_type="kid" `;
+
+      const decodedToken = await verifyIdToken(googleToken); // Verify the Google ID token
+      const { email, uid, name, picture } = getUserData(decodedToken);
+
+      console.log("userData", userData);
+
+      if (!email) {
+        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+      }
+      let SQL = `select distinct * from users where  email=:email and user_type="kid" `;
       let kid = await this.sequelize.query(SQL, {
-        replacements: { kid_email },
+        replacements: { email: userData.email },
         type: QueryTypes.SELECT,
       });
       console.log("kid data", kid);
@@ -46,7 +44,7 @@ class AuthenticationController extends BaseController {
       //kid not exist
       if (family.length === 0) {
         //here we can create family and kid,then sent the parent sms to download the app
-        return res.status(400).send("No match family found");
+        return res.status(400).send(ServerErrors.OTP_INVALID);
       }
       family = family[0];
       if (kid.length === 0) {
@@ -62,26 +60,20 @@ class AuthenticationController extends BaseController {
           const SQL = `insert into users 
           (email,f_name,l_name,user_type,family_id,otp,otp_trys)
            values 
-           (:kid_email,:firstName,:lastName,"kid_temporary",${family.id},${OTP},1)`;
+          (:kid_email,:firstName,:lastName,"kid_temporary",${family.id},${OTP},1)`;
           await this.sequelize.query(SQL, {
             replacements: { kid_email, firstName, lastName },
             type: QueryTypes.INSERT,
           });
-          return res.status(200).send("sms sent");
+          return res.status(200).send(ServerMessages.API_BASE_UPDATE_SUCCESS);
         } else {
-          return res.status(400).send("sms not sent");
+          return res.status(400).send(ServerErrors.GENERAL_ERROR);
         }
       } else {
-        // name,
-        // phone,
-        // kidName,
-        // otp,
-        // isLogin = false
-
         //kid allredy exist
         kid = kid[0];
         if (kid.is_active !== 1) {
-          return res.status(400).send("some error occurred call support");
+          return res.status(400).send(ServerErrors.GENERAL_ERROR);
         }
         if (kid.is_register) {
           await kidRegistrationSMS(
@@ -99,9 +91,7 @@ class AuthenticationController extends BaseController {
             kid.otp_trys >= 3 &&
             kid.last_otp > now() - config.otpTimeLimitSeconds
           ) {
-            return res
-              .status(400)
-              .send(`you have to wait ${config.otpTimeLimitSeconds}seconds`);
+            return res.status(400).send(ServerErrors.OTP_EXPIRED);
           } else {
             const OTP = createOTP();
             const smsSent = await kidRegistrationSMS(
@@ -116,9 +106,11 @@ class AuthenticationController extends BaseController {
               await this.sequelize.query(SQL, {
                 type: QueryTypes.UPDATE,
               });
-              return res.status(200).send("sms sent");
+              return res
+                .status(200)
+                .send(ServerMessages.API_BASE_UPDATE_SUCCESS);
             } else {
-              return res.status(400).send("sms not sent");
+              return res.status(400).send(ServerErrors.GENERAL_ERROR);
             }
           }
         }
@@ -126,18 +118,18 @@ class AuthenticationController extends BaseController {
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in register.",
+        err: err.message || ServerErrors.GENERAL_ERROR,
       });
     }
   };
+
+  // POST /api/kid/confirmCode
   confirmCode = async (req, res) => {
     console.log("At kid confirmCode controller");
     try {
       const { phone, otp, email } = req.body;
       if (!phone || !otp || !email) {
-        return res
-          .status(400)
-          .send("Phone number, OTP, and email are required.");
+        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
       }
 
       email = getFixedValue(email);
@@ -150,7 +142,7 @@ class AuthenticationController extends BaseController {
       });
 
       if (kid.length === 0) {
-        return res.status(400).send("Invalid OTP or user not found.");
+        return res.status(400).send(ServerErrors.OTP_INVALID);
       }
       kid = kid[0];
       SQL = `update users set is_register=1,otp_trys=0,user_type="kid" where id=${kid.id}`;
@@ -172,50 +164,52 @@ class AuthenticationController extends BaseController {
         });
       }
       const token = createJwtToken(kid.email);
-      return res.status(200).send(token);
+      return res.status(200).json({ token: token });
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in confirmCode.",
+        err: err.message || ServerErrors.GENERAL_ERROR,
       });
     }
   };
 }
 export default AuthenticationController;
 
-// Key Functionalities & API Endpoints
-// Kid Registration (POST /api/kid/register):
+/* 
+Unit Tests for Individual Functions:
 
-// Purpose: Registers or logs in a kid using a Google authentication token and other provided details.
-// Required Body Parameters:
-// firstName: Kid's first name.
-// lastName: Kid's last name.
-// phone: Parent's phone number.
-// googleToken: Google authentication token.
-// Process:
-// Verifies the provided Google token.
-// Searches for an existing kid and family by the provided details.
-// If no matching family is found, responds with an error.
-// For a new kid, sends an OTP to the parent's phone and inserts a new user record as "kid_temporary".
-// For an existing kid, the process depends on their registration and activation status:
-// If already registered and active, sends a login SMS and returns a JWT token.
-// If not registered or awaiting OTP verification, sends a registration SMS.
-// Responses:
-// 200: Successfully sent SMS or returned JWT token for login.
-// 400: Errors such as missing Google token/phone, invalid Google token, SMS sending failure, or no matching family found.
-// Confirm Registration Code (POST /api/kid/confirmCode):
+1.1 Test verifyIdToken with valid and invalid tokens.
+1.2 Test getUserData with various decoded token structures.
+1.3 Test createOTP for format, length, and randomness.
+1.4 Test createJwtToken with representative user data.
+Integration Tests for API Endpoints:
 
-// Purpose: Confirms the OTP sent to the parent's phone during the registration process.
-// Required Body Parameters:
-// phone: Phone number to which the OTP was sent.
-// otp: The OTP that was sent to the parent's phone.
-// email: Kid's email address.
-// Process:
-// Verifies the provided OTP and email against the database.
-// Updates the kid's status to registered if the OTP is correct and within the valid time frame.
-// Optionally adds a device ID to kid_devices if not already present.
-// Responses:
-// 200: Successfully confirmed OTP and updated kid's status, returns JWT token.
-// 400: Errors such as missing parameters, invalid OTP, or user not found.
+POST /api/kid/register
+2.1 POST /api/kid/register with missing googleToken: {"firstName":"John", "lastName":"Doe", "parentPhone":"1234567890"}
+2.2 POST /api/kid/register with invalid googleToken: {"googleToken":"invalidToken", "firstName":"John", "lastName":"Doe", "parentPhone":"1234567890"}
+2.3 POST /api/kid/register with valid googleToken but missing user data fields: {"googleToken":"validToken"}
+2.4 POST /api/kid/register for a successful registration, including all required data: {"googleToken":"validToken", "firstName":"John", "lastName":"Doe", "parentPhone":"1234567890"}
+2.5 POST /api/kid/register to test behavior when the kid or family already exists.
+2.6 POST /api/kid/register to test SMS functionality for different scenarios.
+POST /api/kid/confirmCode
+2.7 POST /api/kid/confirmCode with missing parameters: {"otp":"1234", "email":"test@example.com"}
+2.8 POST /api/kid/confirmCode with incorrect OTP: {"phone":"1234567890", "otp":"wrong", "email":"test@example.com"}
+2.9 POST /api/kid/confirmCode with expired OTP: {"phone":"1234567890", "otp":"expired", "email":"test@example.com"}
+2.10 POST /api/kid/confirmCode for successful confirmation: {"phone":"1234567890", "otp":"1234", "email":"test@example.com"}
+2.11 POST /api/kid/confirmCode testing database interaction for user status update.
+Error Handling Tests:
 
-test;
+3.1 Simulate database connection issues to test response.
+3.2 Simulate failure of external services like Firebase or SMS services to test error handling.
+Security Tests:
+
+4.1 Ensure sensitive data is not logged or exposed.
+4.2 Test input validation to prevent SQL injection and XSS attacks.
+Performance Tests:
+
+5.1 Test API endpoint performance under load, particularly for registration.
+5.2 Measure response times to ensure they meet performance benchmarks.
+End-to-End Tests:
+
+6.1 Simulate the full registration process from token validation to database update.
+6.2 Simulate the complete confirm code process to verify flow and database updates. */

@@ -6,6 +6,9 @@ import { createJwtToken } from "../../utils/authenticationUtils.js";
 import { createOTP } from "../../utils/authenticationUtils.js";
 import { parentRegistrationSMS } from "../../utils/smsUtil.js";
 import moment from "moment";
+import { format, isBefore, addSeconds, parseISO } from "date-fns"; // Replace moment.js
+import { ServerLoginMessages } from '../../constants/ServerMessages.js';
+
 
 class AuthenticationController extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -14,42 +17,35 @@ class AuthenticationController extends BaseController {
 
   // POST /api/parent/register
   register = async (req, res) => {
+    const { name, familyName, parentPhone, email } = req.body;
+    if (!name || !familyName || !parentPhone) {
+      return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+    }
     try {
-      const { name, familyName, parentPhone, email } = req.body;
-      if (!name || !familyName || !parentPhone) {
-        return res
-          .status(400)
-          .send("Name, family name, and phone are required.");
-      }
-
-      const SQL = `SELECT DISTINCT * FROM users WHERE phone = :parentPhone AND user_type = "parent"`;
-      const parent = await this.sequelize.query(SQL, {
-        replacements: { parentPhone },
-        type: QueryTypes.SELECT,
-      });
-
+      const parent = await this.findParentByPhone(parentPhone);
       console.log("parent data", parent);
-
       if (parent.length > 0) {
         if (parent[0].is_active !== 1) {
-          return res.status(400).send("User canot register contact support.");
+          return res.status(400).send(ServerErrors.API_BASE_UPDATE_FAIL);
         }
+
+        const lastOtpTime = parseISO(parent.last_otp);
+        const currentTime = new Date();
+        const timeDiffSeconds = (currentTime - lastOtpTime) / 1000;
 
         if (
           parent[0].otp_trys >= 3 &&
-          parent[0].last_otp > now() - config.otpTimeLimitSeconds
+          timeDiffSeconds < config.otpTimeLimitSeconds
         ) {
           return res
             .status(400)
-            .send(
-              `You must wait ${config.otpTimeLimitSeconds} seconds before trying again.`
-            );
+            .send(ServerErrors.API_BASE_UPDATE_FAIL)
         }
       }
       const OTP = createOTP();
       const smsSent = await parentRegistrationSMS(parentPhone, OTP);
       if (!smsSent) {
-        return res.status(400).send("SMS not sent");
+        return res.status(400).send(ServerErrors.API_BASE_CREATE_FAIL);
       }
 
       if (parent.length > 0) {
@@ -73,17 +69,10 @@ class AuthenticationController extends BaseController {
           type: QueryTypes.INSERT,
         });
       }
-      return res.status(200).send("OTP sent to parent successfully.");
+      return res.status(200).send(ServerMessages.API_BASE_CREATE_SUCCESS);
     } catch (err) {
-      this.handleError(res, err, "Some error occurred in register.");
+      this.handleError(res, err, ServerErrors.GENERAL_ERROR);
     }
-  };
-
-  handleError = (res, err, message) => {
-    console.error(err);
-    res.createErrorLogAndSend(this.sequelize, {
-      err: err.message || message,
-    });
   };
 
   // POST /api/parent/confirm
@@ -93,7 +82,7 @@ class AuthenticationController extends BaseController {
     try {
       const { phone, otp } = req.body;
       if (!phone || !otp) {
-        return res.status(400).send("Phone number, OTP are required.");
+        return res.status(400).send(ServerErrors.API_BASE_UPDATE_INVALID);
       }
 
       const cleanedOtp = getFixedValue(otp);
@@ -108,7 +97,7 @@ class AuthenticationController extends BaseController {
       });
 
       if (parent.length === 0) {
-        return res.status(400).send("Invalid OTP or user not found.");
+        return res.status(400).send(ServerErrors.OTP_INVALID);
       }
       const currentTime = moment();
       const otpExpirationTime = moment(parent[0].last_otp).add(
@@ -119,7 +108,7 @@ class AuthenticationController extends BaseController {
         parent[0].otp_trys >= otpAattemps &&
         currentTime.isBefore(otpExpirationTime)
       ) {
-        return res.status(400).send("OTP time expired, register again");
+        return res.status(400).send(ServerErrors.OTP_EXPIRED);
       }
 
       SQL = "UPDATE users SET is_register=1, otp_trys=0 WHERE id=:id";
@@ -171,13 +160,28 @@ class AuthenticationController extends BaseController {
         });
       }
 
-      return res.status(200).send("Parent confirmed successfully");
+      return res.status(200).send(ServerMessages.API_BASE_UPDATE_SUCCESS);
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in confirm.",
+        err: err.message || ServerErrors.GENERAL_ERROR,
       });
+      
     }
   };
+
+  async findParentByPhone(parentPhone) {
+    const SQL = `SELECT * FROM users WHERE phone = :parentPhone AND user_type = "parent"`;
+    const [parent] = await this.sequelize.query(SQL, {
+      replacements: { parentPhone },
+      type: QueryTypes.SELECT,
+    });
+    return parent;
+  }
+
+  handleError(res, err, message) {
+    console.error(err);
+    res.status(500).send({ error: err.message || message });
+  }
 }
 export default AuthenticationController;
