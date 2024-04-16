@@ -1,8 +1,5 @@
-to add .env  
- echo "${{secrets.STAGING_ENV}}" >.env
-use the github secrets
-as https://www.youtube.com/watch?v=cgWXQqL-ZU8
 
+<<<<<<< HEAD
 connect to server
 $ ssh -i "C:\\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com
 
@@ -11,3 +8,5 @@ at aws the server at :
 
 .env
 this file shuld be at /home/ubuntu/env./env , the ci will make simblic link to project
+=======
+>>>>>>> d85f076a6ce46eea6055cf2375b4b3b981495736
