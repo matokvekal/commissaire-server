@@ -1,5 +1,5 @@
 
-<<<<<<< HEAD
+
 connect to server
 $ ssh -i "C:\\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com
 
@@ -8,5 +8,17 @@ at aws the server at :
 
 .env
 this file shuld be at /home/ubuntu/env./env , the ci will make simblic link to project
-=======
->>>>>>> d85f076a6ce46eea6055cf2375b4b3b981495736
+
+log error
+import { createErrorLog } from "../utils/apiLoggerUtils.js";
+await createErrorLog(db, req, error);
+
+\
+log
+import { createSingleLog } from "../../utils/apiLoggerUtils.js";
+await createSingleLog(
+        this.sequelize,
+        req,
+        "Hello from kids controller",
+        "/hello"
+      );

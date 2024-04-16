@@ -5,6 +5,7 @@ import config from "../../config/index.js";
 import { createJwtToken } from "../../utils/authenticationUtils.js";
 import { createOTP } from "../../utils/authenticationUtils.js";
 import { parentRegistrationSMS } from "../../utils/smsUtil.js";
+import { createSingleLog } from "../../utils/apiLoggerUtils.js";
 import moment from "moment";
 
 import {
@@ -44,7 +45,7 @@ class AuthController extends BaseController {
   register = async (req, res) => {
     const { name, familyName, parentPhone, email } = req.body;
     let parentStatus = "registered";
-
+    await createSingleLog(this.sequelize,req,`parentPhone ${parentPhone} email:${email}`,"/parent/register" );
     // Check if required fields are present
     if (!name || !familyName || !parentPhone) {
       return res.status(400).send("Required fields are missing.");
@@ -99,9 +100,14 @@ class AuthController extends BaseController {
         .status(200)
         .send(`${parentStatus} successful we sent you an OTP.`);
     } catch (err) {
-      console.error("Error during registration:", err);
-      return res.status(500).send("An error occurred during registration.");
+       console.error("Error during registration:", err);
+      // return res.status(500).send("An error occurred during registration.");
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || ServerErrors.GENERAL_ERROR,
+      });
     }
+
+    
   };
 
   // POST /api/parent/confirm
@@ -110,6 +116,7 @@ class AuthController extends BaseController {
     const otpAattemps = config.sms_otp_attempt_limit;
     try {
       const { phone, otp } = req.body;
+      await createSingleLog(this.sequelize,req,`parentPhone ${phone} otp:${otp}`,"/parent/confirm" );
       if (!phone || !otp) {
         return res.status(400).send(ServerErrors.API_BASE_UPDATE_INVALID);
       }

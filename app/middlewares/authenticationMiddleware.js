@@ -7,9 +7,10 @@ const bypassPathsWhiteList = new Set([
   "/parent/auth/login",
   "/kid/register",
   "/kid/auth/confirmCode",
-  "/parent/auth/confirmCode",
+  "/parent/auth/confirmcode",
   "/kid/sayhi",
   "/parent/sayhi",
+  "/kid/confirmcode",
   "/kid/simulatejwttoken",
   "/parent/register",
   "/parent/confirm",
@@ -21,7 +22,7 @@ const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
 const authenticationMiddleware = (db) => async (req, res, next) => {
   console.log("at authenticationMiddleware");
   console.log(req.path);
-  if (isPathCanBypass(req.path)|| isPathCanBypass(req.originalUrl)) {
+  if (isPathCanBypass(req.path) || isPathCanBypass(req.originalUrl)) {
     return next();
   }
 
@@ -45,7 +46,11 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
     req.user = { userName, userId };
     next();
   } catch (err) {
-    return res.status(401).send("Invalid authentication token");
+    console.log(err);
+    // return res.status(401).send("Invalid authentication token");
+    res.createErrorLogAndSend(this.sequelize, {
+      err: err.message || "Invalid authentication token",
+    });
   }
 };
 

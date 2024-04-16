@@ -11,19 +11,19 @@ export const getTokenFromRequest = (req) => {
   return null;
 };
 
-export const getDataFromGoogleToken = async (googleToken) => {
-  const response = await fetch(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${googleToken}`
-  );
-  const data = await response.json();
-  return data;
-};
+// export const getDataFromGoogleToken = async (googleToken) => {
+//   const response = await fetch(
+//     `https://oauth2.googleapis.com/tokeninfo?id_token=${googleToken}`
+//   );
+//   const data = await response.json();
+//   return data;
+// };
 
 export const createOTP = () => {
   const min = 1000;
   const max = 9999;
   const confirmationCode = Math.floor(Math.random() * (max - min + 1)) + min;
-  return confirmationCode ;
+  return confirmationCode;
 };
 
 //export const generateJwtToken = (payload) => {

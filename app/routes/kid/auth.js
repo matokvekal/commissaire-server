@@ -7,6 +7,9 @@ export default (router, app) => {
   // GET /api/kid/register
   router.post(`/${modelBase}/register`, authenticationController.register);
 
+  // POST /api/kid/confirmcode
+  router.post(`/${modelBase}/confirmcode`, authenticationController.confirmCode);
+
 };
 
 //import ControllerKids from "../../controllers/kid/controllerKids.js";
