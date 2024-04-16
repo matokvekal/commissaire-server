@@ -24,6 +24,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - name: Create symbolic link to .env file
-      run: ln -s /home/ubuntu/env/.env .env
-    - run: pm2 restart api
+    - run: |
+        touch .env
+        echo "${{secrets.STAGING_ENV}}" >.env
+    - run: pm2 restart api     
