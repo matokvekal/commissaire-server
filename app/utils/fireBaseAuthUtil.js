@@ -1,11 +1,11 @@
 import admin from "firebase-admin";
 
 import serviceAccount from "../../serviceAccountKey.json" assert { type: "json" };
-
+const project_id = "upwize-app";
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://<YOUR-FIREBASE-PROJECT-ID>.firebaseio.com",
+  databaseURL: `https://${project_id}.firebaseio.com`,
 });
 
 /**

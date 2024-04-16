@@ -13,6 +13,7 @@ const bypassPathsWhiteList = new Set([
   "/kid/simulatejwttoken",
   "/parent/register",
   "/parent/confirm",
+  "/parent/reset",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);

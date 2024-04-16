@@ -17,8 +17,30 @@ class AuthController extends BaseController {
     super(app, modelName, sequelize);
   }
 
-  // POST /api/parent/register
+  //very simple get api  /api/parent/reset  to delete user  with phone 0548847997 from the database from table users and table family
+  reset = async (req, res) => {
+    try {
+      const phone = "0548047997";
+      let SQL = `DELETE FROM users WHERE phone = :phone AND user_type = "parent"`;
+      await this.sequelize.query(SQL, {
+        replacements: { phone },
+        type: QueryTypes.DELETE,
+      });
+      SQL = `DELETE FROM family WHERE parent_phone = :phone`;
+      await this.sequelize.query(SQL, {
+        replacements: { phone },
+        type: QueryTypes.DELETE,
+      });
+      return res.status(200).send("User deleted successfully");
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || ServerErrors.GENERAL_ERROR,
+      });
+    }
+  };
 
+  // POST /api/parent/register
   register = async (req, res) => {
     const { name, familyName, parentPhone, email } = req.body;
     let parentStatus = "registered";
@@ -111,9 +133,7 @@ class AuthController extends BaseController {
         config.otpExpirationTimeInMinutes,
         "minutes"
       );
-      if (
-        currentTime.isAfter(otpExpirationTime)
-      ) {
+      if (currentTime.isAfter(otpExpirationTime)) {
         return res.status(400).send(ServerErrors.OTP_EXPIRED);
       }
       if (parent[0].is_register === 1) {
