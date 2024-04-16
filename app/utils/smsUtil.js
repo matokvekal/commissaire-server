@@ -18,7 +18,7 @@ export const kidRegistrationSMS = async (
 };
 
 export const parentRegistrationSMS = async (phoneNumber, otp) => {
-  const messageBody = `welcome to  Koali Time yout app :${otp}`;
+  const messageBody = `welcome to  Koali Time your OTP :${otp}`;
   const smsSender = config.smsSenderName;
   const result = await singleSmsSender(phoneNumber, messageBody, smsSender);
   return result;

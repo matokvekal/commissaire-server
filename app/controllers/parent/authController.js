@@ -6,7 +6,7 @@ import { createJwtToken } from "../../utils/authenticationUtils.js";
 import { createOTP } from "../../utils/authenticationUtils.js";
 import { parentRegistrationSMS } from "../../utils/smsUtil.js";
 import moment from "moment";
-import { format, isBefore, addSeconds, parseISO } from "date-fns"; // Replace moment.js
+
 import {
   ServerLoginMessages,
   ServerErrors,
@@ -21,6 +21,7 @@ class AuthController extends BaseController {
 
   register = async (req, res) => {
     const { name, familyName, parentPhone, email } = req.body;
+    let parentStatus = "registered";
 
     // Check if required fields are present
     if (!name || !familyName || !parentPhone) {
@@ -34,14 +35,14 @@ class AuthController extends BaseController {
       // Check if parent is already registered and active
       if (parent) {
         if (parent.is_active !== 1) {
-          return res.status(400).send("Parent not registered.");
+          return res.status(400).send("Please contact support.");
         }
-
+        parentStatus = "login";
         // Check for too many OTP attempts in a short time
         if (
           parent.otp_trys >= 3 &&
           moment(parent.last_otp).isAfter(
-            moment().subtract(config.otpTimeLimitSeconds, "seconds")
+            moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
           return res
@@ -60,7 +61,7 @@ class AuthController extends BaseController {
 
       // Update or insert parent data
       if (parent) {
-        const updateSql = `UPDATE users SET otp = :OTP, otp_trys = otp_trys + 1 WHERE phone = :parentPhone AND user_type = "parent"`;
+        const updateSql = `UPDATE users SET otp = :OTP, otp_trys = otp_trys + 1,last_otp=now() WHERE phone = :parentPhone AND user_type = "parent"`;
         await this.sequelize.query(updateSql, {
           replacements: { parentPhone, OTP },
           type: QueryTypes.UPDATE,
@@ -72,7 +73,9 @@ class AuthController extends BaseController {
           type: QueryTypes.INSERT,
         });
       }
-      return res.status(200).send("Registration successful.");
+      return res
+        .status(200)
+        .send(`${parentStatus} successful we sent you an OTP.`);
     } catch (err) {
       console.error("Error during registration:", err);
       return res.status(500).send("An error occurred during registration.");
@@ -105,14 +108,18 @@ class AuthController extends BaseController {
       }
       const currentTime = moment();
       const otpExpirationTime = moment(parent[0].last_otp).add(
-        config.otpConfirmationLimitsSeconds,
-        "seconds"
+        config.otpExpirationTimeInMinutes,
+        "minutes"
       );
       if (
-        parent[0].otp_trys >= otpAattemps &&
-        currentTime.isBefore(otpExpirationTime)
+        currentTime.isAfter(otpExpirationTime)
       ) {
         return res.status(400).send(ServerErrors.OTP_EXPIRED);
+      }
+      if (parent[0].is_register === 1) {
+        const token = createJwtToken(parent[0].phone);
+        res.setHeader("Authorization", `Bearer ${token}`);
+        return res.status(400).send("User already registered");
       }
 
       SQL = "UPDATE users SET is_register=1, otp_trys=0 WHERE id=:id";
@@ -163,8 +170,9 @@ class AuthController extends BaseController {
           type: QueryTypes.UPDATE,
         });
       }
-
-      return res.status(200).send(ServerMessages.API_BASE_UPDATE_SUCCESS);
+      const token = createJwtToken(parent[0].phone);
+      res.setHeader("Authorization", `Bearer ${token}`);
+      return res.status(200).send("User registered successfully");
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {

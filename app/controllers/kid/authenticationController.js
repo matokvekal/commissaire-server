@@ -102,8 +102,9 @@ class AuthenticationController extends BaseController {
           if (
             kid.otp_trys >= 3 &&
             moment(kid.last_otp).isAfter(
-              moment().subtract(config.otpTimeLimitSeconds, "seconds")
+              moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
             )
+            
           ) {
             return res.status(400).send(ServerErrors.OTP_EXPIRED);
           } else {
@@ -178,7 +179,10 @@ class AuthenticationController extends BaseController {
         });
       }
       const token = createJwtToken(kid.email);
+      res.setHeader('Authorization', `Bearer ${token}`);
       return res.status(200).json({ token: token });
+      //return token at header
+
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {

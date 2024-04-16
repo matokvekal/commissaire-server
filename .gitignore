@@ -13,7 +13,7 @@ env.json
 *.jar
 /config/
 .env
-READ.md
+README.md
 API.md
 
 serviceAccountKey.json
