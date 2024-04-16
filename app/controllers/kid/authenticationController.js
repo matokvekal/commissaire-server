@@ -7,7 +7,7 @@ import { createJwtToken } from "../../utils/authenticationUtils.js";
 import { createOTP } from "../../utils/authenticationUtils.js";
 import test from "../../routes/kid/temporarytest.js";
 import { kidRegistrationSMS } from "../../utils/smsUtil.js";
-
+import moment from "moment";
 class AuthenticationController extends BaseController {
   constructor(app, modelName) {
     super(app, modelName);
@@ -97,7 +97,9 @@ class AuthenticationController extends BaseController {
         } else {
           if (
             kid.otp_trys >= 3 &&
-            kid.last_otp > now() - config.otpTimeLimitSeconds
+            moment(kid.last_otp).isAfter(
+              moment().subtract(config.otpTimeLimitSeconds, "seconds")
+            )
           ) {
             return res
               .status(400)
@@ -143,7 +145,7 @@ class AuthenticationController extends BaseController {
       email = getFixedValue(email);
       otp = getFixedValue(otp);
       phone = getFixedValue(phone);
-      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1  and otp=:otp and last_otp>now()-interval ${config.confirmationCodeLimit} minute`;
+      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1  and otp=:otp and last_otp > NOW()-interval ${config.confirmationCodeLimit} minute`;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
         type: QueryTypes.SELECT,

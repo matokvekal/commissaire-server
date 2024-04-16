@@ -37,7 +37,7 @@ class AuthenticationController extends BaseController {
 
         if (
           parent[0].otp_trys >= 3 &&
-          parent[0].last_otp > now() - config.otpTimeLimitSeconds
+          moment(parent[0].last_otp).isAfter(moment().subtract(config.otpTimeLimitSeconds, 'seconds'))
         ) {
           return res
             .status(400)
@@ -181,3 +181,38 @@ class AuthenticationController extends BaseController {
   };
 }
 export default AuthenticationController;
+
+
+
+/* 1. Integration Tests for API Endpoints:
+POST /api/parent/register
+
+1.1 POST /api/parent/register with missing required fields: Send a request without name, familyName, or parentPhone to ensure the endpoint correctly handles and returns an error for missing fields.
+Data: {"email":"test@example.com"}
+1.2 POST /api/parent/register with existing inactive parent: Mock the database to return an inactive parent and ensure the endpoint returns the correct error message.
+Data: {"name":"John", "familyName":"Doe", "parentPhone":"1234567890", "email":"test@example.com"}
+1.3 POST /api/parent/register with excessive OTP attempts: Ensure the service correctly restricts further OTP attempts based on otp_trys and timing, returning an appropriate error.
+Data: {"name":"John", "familyName":"Doe", "parentPhone":"1234567890", "email":"test@example.com"}
+1.4 POST /api/parent/register successful OTP dispatch: Test successful OTP generation and SMS dispatch, including SQL INSERT/UPDATE operations for new or existing parents.
+Data: {"name":"John", "familyName":"Doe", "parentPhone":"1234567890", "email":"test@example.com"}
+POST /api/parent/confirm
+
+1.5 POST /api/parent/confirm with missing parameters: Send a request without phone or otp and check for the correct error handling.
+Data: {}
+1.6 POST /api/parent/confirm with invalid OTP: Ensure that the endpoint correctly identifies and rejects invalid OTPs.
+Data: {"phone":"1234567890", "otp":"wrong_otp"}
+1.7 POST /api/parent/confirm with expired OTP: Test the OTP expiration logic to confirm that an expired OTP results in an error message.
+Data: {"phone":"1234567890", "otp":"1234"}
+1.8 POST /api/parent/confirm successful confirmation and family link: Verify that a valid OTP correctly updates the parent’s status and links them to a family, if not already linked.
+Data: {"phone":"1234567890", "otp":"correct_otp"}
+2. Error Handling Tests:
+2.1 Simulate database failures: Test how the system behaves under database connection issues or SQL errors during both registration and confirmation.
+2.2 Test error logging: Ensure that all errors are logged appropriately, and the error response is consistent with the error condition.
+3. Security Tests:
+3.1 Test input validation for SQL Injection: Ensure that all inputs are sanitized to prevent SQL Injection vulnerabilities.
+3.2 Verify that sensitive data (like OTPs) is not logged: Check logs to ensure that OTPs or other sensitive information are not being inadvertently stored or logged.
+4. Performance Tests:
+4.1 Load test the register and confirm endpoints: Assess how the system performs under high traffic, particularly focusing on the database and SMS service responsiveness.
+5. End-to-End Tests:
+5.1 Complete registration flow: From sending the initial registration request through to confirming the OTP, ensure the entire flow works seamlessly and updates the database correctly.
+5.2 Family linkage: Test scenarios where a parent is linked to a new or existing family during the registration confirmation process. */
