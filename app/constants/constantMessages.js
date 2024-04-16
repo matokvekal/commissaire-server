@@ -7,6 +7,7 @@ export const ServerErrors = {
 	OTP_INVALID: `Invalid OTP or user not found.`,
 	OTP_EXPIRED: `OTP time expired, please register again.`,
 	API_BASE_CREATE_INVALID: 'Required fields are missing or invalid.',
+	INVALID_GOOGLE_TOKEN:"Invalid authentication token provided.",
 };
 
 export const ServerMessages = {

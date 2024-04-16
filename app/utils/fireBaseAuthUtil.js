@@ -1,12 +1,11 @@
-import admin from 'firebase-admin';
+import admin from "firebase-admin";
 
-import serviceAccount from '../../serviceAccountKey.json' assert { type: 'json' };
-
+import serviceAccount from "../../serviceAccountKey.json" assert { type: "json" };
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://<YOUR-FIREBASE-PROJECT-ID>.firebaseio.com'
+  databaseURL: "https://<YOUR-FIREBASE-PROJECT-ID>.firebaseio.com",
 });
 
 /**
@@ -17,10 +16,10 @@ admin.initializeApp({
 const verifyIdToken = async (idToken) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    return decodedToken;
+    return { valid: true, decodedToken };
   } catch (error) {
-    console.error('Error verifying ID token:', error);
-    throw error;
+    console.error("Error verifying ID token:", error);
+    return { valid: false, error };
   }
 };
 

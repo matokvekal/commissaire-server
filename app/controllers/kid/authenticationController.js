@@ -5,9 +5,18 @@ import config from "../../config/index.js";
 import test from "../../routes/kid/temporarytest.js";
 import { kidRegistrationSMS } from "../../utils/smsUtil.js";
 import { verifyIdToken, getUserData } from "../../utils/fireBaseAuthUtil.js"; // Import Firebase utilities
-import {getDataFromGoogleToken, createJwtToken, createOTP,} from "../../utils/authenticationUtils.js";
-import { ServerMessages } from "../../constants/ServerMessages.js";
+import {
+  getDataFromGoogleToken,
+  createJwtToken,
+  createOTP,
+} from "../../utils/authenticationUtils.js";
+import {
+  ServerMessages,
+  ServerErrors,
+  ServerLoginMessages,
+} from "../../constants/constantMessages.js";
 
+import moment from "moment";
 class AuthenticationController extends BaseController {
   constructor(app, modelName) {
     super(app, modelName);
@@ -20,8 +29,11 @@ class AuthenticationController extends BaseController {
       if (!googleToken) {
         return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
       }
-
-      const decodedToken = await verifyIdToken(googleToken); // Verify the Google ID token
+      const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      if (!valid) {
+        console.log("Failed to verify token:", error.message || error);
+        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+      }
       const { email, uid, name, picture } = getUserData(decodedToken);
 
       console.log("userData", userData);
@@ -89,7 +101,9 @@ class AuthenticationController extends BaseController {
         } else {
           if (
             kid.otp_trys >= 3 &&
-            kid.last_otp > now() - config.otpTimeLimitSeconds
+            moment(kid.last_otp).isAfter(
+              moment().subtract(config.otpTimeLimitSeconds, "seconds")
+            )
           ) {
             return res.status(400).send(ServerErrors.OTP_EXPIRED);
           } else {
@@ -135,7 +149,7 @@ class AuthenticationController extends BaseController {
       email = getFixedValue(email);
       otp = getFixedValue(otp);
       phone = getFixedValue(phone);
-      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1  and otp=:otp and last_otp>now()-interval ${config.confirmationCodeLimit} minute`;
+      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1  and otp=:otp and last_otp > NOW()-interval ${config.confirmationCodeLimit} minute`;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
         type: QueryTypes.SELECT,
