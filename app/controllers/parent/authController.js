@@ -12,7 +12,7 @@ import {
   ServerErrors,
 } from "../../constants/constantMessages.js";
 
-class AuthenticationController extends BaseController {
+class AuthController extends BaseController {
   constructor(app, modelName, sequelize) {
     super(app, modelName, sequelize);
   }
@@ -187,7 +187,7 @@ class AuthenticationController extends BaseController {
     res.status(500).send({ error: err.message || message });
   }
 }
-export default AuthenticationController;
+export default AuthController;
 
 /* 1. Integration Tests for API Endpoints:
 POST /api/parent/register

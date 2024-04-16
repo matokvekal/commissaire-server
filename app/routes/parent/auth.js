@@ -1,11 +1,11 @@
-import AuthenticationController from "../../controllers/parent/authenticationController.js";
+import AuthController from "../../controllers/parent/authController.js";
 
 export default (router, app) => {
   const modelBase = "parent";
-  const authenticationController = new AuthenticationController(app, modelBase);
+  const authController = new AuthController(app, modelBase);
   // POST /api/parent/register
-  router.post(`/${modelBase}/register`, authenticationController.register);
+  router.post(`/${modelBase}/register`, authController.register);
 
   // POST /api/parent/confirm
-  router.post(`/${modelBase}/confirm`, authenticationController.confirm);
+  router.post(`/${modelBase}/confirm`, authController.confirm);
 };
