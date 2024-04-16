@@ -21,7 +21,7 @@ const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
 const authenticationMiddleware = (db) => async (req, res, next) => {
   console.log("at authenticationMiddleware");
   console.log(req.path);
-  if (isPathCanBypass(req.path)) {
+  if (isPathCanBypass(req.path)|| isPathCanBypass(req.originalUrl)) {
     return next();
   }
 
