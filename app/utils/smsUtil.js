@@ -24,7 +24,7 @@ export const parentRegistrationSMS = async (phoneNumber, otp) => {
   return result;
 };
 
-const singleSmsSender = async (phoneNumber, messageBody, sender) => {
+export const singleSmsSender = async (phoneNumber, messageBody, sender = config.smsSenderName) => {
   try {
     const token = config.SMS_API_TOKEN;
     const url = config.sms_api_url;

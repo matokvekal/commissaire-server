@@ -3,7 +3,7 @@ import { QueryTypes } from "sequelize";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import config from "../../config/index.js";
 import test from "../../routes/kid/temporarytest.js";
-import { kidRegistrationSMS } from "../../utils/smsUtil.js";
+import { kidRegistrationSMS,singleSmsSender } from "../../utils/smsUtil.js";
 import { verifyIdToken, getUserData } from "../../utils/fireBaseAuthUtil.js"; // Import Firebase utilities
 import { createJwtToken, createOTP } from "../../utils/authenticationUtils.js";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
@@ -72,7 +72,7 @@ class AuthenticationController extends BaseController {
         return res.status(400).send("Family not exist");
       }
       const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
-      singleSmsSender(phoneNumber, messageBody, smsSender);
+      singleSmsSender(phoneNumber, messageBody);
       const token = createJwtToken(kid.email);
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).send(token);
@@ -189,7 +189,7 @@ class AuthenticationController extends BaseController {
     }
   };
 
-  // POST /api/confirmcode
+  // POST /api/kid/confirmcode
   confirmCode = async (req, res) => {
     console.log("At kid confirmCode controller");
     try {
