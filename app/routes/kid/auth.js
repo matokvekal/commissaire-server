@@ -4,12 +4,17 @@ export default (router, app) => {
   const modelBase = "kid";
   const authenticationController = new AuthenticationController(app, modelBase);
 
+  //Post /api/kid/login
+  router.post(`/${modelBase}/login`, authenticationController.login);
+
   // GET /api/kid/register
   router.post(`/${modelBase}/register`, authenticationController.register);
 
   // POST /api/kid/confirmcode
-  router.post(`/${modelBase}/confirmcode`, authenticationController.confirmCode);
-
+  router.post(
+    `/${modelBase}/confirmcode`,
+    authenticationController.confirmCode
+  );
 };
 
 //import ControllerKids from "../../controllers/kid/controllerKids.js";

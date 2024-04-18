@@ -18,30 +18,100 @@ class AuthenticationController extends BaseController {
   constructor(app, modelName) {
     super(app, modelName);
   }
+
+  //Post /api/kid/login
+  login = async (req, res) => {
+    try {
+      console.log("at kid login controller");
+      const { googleToken } = req.body;
+      if (!googleToken) {
+        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+      }
+      const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      if (!valid) {
+        console.log("Failed to verify token:", error.message || error);
+        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+      }
+      const { email } = getUserData(decodedToken);
+      if (!email) {
+        return res.status(400).send("some error occurred a1");
+      }
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `email:${email}`,
+        "/kid/login"
+      );
+      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
+      let kid = await this.sequelize.query(SQL, {
+        replacements: { email },
+        type: QueryTypes.SELECT,
+      });
+      console.log("kid data", kid);
+      if (kid.length === 0) {
+        return res.status(400).send("you are not registered");
+      }
+      kid = kid[0];
+      if (kid.is_active !== 1) {
+        return res.status(400).send("contact admin to activate your account");
+      }
+      if (!kid.is_register) {
+        return res.status(400).send("you are not registered");
+      }
+      SQL = `select distinct * from family where id=:family_id and is_active=1`;
+      let family = await this.sequelize.query(SQL, {
+        replacements: { family_id: kid.family_id },
+        type: QueryTypes.SELECT,
+      });
+      if (family.length === 0) {
+        return res.status(400).send("Family not exist");
+      }
+      family = family[0];
+      const phoneNumber = family.parent_phone;
+      if (!phoneNumber) {
+        return res.status(400).send("Family not exist");
+      }
+      const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
+      singleSmsSender(phoneNumber, messageBody, smsSender);
+      const token = createJwtToken(kid.email);
+      res.setHeader("Authorization", `Bearer ${token}`);
+      return res.status(200).send(token);
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || ServerErrors.GENERAL_ERROR,
+      });
+    }
+  };
+
   // POST /api/kid/register
   register = async (req, res) => {
     console.log("at kid register controller");
     try {
-      let { firstName, lastName, parentPhone, googleToken } = req.body;
-    
-      if (!googleToken) {
-        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+      let { firstName, parentPhone, googleToken } = req.body;
+
+      if (!googleToken || !firstName || !parentPhone) {
+        return res.status(400).send("some details are missing");
       }
-      //Due to some issue in the code, the below line is commented out
+      firstName = getFixedValue(firstName);
+      parentPhone = getFixedValue(parentPhone);
 
-      // const { valid, decodedToken, error } = await verifyIdToken(googleToken);
-      // if (!valid) {
-      //   console.log("Failed to verify token:", error.message || error);
-      //   return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
-      // }
-      // const { email, uid, name, picture } = getUserData(decodedToken);
+      const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      if (!valid) {
+        console.log("Failed to verify token:", error.message || error);
+        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+      }
+      const { email, uid, name, picture } = getUserData(decodedToken);
 
-      // console.log("userData", userData);
-      const email = googleToken;
       if (!email) {
-        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+        return res.status(400).send("some error occurred a1");
       }
-      await createSingleLog(this.sequelize,req,`parentPhone ${parentPhone} email:${email}`,"/kid/register" );
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `parentPhone ${parentPhone} email:${email}`,
+        "/kid/register"
+      );
       let SQL = `select distinct * from users where  email=:email and ( user_type="kid" or user_type="kid_temporary") `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email: email },
@@ -49,8 +119,22 @@ class AuthenticationController extends BaseController {
       });
       console.log("kid data", kid);
 
-      if (kid.length > 0 && kid[0].is_active === 0) {
-        return res.status(400).send("contact admin to activate your account");
+      if (kid.length > 0) {
+        kid = kid[0];
+        if (kid.is_active === 0) {
+          return res.status(400).send("contact admin to activate your account");
+        } else if (kid.is_register === 1) {
+          return res.status(400).send("Kid already registered");
+        } else if (
+          kid.otp_trys >= 3 &&
+          moment(kid.last_otp).isAfter(
+            moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
+          )
+        ) {
+          return res
+            .status(400)
+            .send("Too many tries, please wait before trying again.");
+        }
       }
 
       SQL = `select distinct  * from family where  parent_phone=:parentPhone and is_active=1  `;
@@ -59,83 +143,43 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       console.log("family data", family);
-      //kid not exist
       if (family.length === 0) {
-        //here we can create family and kid,then sent the parent sms to download the app
         return res.status(400).send("Family not exist");
       }
+
       family = family[0];
-      if (kid.length === 0) {
-        const OTP = createOTP();
-        const smsSent = await kidRegistrationSMS(
-          family.name,
-          parentPhone,
-          firstName,
-          OTP,
-          false //login
-        );
-        if (smsSent) {
-          const SQL = `insert into users 
-          (email,f_name,l_name,user_type,family_id,otp,otp_trys,last_otp)
-           values 
-          (:email,:firstName,:lastName,"kid_temporary",${family.id},${OTP},1,NOW())`;
+      const OTP = createOTP();
+      const smsSent = await kidRegistrationSMS(
+        family.name,
+        parentPhone,
+        firstName,
+        OTP,
+        false //login
+      );
+      if (smsSent) {
+        if (kid.length === 0) {
+          kid = kid[0];
+          SQL = `insert into users 
+                  (email,f_name,l_name,user_type,family_id,otp,otp_trys,last_otp,google_uid, google_name, google_picture)
+                  values 
+                  (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,NOW(),'${uid}', '${name}', '${picture}')`;
+          console.log("SQL", SQL);
           await this.sequelize.query(SQL, {
-            replacements: { email, firstName, lastName },
+            replacements: { email, firstName },
             type: QueryTypes.INSERT,
           });
           return res.status(200).send("OTP sent successfully to parent");
         } else {
-          return res.status(400).send(ServerErrors.GENERAL_ERROR);
+          SQL = `update users set otp=${OTP},otp_trys=otp_trys+1,last_otp=NOW() where id=${kid.id}`;
+          await this.sequelize.query(SQL, {
+            type: QueryTypes.UPDATE,
+          });
+          return res
+            .status(200)
+            .send("OTP sent successfully to parent for login");
         }
       } else {
-        //kid allredy exist
-        kid = kid[0];
-        if (kid.is_active !== 1) {
-          return res.status(400).send(ServerErrors.GENERAL_ERROR);
-        }
-        if (kid.is_register) {
-          await kidRegistrationSMS(
-            family.name,
-            parentPhone,
-            firstName,
-            null,
-            false
-          );
-
-          const token = createJwtToken(kid.email);
-          return res.status(200).send(token);
-        } else {
-          if (
-            kid.otp_trys >= 3 &&
-            moment(kid.last_otp).isAfter(
-              moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
-            )
-          ) {
-            return res
-              .status(400)
-              .send("Too many tries, please wait before trying again.");
-          } else {
-            const OTP = createOTP();
-            const smsSent = await kidRegistrationSMS(
-              family.name,
-              parentPhone,
-              firstName,
-              OTP,
-              true
-            );
-            if (OTP) {
-              const SQL = `update users set otp=${OTP},otp_trys=otp_trys+1,last_otp=NOW() where id=${kid.id}`;
-              await this.sequelize.query(SQL, {
-                type: QueryTypes.UPDATE,
-              });
-              return res
-                .status(200)
-                .send("OTP sent successfully to parent for login");
-            } else {
-              return res.status(400).send(ServerErrors.GENERAL_ERROR);
-            }
-          }
-        }
+        return res.status(400).send(ServerErrors.GENERAL_ERROR);
       }
     } catch (err) {
       console.log(err);
@@ -145,19 +189,35 @@ class AuthenticationController extends BaseController {
     }
   };
 
-  // POST /api/kid/confirmcode
+  // POST /api/confirmcode
   confirmCode = async (req, res) => {
     console.log("At kid confirmCode controller");
     try {
-      let { phone, otp, email } = req.body;
-      await createSingleLog(this.sequelize,req,`parentPhone: ${phone} email: ${email}`,"/kid/confirmCode" );
-      if (!phone || !otp || !email) {
-        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+      let { otp, googleToken } = req.body;
+
+      if (!googleToken || !otp) {
+        return res.status(400).send("some details are missing");
+      }
+      otp = getFixedValue(otp);
+
+      const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      if (!valid) {
+        console.log("Failed to verify token:", error.message || error);
+        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+      }
+      const { email } = getUserData(decodedToken);
+
+      if (!email) {
+        return res.status(400).send("some error occurred a1");
       }
 
-      email = getFixedValue(email);
-      otp = getFixedValue(otp);
-      phone = getFixedValue(phone);
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `otp: ${otp} email: ${email}`,
+        "/kid/confirmCode"
+      );
+
       let SQL = `select distinct * from users where  email=:email and ( user_type="kid" or user_type="kid_temporary") and is_active=1  and otp=${otp} and last_otp > NOW()-interval ${config.otpConfirmationLimitsMinutes} minute`;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },

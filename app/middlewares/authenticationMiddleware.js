@@ -4,17 +4,16 @@ import config from "../config/index.js";
 //import { isBefore } from "date-fns";
 
 const bypassPathsWhiteList = new Set([
-  "/parent/auth/login",
+  "/kid/login",
   "/kid/register",
-  "/kid/auth/confirmCode",
-  "/parent/auth/confirmcode",
-  "/kid/sayhi",
-  "/parent/sayhi",
   "/kid/confirmcode",
   "/kid/simulatejwttoken",
+  "/kid/sayhi",
+  "/parent/login",
   "/parent/register",
   "/parent/confirm",
   "/parent/reset",
+  "/parent/sayhi",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
