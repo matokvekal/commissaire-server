@@ -25,5 +25,5 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - name: Create symbolic link to .env file
-      run: ln -s /home/ubuntu/env/.env .env
+      run: ln -sf /home/ubuntu/env/.env .env
     - run: pm2 restart api
