@@ -100,7 +100,9 @@ class AuthController extends BaseController {
           type: QueryTypes.INSERT,
         });
       }
-      return res.status(200).send(ServerErrors.REGISTRATION_LOGIN_SUCCESSFUL);
+      const token = createJwtToken(parent[0].phone);
+      res.setHeader("Authorization", `Bearer ${token}`);
+      return res.status(200).send(ServerMessages.LOGIN_SUCCESS);
     } catch (err) {
       console.error("Error during registration:", err);
       // return res.status(500).send("An error occurred during registration.");

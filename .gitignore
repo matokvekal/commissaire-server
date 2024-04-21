@@ -17,3 +17,5 @@ README.md
 API.md
 
 serviceAccountKey.json
+/__tests__/
+babel.config.js
