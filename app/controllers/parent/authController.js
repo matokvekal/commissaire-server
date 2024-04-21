@@ -11,7 +11,7 @@ import moment from "moment";
 import {
   ServerLoginMessages,
   ServerErrors,
-  ServerMessages
+  ServerMessages,
 } from "../../constants/constantMessages.js";
 
 class AuthController extends BaseController {
@@ -100,9 +100,7 @@ class AuthController extends BaseController {
           type: QueryTypes.INSERT,
         });
       }
-      const token = createJwtToken(parent[0].phone);
-      res.setHeader("Authorization", `Bearer ${token}`);
-      return res.status(200).send(ServerMessages.LOGIN_SUCCESS);
+      return res.status(200).send(ServerMessages.OTP_SENT_SUCCESS);
     } catch (err) {
       console.error("Error during registration:", err);
       // return res.status(500).send("An error occurred during registration.");
