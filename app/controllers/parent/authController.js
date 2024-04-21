@@ -45,10 +45,15 @@ class AuthController extends BaseController {
   register = async (req, res) => {
     const { name, familyName, parentPhone, email } = req.body;
     let parentStatus = "registered";
-    await createSingleLog(this.sequelize,req,`parentPhone ${parentPhone} email:${email}`,"/parent/register" );
+    await createSingleLog(
+      this.sequelize,
+      req,
+      `parentPhone ${parentPhone} email:${email}`,
+      "/parent/register"
+    );
     // Check if required fields are present
     if (!name || !familyName || !parentPhone) {
-      return res.status(400).send("Required fields are missing.");
+      return res.status(400).send(ServerErrors.MISSING_DETAILS);
     }
 
     try {
@@ -58,7 +63,7 @@ class AuthController extends BaseController {
       // Check if parent is already registered and active
       if (parent) {
         if (parent.is_active !== 1) {
-          return res.status(400).send("Please contact support.");
+          return res.status(400).send(ServerErrors.CONTACT_ADMIN);
         }
         parentStatus = "login";
         // Check for too many OTP attempts in a short time
@@ -68,9 +73,7 @@ class AuthController extends BaseController {
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
-          return res
-            .status(400)
-            .send("Too many tries, please wait before trying again.");
+          return res.status(400).send(ServerErrors.SMS_FAILED);
         }
       }
 
@@ -79,7 +82,7 @@ class AuthController extends BaseController {
 
       // Handle failed SMS sending
       if (!smsSent) {
-        return res.status(400).send("Failed to send SMS.");
+        return res.status(400).send(ServerErrors.SMS_FAILED);
       }
 
       // Update or insert parent data
@@ -96,44 +99,43 @@ class AuthController extends BaseController {
           type: QueryTypes.INSERT,
         });
       }
-      return res
-        .status(200)
-        .send(`${parentStatus} successful we sent you an OTP.`);
+      return res.status(200).send(ServerErrors.REGISTRATION_LOGIN_SUCCESSFUL);
     } catch (err) {
-       console.error("Error during registration:", err);
+      console.error("Error during registration:", err);
       // return res.status(500).send("An error occurred during registration.");
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || ServerErrors.GENERAL_ERROR,
       });
     }
-
-    
   };
 
   // POST /api/parent/confirm
   confirm = async (req, res) => {
     console.log("At parent confirm controller");
-    const otpAattemps = config.sms_otp_attempt_limit;
+    const { phone, otp } = req.body;
+    if (!phone || !otp) {
+      return res.status(400).send(ServerErrors.MISSING_DETAILS);
+    }
     try {
-      const { phone, otp } = req.body;
-      await createSingleLog(this.sequelize,req,`parentPhone ${phone} otp:${otp}`,"/parent/confirm" );
-      if (!phone || !otp) {
-        return res.status(400).send(ServerErrors.API_BASE_UPDATE_INVALID);
-      }
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `parentPhone ${phone} otp:${otp}`,
+        "/parent/confirm"
+      );
 
       const cleanedOtp = getFixedValue(otp);
       const cleanedPhone = getFixedValue(phone);
       // Retrieve the parent user with the given phone and OTP
       let SQL =
         "SELECT DISTINCT * FROM users WHERE phone=:phone AND user_type='parent' AND otp=:otp";
-
       let parent = await this.sequelize.query(SQL, {
         replacements: { phone: cleanedPhone, otp: cleanedOtp },
         type: QueryTypes.SELECT,
       });
 
       if (parent.length === 0) {
-        return res.status(400).send(ServerErrors.OTP_INVALID);
+        return res.status(400).send(ServerErrors.INVALID_OTP);
       }
       const currentTime = moment();
       const otpExpirationTime = moment(parent[0].last_otp).add(
@@ -199,7 +201,7 @@ class AuthController extends BaseController {
       }
       const token = createJwtToken(parent[0].phone);
       res.setHeader("Authorization", `Bearer ${token}`);
-      return res.status(200).send("User registered successfully");
+      return res.status(200).send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {

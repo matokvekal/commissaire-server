@@ -3,7 +3,7 @@ import { QueryTypes } from "sequelize";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import config from "../../config/index.js";
 import test from "../../routes/kid/temporarytest.js";
-import { kidRegistrationSMS,singleSmsSender } from "../../utils/smsUtil.js";
+import { kidRegistrationSMS, singleSmsSender } from "../../utils/smsUtil.js";
 import { verifyIdToken, getUserData } from "../../utils/fireBaseAuthUtil.js"; // Import Firebase utilities
 import { createJwtToken, createOTP } from "../../utils/authenticationUtils.js";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
@@ -24,17 +24,20 @@ class AuthenticationController extends BaseController {
     try {
       console.log("at kid login controller");
       const { googleToken } = req.body;
+      console.log("googleToken", googleToken);
+
       if (!googleToken) {
-        return res.status(400).send(ServerErrors.API_BASE_CREATE_INVALID);
+        return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      console.log("valid", valid, "decodedToken", decodedToken, "error", error);
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
         return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
       }
       const { email } = getUserData(decodedToken);
       if (!email) {
-        return res.status(400).send("some error occurred a1");
+        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
       }
       await createSingleLog(
         this.sequelize,
@@ -49,14 +52,14 @@ class AuthenticationController extends BaseController {
       });
       console.log("kid data", kid);
       if (kid.length === 0) {
-        return res.status(400).send("you are not registered");
+        return res.status(400).send(ServerErrors.NOT_REGISTERED);
       }
       kid = kid[0];
       if (kid.is_active !== 1) {
-        return res.status(400).send("contact admin to activate your account");
+        return res.status(400).send(ServerErrors.CONTACT_ADMIN);
       }
       if (!kid.is_register) {
-        return res.status(400).send("you are not registered");
+        return res.status(400).send(ServerErrors.NOT_REGISTERED);
       }
       SQL = `select distinct * from family where id=:family_id and is_active=1`;
       let family = await this.sequelize.query(SQL, {
@@ -64,18 +67,20 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (family.length === 0) {
-        return res.status(400).send("Family not exist");
+        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       family = family[0];
       const phoneNumber = family.parent_phone;
       if (!phoneNumber) {
-        return res.status(400).send("Family not exist");
+        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
       singleSmsSender(phoneNumber, messageBody);
       const token = createJwtToken(kid.email);
-      res.setHeader("Authorization", `Bearer ${token}`);
-      return res.status(200).send(token);
+      return res
+        .setHeader("Authorization", `Bearer ${token}`)
+        .status(200)
+        .send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -91,7 +96,7 @@ class AuthenticationController extends BaseController {
       let { firstName, parentPhone, googleToken } = req.body;
 
       if (!googleToken || !firstName || !parentPhone) {
-        return res.status(400).send("some details are missing");
+        return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       firstName = getFixedValue(firstName);
       parentPhone = getFixedValue(parentPhone);
@@ -104,7 +109,7 @@ class AuthenticationController extends BaseController {
       const { email, uid, name, picture } = getUserData(decodedToken);
 
       if (!email) {
-        return res.status(400).send("some error occurred a1");
+        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
       }
       await createSingleLog(
         this.sequelize,
@@ -122,18 +127,16 @@ class AuthenticationController extends BaseController {
       if (kid.length > 0) {
         kid = kid[0];
         if (kid.is_active === 0) {
-          return res.status(400).send("contact admin to activate your account");
+          return res.status(400).send(ServerErrors.CONTACT_ADMIN);
         } else if (kid.is_register === 1) {
-          return res.status(400).send("Kid already registered");
+          return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
         } else if (
           kid.otp_trys >= 3 &&
           moment(kid.last_otp).isAfter(
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
-          return res
-            .status(400)
-            .send("Too many tries, please wait before trying again.");
+          return res.status(400).send(ServerErrors.TOO_MANY_TRIES);
         }
       }
 
@@ -144,7 +147,7 @@ class AuthenticationController extends BaseController {
       });
       console.log("family data", family);
       if (family.length === 0) {
-        return res.status(400).send("Family not exist");
+        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
 
       family = family[0];
@@ -168,15 +171,13 @@ class AuthenticationController extends BaseController {
             replacements: { email, firstName },
             type: QueryTypes.INSERT,
           });
-          return res.status(200).send("OTP sent successfully to parent");
+          return res.status(200).send(ServerMessages.OTP_SENT_SUCCESS);
         } else {
           SQL = `update users set otp=${OTP},otp_trys=otp_trys+1,last_otp=NOW() where id=${kid.id}`;
           await this.sequelize.query(SQL, {
             type: QueryTypes.UPDATE,
           });
-          return res
-            .status(200)
-            .send("OTP sent successfully to parent for login");
+          return res.status(200).send(ServerMessages.OTP_SENT_SUCCESS);
         }
       } else {
         return res.status(400).send(ServerErrors.GENERAL_ERROR);
@@ -196,7 +197,7 @@ class AuthenticationController extends BaseController {
       let { otp, googleToken } = req.body;
 
       if (!googleToken || !otp) {
-        return res.status(400).send("some details are missing");
+        return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       otp = getFixedValue(otp);
 
@@ -208,7 +209,7 @@ class AuthenticationController extends BaseController {
       const { email } = getUserData(decodedToken);
 
       if (!email) {
-        return res.status(400).send("some error occurred a1");
+        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
       }
 
       await createSingleLog(
@@ -225,11 +226,11 @@ class AuthenticationController extends BaseController {
       });
 
       if (kid.length === 0) {
-        return res.status(400).send("Invalid OTP or OTP expired");
+        return res.status(400).send(ServerErrors.INVALID_OTP);
       }
       kid = kid[0];
       if (kid.user_type === "kid" && kid.is_register === 1) {
-        return res.status(400).send("Kid already registered");
+        return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
       }
 
       SQL = `update users set is_register=1,otp_trys=0,user_type="kid" where id=${kid.id}`;
@@ -238,22 +239,22 @@ class AuthenticationController extends BaseController {
       });
 
       // if device_id for kid id not exist at kid_devices table, add
-      SQL = `select distinct * from kid_devices where id=:kid_id`;
-      let kidDevice = await this.sequelize.query(SQL, {
-        replacements: { kid_id: kid.id },
-        type: QueryTypes.SELECT,
-      });
-      if (kidDevice.length === 0 && req.deviceId) {
-        SQL = `insert into kid_devices (kid_id,device_id,device_name) values (:kid_id,:device_id,:device_name)`;
-        await this.sequelize.query(SQL, {
-          replacements: {
-            kid_id: kid.id,
-            device_id: req.deviceId || "",
-            device_name: req.deviceName || "",
-          },
-          type: QueryTypes.INSERT,
-        });
-      }
+      // SQL = `select distinct * from kid_devices where id=:kid_id`;
+      // let kidDevice = await this.sequelize.query(SQL, {
+      //   replacements: { kid_id: kid.id },
+      //   type: QueryTypes.SELECT,
+      // });
+      // if (kidDevice.length === 0 && req.deviceId) {
+      //   SQL = `insert into kid_devices (kid_id,device_id,device_name) values (:kid_id,:device_id,:device_name)`;
+      //   await this.sequelize.query(SQL, {
+      //     replacements: {
+      //       kid_id: kid.id,
+      //       device_id: req.deviceId || "",
+      //       device_name: req.deviceName || "",
+      //     },
+      //     type: QueryTypes.INSERT,
+      //   });
+      // }
       const token = createJwtToken(kid.email);
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).json({ token: token });
