@@ -25,12 +25,24 @@ class AuthenticationController extends BaseController {
       console.log("at kid login controller");
       const { googleToken } = req.body;
       console.log("googleToken", googleToken);
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `googleToken ${googleToken} `,
+        "/kid/login"
+      );
 
       if (!googleToken) {
         return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       console.log("valid", valid, "decodedToken", decodedToken, "error", error);
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `valid ${valid};error ${error} `,
+        "/kid/login"
+      );
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
         return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
@@ -39,6 +51,7 @@ class AuthenticationController extends BaseController {
       if (!email) {
         return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
       }
+
       await createSingleLog(
         this.sequelize,
         req,
