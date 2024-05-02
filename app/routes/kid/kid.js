@@ -4,6 +4,12 @@ export default (router, app) => {
   const modelBase = "kid";
   const kidsController = new ControllerKids(app, modelBase);
 
+//POST /api/kid/apps
+  router.post(`/${modelBase}/apps`, kidsController.kidApps.bind(kidsController));
+
+  // POST /api/kid/device
+  router.post(`/${modelBase}/device`, kidsController.registerDevice.bind(kidsController));
+
   // GET /api/kid/sayhi
   router.get(`/${modelBase}/sayhi`, kidsController.hello.bind(kidsController));
 

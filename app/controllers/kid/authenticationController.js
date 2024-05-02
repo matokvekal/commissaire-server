@@ -2,7 +2,7 @@ import BaseController from "./baseController.js";
 import { QueryTypes } from "sequelize";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import config from "../../config/index.js";
-import test from "../../routes/kid/temporarytest.js";
+import test from "../../routes/kid/kid.js";
 import { kidRegistrationSMS, singleSmsSender } from "../../utils/smsUtil.js";
 import { verifyIdToken, getUserData } from "../../utils/fireBaseAuthUtil.js"; // Import Firebase utilities
 import { createJwtToken, createOTP } from "../../utils/authenticationUtils.js";
@@ -87,8 +87,10 @@ class AuthenticationController extends BaseController {
       if (!phoneNumber) {
         return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
-      const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
-      singleSmsSender(phoneNumber, messageBody);
+      //TODO
+      //change this code to send Email instead of sms
+      // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
+      // singleSmsSender(phoneNumber, messageBody);
       const token = createJwtToken(kid.email);
       return res
         .setHeader("Authorization", `Bearer ${token}`)
@@ -251,7 +253,12 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.UPDATE,
       });
 
-      // if device_id for kid id not exist at kid_devices table, add
+      SQL = "select id,type from device_types where is_active=1";
+      const devices = await this.sequelize.query(SQL, {
+        type: QueryTypes.SELECT,
+      });
+      console.log("devices", devices);
+
       // SQL = `select distinct * from kid_devices where id=:kid_id`;
       // let kidDevice = await this.sequelize.query(SQL, {
       //   replacements: { kid_id: kid.id },
@@ -270,7 +277,7 @@ class AuthenticationController extends BaseController {
       // }
       const token = createJwtToken(kid.email);
       res.setHeader("Authorization", `Bearer ${token}`);
-      return res.status(200).json({ token: token });
+      return res.status(200).json({ devices: devices });
       //return token at header
     } catch (err) {
       console.log(err);

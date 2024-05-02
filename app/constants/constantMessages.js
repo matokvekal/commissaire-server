@@ -30,3 +30,4 @@ export const ServerLoginMessages = {
   LOGIN_REQUIRED: "You must be logged in to access this",
   AUTH_FAILED: "Authentication failed",
 };
+

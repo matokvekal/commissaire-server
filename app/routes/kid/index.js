@@ -1,4 +1,4 @@
-import test from "./temporarytest.js";
+import test from "./kid.js";
 import auth from "./auth.js";
 
 export default {

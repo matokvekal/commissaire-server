@@ -15,7 +15,7 @@ env.json
 .env
 README.md
 API.md
-
+/logs/log
 serviceAccountKey.json
 /__tests__/
 babel.config.js
