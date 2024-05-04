@@ -1,7 +1,7 @@
-import test from "./test.js";
+import parent from "./parent.js";
 import auth from "./auth.js";
 
 export default {
-  test,
+  parent,
   auth,
 };

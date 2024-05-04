@@ -13,6 +13,9 @@ export default (router, app) => {
   // GET /api/kid/sayhi
   router.get(`/${modelBase}/sayhi`, kidsController.hello.bind(kidsController));
 
+    //POST api/kid/token
+  router.post(`/${modelBase}/token`, kidsController.googleToken.bind(kidsController));
+
   // GET /api/kid/simulatejwttoken
   router.get(
     `/${modelBase}/simulatejwttoken`,

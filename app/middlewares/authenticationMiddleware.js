@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { getTokenFromRequest } from "../utils/authenticationUtils.js";
 import config from "../config/index.js";
+import { QueryTypes } from "sequelize";
 //import { isBefore } from "date-fns";
 
 const bypassPathsWhiteList = new Set([
@@ -31,12 +32,13 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, config.TOKEN_KEY);
-    //TODO
-    // Implement getUserDataFromDB to fetch user details from the database.
+    const userType = req.path.split("/")[1];
+    const decoded = jwt.verify(token, config.JWT_SECRET);
 
     const { isValidUser, userName, userId } = await getUserDataFromDB(
-      decoded.userName
+      db.sequelize,
+      decoded.user_name,
+      userType
     );
     if (!isValidUser) {
       return res.status(401).send("User not valid");
@@ -46,19 +48,28 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
     next();
   } catch (err) {
     console.log(err);
-    // return res.status(401).send("Invalid authentication token");
-    res.createErrorLogAndSend(this.sequelize, {
-      err: err.message || "Invalid authentication token",
-    });
+    return res.status(401).send("Invalid authentication token");
+    // res.createErrorLogAndSend(this.sequelize, {
+    //   err: err.message || "Invalid authentication token",
+    // });
   }
 };
 
 //use moment utc to compare dates not use. jwt do it automatically
 //const checkIfTokenExpired = (tokenExpireDate) => isBefore(new Date(tokenExpireDate), new Date());
 
-const getUserDataFromDB = async (userName) => {
-  // Database logic here
-  return { isValidUser: true, userName: "test", userId: 1 };
+const getUserDataFromDB = async (sequelize, userName, userType) => {
+  try {
+    const SQL = `select * from users where email=:userName and is_active=1 and user_type='${userType}'`;
+    const user = await sequelize.query(SQL, {
+      replacements: { userName },
+      type: QueryTypes.SELECT,
+    });
+
+    return { isValidUser: true, userName: user[0].email, userId: user[0].id };
+  } catch (err) {
+    return { isValidUser: false, userName: "", userId: 0 };
+  }
 };
 
 export default authenticationMiddleware;

@@ -44,7 +44,8 @@ class AuthController extends BaseController {
 
   // POST /api/parent/register
   register = async (req, res) => {
-    const { name, familyName, parentPhone, email } = req.body;
+    const { name, familyName, parentPhone, email, readAndAgreeTerms } =
+      req.body;
     let parentStatus = "registered";
     await createSingleLog(
       this.sequelize,
@@ -53,7 +54,7 @@ class AuthController extends BaseController {
       "/parent/register"
     );
     // Check if required fields are present
-    if (!name || !familyName || !parentPhone) {
+    if (!name || !familyName || !parentPhone || !email || !readAndAgreeTerms) {
       return res.status(400).send(ServerErrors.MISSING_DETAILS);
     }
 
@@ -94,7 +95,7 @@ class AuthController extends BaseController {
           type: QueryTypes.UPDATE,
         });
       } else {
-        const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, NOW())`;
+        const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp,readAndAgreeTerms) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, NOW(),1)`;
         await this.sequelize.query(insertSql, {
           replacements: { name, familyName, parentPhone, email, OTP },
           type: QueryTypes.INSERT,

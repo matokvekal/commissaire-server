@@ -2,12 +2,12 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import Logger from "../utils/logger.js";
-import { getModeFromEnv } from "../utils/authenticationUtils.js";
+// import Logger from "../utils/logger.js";
+import  getModeFromEnv from "../utils/mode.js";
 const mode = getModeFromEnv();
 // const mode = process.env.MODE || "staging";
-const env = getModeFromEnv();
-Logger.debug(`Server is running in ${mode} mode`);
+// const env = getModeFromEnv();
+// Logger.debug(`Server is running in ${mode} mode`);
 const configByEnv = {
   staging: {
     database: {

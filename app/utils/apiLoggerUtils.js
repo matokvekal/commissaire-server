@@ -27,13 +27,12 @@ export const createSingleLog = async (sequelize, req, message, controller) => {
 };
 export const createErrorLog = async (sequelize, req, err) => {
   try {
-
     const date = moment().toDate();
     const ip = req.socket.remoteAddress;
     const path = req.path ? req.path : "";
-    const userName = req.user ? req.user.user_name : "";
-    const SQL = `INSERT INTO log_errors (date, ip, path, err,user_name ,createdAt, updatedAt)
-					 VALUES (:date, :ip, :path, :err,:userName, NOW(), NOW())`;
+    const userName = req.user ? req.user.userName : "";
+    const SQL = `INSERT INTO log_errors (date, ip, path, err,user_name )
+					 VALUES (:date, :ip, :path, :err,:userName)`;
     console.log("SQL createErrorLog", SQL);
     await sequelize.query(SQL, {
       replacements: {

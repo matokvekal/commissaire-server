@@ -108,9 +108,9 @@ class AuthenticationController extends BaseController {
   register = async (req, res) => {
     console.log("at kid register controller");
     try {
-      let { firstName, parentPhone, googleToken } = req.body;
+      let { firstName, parentPhone, googleToken, readAndAgreeTerms } = req.body;
 
-      if (!googleToken || !firstName || !parentPhone) {
+      if (!googleToken || !firstName || !parentPhone || !readAndAgreeTerms) {
         return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       firstName = getFixedValue(firstName);
@@ -178,9 +178,9 @@ class AuthenticationController extends BaseController {
         if (kid.length === 0) {
           kid = kid[0];
           SQL = `insert into users 
-                  (email,f_name,l_name,user_type,family_id,otp,otp_trys,last_otp,google_uid, google_name, google_picture)
+                  (email,f_name,l_name,user_type,family_id,otp,otp_trys,last_otp,google_uid, google_name, google_picture,read_agree_terms)
                   values 
-                  (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,NOW(),'${uid}', '${name}', '${picture}')`;
+                  (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,NOW(),'${uid}', '${name}', '${picture}',1)`;
           console.log("SQL", SQL);
           await this.sequelize.query(SQL, {
             replacements: { email, firstName },
