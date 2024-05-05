@@ -60,6 +60,9 @@ class AuthController extends BaseController {
 
     try {
       const parent = await this.findParentByPhone(parentPhone);
+      if(!parent){
+        return res.status(400).send(ServerErrors.PHONE_NOT_FOUND);
+      }
       console.log("parent data", parent);
 
       // Check if parent is already registered and active
@@ -213,7 +216,7 @@ class AuthController extends BaseController {
   };
 
   async findParentByPhone(parentPhone) {
-    const SQL = `SELECT * FROM users WHERE phone = :parentPhone AND user_type = "parent"`;
+    const SQL = `SELECT * FROM users WHERE phone = :parentPhone AND user_type = "parent" and is_active=1 LIMIT 1`;
     const [parent] = await this.sequelize.query(SQL, {
       replacements: { parentPhone },
       type: QueryTypes.SELECT,
