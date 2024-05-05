@@ -60,9 +60,6 @@ class AuthController extends BaseController {
 
     try {
       const parent = await this.findParentByPhone(parentPhone);
-      if (!parent) {
-        return res.status(400).send(ServerErrors.PARENT_NOT_EXIST);
-      }
       console.log("parent data", parent);
 
       // Check if parent is already registered and active
@@ -98,7 +95,7 @@ class AuthController extends BaseController {
           type: QueryTypes.UPDATE,
         });
       } else {
-        const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp,readAndAgreeTerms) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, NOW(),1)`;
+        const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp,read_agree_terms) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, NOW(),1)`;
         await this.sequelize.query(insertSql, {
           replacements: { name, familyName, parentPhone, email, OTP },
           type: QueryTypes.INSERT,
@@ -216,7 +213,7 @@ class AuthController extends BaseController {
   };
 
   async findParentByPhone(parentPhone) {
-    const SQL = `SELECT * FROM users WHERE phone = :parentPhone AND user_type = "parent" and is_active=1 LIMIT 1`;
+    const SQL = `SELECT * FROM users WHERE phone = :parentPhone AND user_type = "parent"`;
     const [parent] = await this.sequelize.query(SQL, {
       replacements: { parentPhone },
       type: QueryTypes.SELECT,
