@@ -7,6 +7,7 @@ import Wlogger from "../../utils/winstonLogger.js";
 import { ServerNumbers } from "../../constants/serverConstants.js";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import { createJwtToken } from "../../utils/authenticationUtils.js";
+// import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
     super(app, modelName, sequelize);
@@ -136,7 +137,7 @@ class ControllerKids extends BaseController {
   };
 
   // GET /api/kid/sayhi
-  hello = async (req, res) => {
+  hello = async (req, res,io) => {
     try {
       Wlogger.log("info", "kid sey hello", "test1");
       await createSingleLog(

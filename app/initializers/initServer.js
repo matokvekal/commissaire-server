@@ -1,4 +1,6 @@
 import express from "express";
+import http from "http";
+import { Server } from "socket.io";
 import * as middlewares from "../middlewares/index.js";
 import initKidsRoutes from "./initKidsRoutes.js";
 import initParentsRoutes from "./initParentsRoutes.js";
@@ -7,13 +9,13 @@ import cors from "cors";
 
 export default async (config) => {
   const app = express();
-  const kidsRouter = express.Router();
-  const parentsRouter = express.Router();
-
+  const server = http.createServer(app);
+  const io = new Server(server); 
   const db = await initDatabase(config);
   app.set("dbModels", db);
 
   //kid
+  const kidsRouter = express.Router();
   kidsRouter.use(middlewares.apiMiddleware);
   kidsRouter.use(middlewares.errorLoggerMiddleware(db));
   kidsRouter.use(middlewares.authenticationMiddleware(db));
@@ -21,6 +23,7 @@ export default async (config) => {
   initKidsRoutes(kidsRouter, app);
 
   //parent
+  const parentsRouter = express.Router();
   parentsRouter.use(middlewares.apiMiddleware);
   parentsRouter.use(middlewares.errorLoggerMiddleware(db));
   parentsRouter.use(middlewares.authenticationMiddleware(db));
@@ -42,5 +45,5 @@ export default async (config) => {
   app.use("/api", kidsRouter);
   app.use("/api", parentsRouter);
 
-  return app;
+  return { app, server, io };
 };

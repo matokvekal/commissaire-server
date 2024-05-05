@@ -41,6 +41,7 @@
     "nodemon": "^3.1.0",
     "rotating-file-stream": "^3.2.1",
     "sequelize": "^6.37.2",
+    "socket.io": "^4.7.5",
     "winston": "^3.13.0"
   },
   "devDependencies": {

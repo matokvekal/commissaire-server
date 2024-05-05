@@ -4,12 +4,18 @@ import moment from "moment";
 import config from "../config/index.js";
 export const getTokenFromRequest = (req) => {
   const bearerHeader = req.headers["authorization"];
+  let token = getTokenFromBearer(bearerHeader); 
+  return token;
+  return null;
+};
+
+export const getTokenFromBearer = (bearerHeader) => {
   if (bearerHeader) {
     const [, token] = bearerHeader.split(" ");
     return token;
   }
   return null;
-};
+}
 
 // export const getDataFromGoogleToken = async (googleToken) => {
 //   const response = await fetch(
