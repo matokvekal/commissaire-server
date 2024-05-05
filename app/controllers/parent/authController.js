@@ -60,8 +60,8 @@ class AuthController extends BaseController {
 
     try {
       const parent = await this.findParentByPhone(parentPhone);
-      if(!parent){
-        return res.status(400).send(ServerErrors.PHONE_NOT_FOUND);
+      if (!parent) {
+        return res.status(400).send(ServerErrors.PARENT_NOT_EXIST);
       }
       console.log("parent data", parent);
 

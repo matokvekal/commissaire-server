@@ -15,6 +15,7 @@ export const ServerErrors = {
   REGISTRATION_FAILED: "An error occurred during registration.",
   SOME_ERROR_OCCURRED: "Some error occurred.",
   OTP_EXPIRED: "OTP expired",
+  PARENT_NOT_EXIST:"Parent not exist-contact support",
 };
 
 export const ServerMessages = {
