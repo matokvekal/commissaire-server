@@ -111,6 +111,126 @@ class ControllerKids extends BaseController {
     }
   };
 
+  //Get /api/kid/apps   kp-32
+  //kid app will get list of apps with theres status, also  devideid from the query string
+  //kid will send at request the device id
+  //this api will cal at login or at any time the kid will get notification
+  //app status : (block, always, reduce, cumulate, allow)
+  getApps = async (req, res) => {
+    console.log(" at getApps");
+    try {
+      const kidId = req.user.userId;
+      const deviceId = req.query.deviceid;
+      if (!kidId || !deviceId) {
+        return res.status(400).send("some data is missing");
+      }
+
+      let SQL =
+        "select id,status,app_id from kid_apps where kid_id=:kidId and  kid_device_id = :deviceId and is_active=1 and is_exist=1";
+      const apps = await this.sequelize.query(SQL, {
+        replacements: { kidId, deviceId },
+        type: QueryTypes.SELECT,
+      });
+      return res.status(200).send(apps);
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in getApps.",
+      });
+    }
+  };
+
+  //Get /api/kids/limits     kp-43
+  //kid will get  startDayTime,endDayTime per ech day, and ratio,
+  //this api will cal at login or at any time the kid will get notification
+
+  limits = async (req, res) => {
+    console.log(" at limits");
+    try {
+      const kidId = req.user.userId;
+      if (!kidId) {
+        return res.status(400).send("some data is missing");
+      }
+      let SQL =
+        "SELECT id, ratio, sun_start, sun_end, mon_start, mon_end, tue_start, tue_end, wed_start, wed_end, thu_start, thu_end, fri_start, fri_end, sat_start, sat_end FROM kids WHERE kid_id=:kidId AND is_active=1";
+      const limits = await this.sequelize.query(SQL, {
+        replacements: { kidId },
+        type: QueryTypes.SELECT,
+      });
+
+      return res.status(200).send(limits);
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in limits.",
+      });
+    }
+  };
+
+  //POST api/kid/usage   kp-34
+  // the kid will send to the server every x minuts
+
+  usage = async (req, res) => {
+    console.log(" at usage");
+    try {
+      const { userId: kidId } = req.user;
+      const {
+        deviceId,
+        dateTime,
+        dailyTimeLimit,
+        dailyTimeRemaining,
+        playTimeRemaining,
+        dailyTimeUsed,
+        total_increment_apps,
+        total_decremant_apps,
+      } = req.body;
+
+      // Ensure all required data is provided
+      if (
+        !kidId ||
+        !deviceId ||
+        !dateTime ||
+        !dailyTimeLimit ||
+        !dailyTimeRemaining ||
+        !playTimeRemaining ||
+        !dailyTimeUsed ||
+        !total_increment_apps ||
+        !total_decremant_apps
+      ) {
+        return res.status(400).send("Some data is missing");
+      }
+
+      // Use prepared statements for better security and performance
+      const SQL = `
+        INSERT INTO kid_usage
+          (kid_id, deviceId, date_time, dailyTimeLimit, dailyTimeRemaining, playTimeRemaining, dailyTimeUsed, total_increment_apps, total_decremant_apps)
+        VALUES
+          (:kidId, :deviceId, :dateTime, :dailyTimeLimit, :dailyTimeRemaining, :playTimeRemaining, :dailyTimeUsed, :total_increment_apps, :total_decremant_apps)
+      `;
+      await this.sequelize.query(SQL, {
+        replacements: {
+          kidId,
+          deviceId,
+          dateTime,
+          dailyTimeLimit,
+          dailyTimeRemaining,
+          playTimeRemaining,
+          dailyTimeUsed,
+          total_increment_apps,
+          total_decremant_apps,
+        },
+        type: QueryTypes.INSERT,
+      });
+
+      return res.status(200).send("Data saved successfully");
+    } catch (err) {
+      console.error(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in usage.",
+      });
+    }
+  };
+
   //POST api/kid/token
   //her the client will send the server the firebase token for push notificatin
   googleToken = async (req, res) => {
@@ -137,7 +257,7 @@ class ControllerKids extends BaseController {
   };
 
   // GET /api/kid/sayhi
-  hello = async (req, res,io) => {
+  hello = async (req, res, io) => {
     try {
       Wlogger.log("info", "kid sey hello", "test1");
       await createSingleLog(
