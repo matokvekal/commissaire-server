@@ -5,8 +5,8 @@ import { QueryTypes } from "sequelize";
 export const createSingleLog = async (sequelize, req, message, controller) => {
   try {
     const date = moment().toDate();
-    const ip = req.socket.remoteAddress;
-    const path = req.path;
+    const ip = req ? req.socket.remoteAddress : "";
+    const path = req ? req.path : "";
     controller = controller ? controller : "";
     const SQL = `INSERT INTO logs (date, ip, path,controler, message, createdAt, updatedAt)
 					 VALUES (:date, :ip, :path,:controller, :message, NOW(), NOW())`;

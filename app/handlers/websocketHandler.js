@@ -1,28 +1,27 @@
 import Logger from "../utils/logger.js";
 import authenticationSocket from "../middlewares/authenticationSocketMiddllware.js";
-
+import { createSingleLog } from "../utils/apiLoggerUtils.js";
 const userSocketMap = {};
-export default function initializeSocketHandlers(io) {
-
-  
+export default function initializeSocketHandlers(io, db) {
   io.use((socket, next) => {
     // Verify the token using the authentication middleware
+
     authenticationSocket(socket, next);
   });
 
-  
-io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     Logger.debug("A user connected to WebSocket");
+    await createSingleLog(db.sequelize, "", `socket connected`, "");
     const userId = socket.user.userName;
     userSocketMap[userId] = socket.id;
-    console.log(userSocketMap)
+    console.log(userSocketMap);
 
     socket.on("message", (msg) => {
       Logger.debug("Received chat message:", msg);
       console.log("Received chat socket.user.userName:", socket.user.userName);
       // Broadcast the message to all connected clients
       // io.emit("chat message", msg);
-      sendMessageToUser(socket.user.userName, "Hello from server2")
+      sendMessageToUser(socket.user.userName, "Hello from server2");
     });
 
     // Handle disconnection events

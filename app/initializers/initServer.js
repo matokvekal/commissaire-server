@@ -5,15 +5,18 @@ import * as middlewares from "../middlewares/index.js";
 import initKidsRoutes from "./initKidsRoutes.js";
 import initParentsRoutes from "./initParentsRoutes.js";
 import initDatabase from "./initDatabase.js";
+import initializeSocketHandlers from "../handlers/websocketHandler.js";
 import cors from "cors";
 
 export default async (config) => {
   const app = express();
   const server = http.createServer(app);
-  const io = new Server(server); 
+  const io = new Server(server);
   const db = await initDatabase(config);
   app.set("dbModels", db);
 
+  // Initialize Socket.IO event handlers here with DB instance
+  initializeSocketHandlers(io, db);
   //kid
   const kidsRouter = express.Router();
   kidsRouter.use(middlewares.apiMiddleware);
