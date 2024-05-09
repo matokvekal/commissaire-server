@@ -16,9 +16,14 @@ export default function initializeSocketHandlers(io, db) {
     userSocketMap[userId] = socket.id;
     console.log(userSocketMap);
 
-    socket.on("message", (msg) => {
+    socket.on("message", async (msg) => {
       Logger.debug("Received chat message:", msg);
-      await createSingleLog(db.sequelize, "msg", `socket connected`,msg);
+      await createSingleLog(
+        db.sequelize,
+        "",
+        `socket connected`,
+        msg ? JSON.stringify(msg) : ""
+      );
       console.log("Received chat socket.user.userName:", socket.user.userName);
       // Broadcast the message to all connected clients
       // io.emit("chat message", msg);
