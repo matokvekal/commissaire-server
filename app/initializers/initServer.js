@@ -10,6 +10,7 @@ import cors from "cors";
 
 export default async (config) => {
   const app = express();
+  app.set("trust proxy", true); // Trust the proxy to get the correct client IP address
   const server = http.createServer(app);
   const io = new Server(server);
   const db = await initDatabase(config);
@@ -22,6 +23,7 @@ export default async (config) => {
   kidsRouter.use(middlewares.apiMiddleware);
   kidsRouter.use(middlewares.errorLoggerMiddleware(db));
   kidsRouter.use(middlewares.authenticationMiddleware(db));
+  kidsRouter.use(middlewares.fileLoggerMiddlaware);
 
   initKidsRoutes(kidsRouter, app);
 
@@ -30,7 +32,7 @@ export default async (config) => {
   parentsRouter.use(middlewares.apiMiddleware);
   parentsRouter.use(middlewares.errorLoggerMiddleware(db));
   parentsRouter.use(middlewares.authenticationMiddleware(db));
-
+  parentsRouter.use(middlewares.fileLoggerMiddlaware);
   initParentsRoutes(kidsRouter, app);
   //
 

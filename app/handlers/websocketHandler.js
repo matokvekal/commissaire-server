@@ -1,5 +1,5 @@
 import Logger from "../utils/logger.js";
-import authenticationSocket from "../middlewares/authenticationSocketMiddllware.js";
+import authenticationSocket from "../middlewares/authenticationSocketMiddlware.js";
 import { createSingleLog } from "../utils/apiLoggerUtils.js";
 const userSocketMap = {};
 export default function initializeSocketHandlers(io, db) {

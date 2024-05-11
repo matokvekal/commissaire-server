@@ -1,9 +1,8 @@
 export { default as apiMiddleware } from "./apiMiddleware.js";
 export { default as authenticationMiddleware } from "./authenticationMiddleware.js";
 export { default as errorMiddleware } from "./errorMiddleware.js";
-export {
-  errorLoggerMiddleware,
-} from "./loggerMiddleware.js";
+export { errorLoggerMiddleware } from "./loggerMiddleware.js";
+export { default as fileLoggerMiddlaware } from "./fileLoggerMiddlaware.js";
 // export { default as authenticationMiddleware } from './authenticationMiddleware';
 // export { default as errorMiddleware } from './errorMiddleware';
 // export {

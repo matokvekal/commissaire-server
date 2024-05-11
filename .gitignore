@@ -8,7 +8,8 @@ env.json
 
 # Log files
 *.log
-
+/logs/
+app.log
 # Package files
 *.jar
 /config/

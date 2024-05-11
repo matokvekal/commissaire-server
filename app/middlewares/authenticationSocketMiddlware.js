@@ -5,8 +5,7 @@ import { getTokenFromBearer } from "../utils/authenticationUtils.js";
 const authenticationSocket = (socket, next) => {
   // Extract token from the socket handshake query
   const token1 = socket.handshake.auth.token;
-  const accessToken = socket.handshake.headers['access-token'];
-
+  const accessToken = socket.handshake.headers["access-token"];
 
   if (!accessToken) {
     return next(new Error("A token is required for authentication"));
@@ -18,7 +17,6 @@ const authenticationSocket = (socket, next) => {
     socket.user = {
       userName: decoded.user_name,
     };
-
 
     next();
   } catch (err) {
