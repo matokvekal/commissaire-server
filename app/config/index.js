@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // import Logger from "../utils/logger.js";
-import  getModeFromEnv from "../utils/mode.js";
+import getModeFromEnv from "../utils/mode.js";
 const mode = getModeFromEnv();
 // const mode = process.env.MODE || "staging";
 // const env = getModeFromEnv();
@@ -24,6 +24,22 @@ const configByEnv = {
         idle: 10000,
       },
     },
+    LocalmongoDB: {
+      URI: "mongodb://localhost:27017/koalidb",
+      options: {},
+    },
+    mongoDB: {
+      DB_USER: process.env.DB_USER,
+      DB_PASSWORD: process.env.DB_PASSWORD,
+      DOCUMENTDB_CLUSTER_URL: process.env.DOCUMENTDB_CLUSTER_URL,
+      IS_AWS: process.env.IS_AWS === "true",
+      DB_NAME: process.env.DB_NAME,
+      options: {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      },
+    },
+    // Other settings...
     port: process.env.SERVER_PORT || 5000,
     allowedOrigins: "http://localhost:5000,http:127.0.0.1:5000",
     JWT_SECRET: process.env.JWT_SECRET || "KOALY_KEY_LOCAL",
@@ -60,6 +76,9 @@ const configByEnv = {
         acquire: 30000,
         idle: 10000,
       },
+    },
+    mongoDB: {
+      URI: `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@your-documentdb-cluster-url:27017/koal-staging?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
     },
     port: process.env.SERVER_PORT || 5000,
     allowedOrigins: "http://",

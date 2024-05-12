@@ -3,6 +3,7 @@ export { default as authenticationMiddleware } from "./authenticationMiddleware.
 export { default as errorMiddleware } from "./errorMiddleware.js";
 export { errorLoggerMiddleware } from "./loggerMiddleware.js";
 export { default as fileLoggerMiddlaware } from "./fileLoggerMiddlaware.js";
+export { default as adaptedFileLoggerMiddleware } from "./socketLoggerMiddleare.js";
 // export { default as authenticationMiddleware } from './authenticationMiddleware';
 // export { default as errorMiddleware } from './errorMiddleware';
 // export {
