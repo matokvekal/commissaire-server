@@ -7,7 +7,7 @@ const initDocumentDb = async (config) => {
     DB_MONGO_PASSWORD,
     DOCUMENTDB_CLUSTER_URL,
     IS_AWS,
-    DB_NAME,
+    DB_MONGO_NAME,
   } = config.mongoDB;
 
   // Setup URI based on environment (AWS or Local)
@@ -18,7 +18,7 @@ const initDocumentDb = async (config) => {
       mongoURI = `mongodb://${DB_MONGO_USER}:${DB_MONGO_PASSWORD}@${DOCUMENTDB_CLUSTER_URL}/?authSource=admin&authMechanism=SCRAM-SHA-256`;
       Logger.info("Connecting to MongoDB at AWS...");
     } else {
-      mongoURI = `mongodb://localhost:27017/${DB_NAME}`;
+      mongoURI = `mongodb://localhost:27017/${DB_MONGO_NAME}`;
       Logger.info("Connecting to local MongoDB...");
     }
 

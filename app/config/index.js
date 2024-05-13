@@ -33,7 +33,7 @@ const configByEnv = {
       DB_MONGO_PASSWORD: process.env.DB_MONGO_PASSWORD,
       DOCUMENTDB_CLUSTER_URL: process.env.DOCUMENTDB_CLUSTER_URL,
       IS_AWS: process.env.IS_AWS === "true",
-      DB_NAME: process.env.DB_NAME,
+      DB_MONGO_NAME: process.env.DB_MONGO_NAME,
       options: {
         useNewUrlParser: true,
         useUnifiedTopology: true,
