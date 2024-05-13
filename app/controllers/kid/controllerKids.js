@@ -131,7 +131,7 @@ class ControllerKids extends BaseController {
         replacements: { kidId, deviceId },
         type: QueryTypes.SELECT,
       });
-      return res.status(200).send(apps);
+      return res.status(200).send({apps});
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
