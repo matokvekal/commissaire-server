@@ -30,12 +30,10 @@ function writeLogsToFile() {
 }
 function writeLogsToMongo(logEntry) {
   console.log("Attempting to write to MongoDB:", logEntry); // Log the entry to be saved
-  Log.create(logEntry).catch(err => {
+  Log.create(logEntry).catch((err) => {
     console.error(`Failed to save log to MongoDB: ${err}`);
   });
 }
-
-
 
 const fileLoggerMiddleware = (req, res, next) => {
   try {
@@ -60,7 +58,7 @@ const fileLoggerMiddleware = (req, res, next) => {
     // Check if it's time to write to the file or MongoDB
     if (logCount >= ServerNumbers.maxLogsBeforeWrite) {
       writeLogsToFile(); // Log to file
-      writeLogsToMongo(logEntry); // Log to MongoDB
+      //writeLogsToMongo(logEntry); // Log to MongoDB check if mongo is active
     }
 
     next();

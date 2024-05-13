@@ -7,7 +7,7 @@ import initParentsRoutes from "./initParentsRoutes.js";
 import initDatabase from "./initDatabase.js";
 import initializeSocketHandlers from "../handlers/websocketHandler.js";
 import cors from "cors";
-import initDocumentDb from "./initDocumentDb.js";
+// import initDocumentDb from "./initDocumentDb.js";
 
 export default async (config) => {
   const app = express();
@@ -15,9 +15,14 @@ export default async (config) => {
   const server = http.createServer(app);
   const io = new Server(server);
   const db = await initDatabase(config);
-  const documentDb = await initDocumentDb(config);
+  if (config.use_mongo_db) {
+    //replace  import initDocumentDb from "./initDocumentDb.js";
+    const initDocumentDb = (await import('./initDocumentDb.js')).default;
+    const documentDb = await initDocumentDb(config);
+    app.set("documentDb", documentDb);
+  }
+
   app.set("dbModels", db);
-  app.set("documentDb", documentDb); 
   // Initialize Socket.IO event handlers here with DB instance
   initializeSocketHandlers(io, db);
   //conect the middleware to socket

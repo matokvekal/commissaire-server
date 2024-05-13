@@ -10,6 +10,7 @@ const mode = getModeFromEnv();
 // Logger.debug(`Server is running in ${mode} mode`);
 const configByEnv = {
   staging: {
+    use_mongo_db: process.env.USE_MONGO_DB === false,
     database: {
       HOST_MYSQL: process.env.HOST_MYSQL,
       USER_MYSQL: process.env.USER_MYSQL,
