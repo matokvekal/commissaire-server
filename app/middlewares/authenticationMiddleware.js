@@ -34,7 +34,6 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
   try {
     const userType = req.path.split("/")[1];
     const decoded = jwt.verify(token, config.JWT_SECRET);
-
     const { isValidUser, userName, userId } = await getUserDataFromDB(
       db.sequelize,
       decoded.user_name,

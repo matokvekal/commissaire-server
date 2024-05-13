@@ -4,7 +4,9 @@ ssh -i "C:\\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.a
 at aws the server at :
 /home/ubuntu/actions-runner-api/\_work/apis/apis
 
-at aws we have instaled mong
+MONGO DB -
+the code is redy to use mongo db, we just have to install it at aws (prffer to use it at other dick since it take resources
+) the update the config use mongo to true; and run
 mongo -u "admin" -p "Aa1234567" --authenticationDatabase "admin"
 
 /etc/mongod.conf
