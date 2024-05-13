@@ -2,15 +2,20 @@ import mongoose from "mongoose";
 import Logger from "../utils/logger.js";
 
 const initDocumentDb = async (config) => {
-  const { DB_USER, DB_PASSWORD, DOCUMENTDB_CLUSTER_URL, IS_AWS, DB_NAME } =
-    config.mongoDB;
+  const {
+    DB_MONGO_USER,
+    DB_MONGO_PASSWORD,
+    DOCUMENTDB_CLUSTER_URL,
+    IS_AWS,
+    DB_NAME,
+  } = config.mongoDB;
 
   // Setup URI based on environment (AWS or Local)
   try {
     let mongoURI;
 
     if (IS_AWS === true) {
-      mongoURI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DOCUMENTDB_CLUSTER_URL}/?authSource=admin&authMechanism=SCRAM-SHA-256`;
+      mongoURI = `mongodb://${DB_MONGO_USER}:${DB_MONGO_PASSWORD}@${DOCUMENTDB_CLUSTER_URL}/?authSource=admin&authMechanism=SCRAM-SHA-256`;
       Logger.info("Connecting to MongoDB at AWS...");
     } else {
       mongoURI = `mongodb://localhost:27017/${DB_NAME}`;

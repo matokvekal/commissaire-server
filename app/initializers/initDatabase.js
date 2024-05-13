@@ -6,20 +6,20 @@ import Logger from "../utils/logger.js";
 export default async (config) => {
   console.log(
     "Initializing DB",
-    config.database.NAME,
-    config.database.USER,
-    config.database.PASSWORD,
-    config.database.HOST,
-    config.database.PORT,
+    config.database.NAME_MYSQL,
+    config.database.USER_MYSQL,
+    config.database.PASSWORD_MYSQL,
+    config.database.HOST_MYSQL,
+    config.database.PORT_MYSQL,
     config.SMS_API_TOKEN
   );
   const sequelize = new Sequelize(
-    config.database.NAME,
-    config.database.USER,
-    config.database.PASSWORD,
+    config.database.NAME_MYSQL,
+    config.database.USER_MYSQL,
+    config.database.PASSWORD_MYSQL,
     {
-      host: config.database.HOST,
-      port: config.database.PORT,
+      host: config.database.HOST_MYSQL,
+      port: config.database.PORT_MYSQL,
       dialect: config.database.dialect,
 
       logging: false, // remove console.logs

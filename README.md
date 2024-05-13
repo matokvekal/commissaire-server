@@ -1,5 +1,5 @@
 connect to server
-$ ssh -i "C:\\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com
+ssh -i "C:\\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com
 
 at aws the server at :
 /home/ubuntu/actions-runner-api/\_work/apis/apis

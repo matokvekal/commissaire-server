@@ -11,11 +11,11 @@ const mode = getModeFromEnv();
 const configByEnv = {
   staging: {
     database: {
-      HOST: process.env.HOST,
-      USER: process.env.USER,
-      PORT: 3306,
-      PASSWORD: process.env.DBPASSWORD,
-      NAME: "koalidb",
+      HOST_MYSQL: process.env.HOST_MYSQL,
+      USER_MYSQL: process.env.USER_MYSQL,
+      PORT_MYSQL: 3306,
+      PASSWORD_MYSQL: process.env.DBPASSWORD_MYSQL,
+      NAME_MYSQL: "koalidb",
       dialect: "mysql",
       pool: {
         max: 5,
@@ -29,8 +29,8 @@ const configByEnv = {
       options: {},
     },
     mongoDB: {
-      DB_USER: process.env.DB_USER,
-      DB_PASSWORD: process.env.DB_PASSWORD,
+      DB_MONGO_USER: process.env.DB_MONGO_USER,
+      DB_MONGO_PASSWORD: process.env.DB_MONGO_PASSWORD,
       DOCUMENTDB_CLUSTER_URL: process.env.DOCUMENTDB_CLUSTER_URL,
       IS_AWS: process.env.IS_AWS === "true",
       DB_NAME: process.env.DB_NAME,
@@ -78,7 +78,7 @@ const configByEnv = {
       },
     },
     mongoDB: {
-      URI: `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@your-documentdb-cluster-url:27017/koal-staging?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
+      URI: `mongodb://${process.env.DB_MONGO_USER}:${process.env.DB_MONGO_PASSWORD}@your-documentdb-cluster-url:27017/koal-staging?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
     },
     port: process.env.SERVER_PORT || 5000,
     allowedOrigins: "http://",
