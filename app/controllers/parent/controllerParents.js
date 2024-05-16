@@ -56,8 +56,8 @@ class ControllerParents extends BaseController {
     }
   };
 
-  //TODO TEST
   //GET api/parent/kids
+  //kp-48
   getKids = async (req, res) => {
     console.log("getKids");
     try {
@@ -82,6 +82,7 @@ class ControllerParents extends BaseController {
   };
 
   //GET api/parent/limits/:kidId
+  //kp-49
   getLimits = async (req, res) => {
     console.log("getLimits");
     try {
@@ -91,8 +92,7 @@ class ControllerParents extends BaseController {
       if (!parent_id || !kidId) {
         return res.status(400).send("some data is missing");
       }
-      //check if the kid is in the same family as the parent
-      // Use the utility function to check the family relationship
+
       const isInSameFamily = await isKidInSameFamily(
         this.sequelize,
         parent_id,
@@ -123,6 +123,7 @@ class ControllerParents extends BaseController {
   };
 
   //POST api/parent/limits
+  //kp-41
   postLimits = async (req, res) => {
     console.log("postLimits");
     try {
@@ -144,7 +145,6 @@ class ControllerParents extends BaseController {
           .send("The specified kid does not belong to the same family.");
       }
 
-      // Check for any invalid or incorrectly typed fields
       const invalidFields = Object.entries(incomingLimits).filter(
         ([key, value]) =>
           !allowedFields[key] || !checkType(value, allowedFields[key])
@@ -156,7 +156,7 @@ class ControllerParents extends BaseController {
           .send("Invalid or improperly formatted fields provided.");
       }
 
-      // Prepare SQL update query
+
       const updates = Object.entries(incomingLimits)
         .filter(([key, value]) => value !== null && value !== undefined)
         .map(([key, value]) => `${key} = :${key}`)

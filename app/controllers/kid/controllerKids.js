@@ -12,8 +12,8 @@ class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
     super(app, modelName, sequelize);
   }
-//TODO
-// ADD table kids defaults with  basic default, avarage , so when create new kids he will get default by his age countru etc
+  //TODO
+  // ADD table kids defaults with  basic default, avarage , so when create new kids he will get default by his age countru etc
 
   //post /api/kid/device
   //get user_id,device_type_id ,recive the kid_device_id
@@ -133,7 +133,7 @@ class ControllerKids extends BaseController {
         replacements: { kidId, deviceId },
         type: QueryTypes.SELECT,
       });
-      return res.status(200).send({apps});
+      return res.status(200).send({ apps });
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -145,22 +145,29 @@ class ControllerKids extends BaseController {
   //Get /api/kids/limits     kp-43
   //kid will get  startDayTime,endDayTime per ech day, and ratio,
   //this api will cal at login or at any time the kid will get notification
-
   limits = async (req, res) => {
-    console.log(" at limits");
+    console.log("at limits");
+    const code = "default-9";
     try {
+      const age = 11; // TODO: get the age from the kid data
       const kidId = req.user.userId;
+
       if (!kidId) {
-        return res.status(400).send("some data is missing");
+        return res.status(400).send("Some data is missing");
       }
-      let SQL =
-        "SELECT id, ratio, sun_start, sun_end, mon_start, mon_end, tue_start, tue_end, wed_start, wed_end, thu_start, thu_end, fri_start, fri_end, sat_start, sat_end FROM kids WHERE kid_id=:kidId AND is_active=1";
+
+      // Call stored procedure to handle kid limits
+      const SQL = `CALL handle_kid_limits(:kidId, :code)`;
+      const replacements = { kidId, code };
       const limits = await this.sequelize.query(SQL, {
-        replacements: { kidId },
+        replacements,
         type: QueryTypes.SELECT,
       });
 
-      return res.status(200).send(limits);
+      // Since the query returns multiple result sets, we need to get the actual data from the first result set
+      const limitsData = limits[1][0];
+
+      return res.status(200).send({limitsData});
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -168,6 +175,80 @@ class ControllerKids extends BaseController {
       });
     }
   };
+
+  // limits = async (req, res) => {
+  //   console.log("at limits");
+  //   try {
+  //     const age = 11; // TODO: get the age from the kid data
+  //     const kidId = req.user.userId;
+
+  //     if (!kidId) {
+  //       return res.status(400).send("Some data is missing");
+  //     }
+
+  //     let SQL = `
+  //       SELECT id, ratio, sun_start, sun_end, mon_start, mon_end, tue_start, tue_end, wed_start, wed_end, thu_start, thu_end, fri_start, fri_end, sat_start, sat_end
+  //       FROM kids
+  //       WHERE kid_id = :kidId AND is_active = 1
+  //     `;
+  //     let limits = await this.sequelize.query(SQL, {
+  //       replacements: { kidId },
+  //       type: QueryTypes.SELECT,
+  //     });
+
+  //     if (limits.length === 0) {
+  //       // Insert into kids table if no data exists for this kid
+  //       SQL = `
+  //         INSERT INTO kids (kid_id, age, ratio, sun_start, sun_end, mon_start, mon_end, tue_start, tue_end, wed_start, wed_end, thu_start, thu_end, fri_start, fri_end, sat_start, sat_end, updateAt)
+  //         SELECT :kidId,
+  //                :age,
+  //                kld.ratio,
+  //                kld.sun_start,
+  //                kld.sun_end,
+  //                kld.mon_start,
+  //                kld.mon_end,
+  //                kld.tue_start,
+  //                kld.tue_end,
+  //                kld.wed_start,
+  //                kld.wed_end,
+  //                kld.thu_start,
+  //                kld.thu_end,
+  //                kld.fri_start,
+  //                kld.fri_end,
+  //                kld.sat_start,
+  //                kld.sat_end,
+  //                NOW()
+  //         FROM kid_limits_data kld
+  //         WHERE kld.age_from <= :age
+  //           AND kld.age_to >= :age
+  //           AND kld.code = 'default'
+  //         ON DUPLICATE KEY UPDATE updateAt = NOW();
+  //       `;
+  //       await this.sequelize.query(SQL, {
+  //         replacements: { kidId, age },
+  //         type: QueryTypes.INSERT,
+  //       });
+
+  //       // Select the limits again after insertion
+  //       SQL = `
+  //         SELECT id, ratio, sun_start, sun_end, mon_start, mon_end, tue_start, tue_end, wed_start, wed_end, thu_start, thu_end, fri_start, fri_end, sat_start, sat_end
+  //         FROM kids
+  //         WHERE kid_id = :kidId AND is_active = 1
+  //       `;
+  //       limits = await this.sequelize.query(SQL, {
+  //         replacements: { kidId },
+  //         type: QueryTypes.SELECT,
+  //       });
+  //     }
+
+  //     return res.status(200).send(limits);
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in limits.",
+  //     });
+  //   }
+  // };
 
   //POST api/kid/usage   kp-34
   // the kid will send to the server every x minuts
