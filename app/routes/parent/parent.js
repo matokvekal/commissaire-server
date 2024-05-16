@@ -14,6 +14,23 @@ export default (router, app) => {
     `/${modelBase}/token`,
     parentsController.googleToken.bind(parentsController)
   );
+  //GET /api/parent/kids
+  router.get(
+    `/${modelBase}/kids`,
+    parentsController.getKids.bind(parentsController)
+  );
+
+  //GET /api/parent/limits
+  router.get(
+    `/${modelBase}/limits/:id`,
+    parentsController.getLimits.bind(parentsController)
+  );
+
+  //POST /api/parent/limits
+  router.post(
+    `/${modelBase}/limits`,
+    parentsController.postLimits.bind(parentsController)
+  );
 
   // router.post(
   // 	`/${modelBase}/uploadPassengersFile`,

@@ -150,7 +150,7 @@ class AuthController extends BaseController {
       if (parent[0].is_register === 1) {
         const token = createJwtToken(parent[0].phone);
         res.setHeader("Authorization", `Bearer ${token}`);
-        return res.status(400).send("User already registered");
+        return res.status(200).send("User login ok");
       }
 
       SQL = "UPDATE users SET is_register=1, otp_trys=0 WHERE id=:id";

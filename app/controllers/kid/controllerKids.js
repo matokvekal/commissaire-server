@@ -12,6 +12,8 @@ class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
     super(app, modelName, sequelize);
   }
+//TODO
+// ADD table kids defaults with  basic default, avarage , so when create new kids he will get default by his age countru etc
 
   //post /api/kid/device
   //get user_id,device_type_id ,recive the kid_device_id
