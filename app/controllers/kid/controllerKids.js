@@ -159,15 +159,15 @@ class ControllerKids extends BaseController {
       // Call stored procedure to handle kid limits
       const SQL = `CALL handle_kid_limits(:kidId, :code)`;
       const replacements = { kidId, code };
-      const limits = await this.sequelize.query(SQL, {
+      const results = await this.sequelize.query(SQL, {
         replacements,
         type: QueryTypes.SELECT,
       });
 
       // Since the query returns multiple result sets, we need to get the actual data from the first result set
-      const limitsData = limits[1][0];
+      const limits = results[1][0];
 
-      return res.status(200).send({limitsData});
+      return res.status(200).send({limits});
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
