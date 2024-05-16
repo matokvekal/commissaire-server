@@ -158,7 +158,7 @@ class ControllerKids extends BaseController {
         type: QueryTypes.SELECT,
       });
 
-      return res.status(200).send(limits);
+      return res.status(200).send({limits});
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
