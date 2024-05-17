@@ -41,8 +41,8 @@ const configByEnv = {
       },
     },
     // Other settings...
-    port: process.env.SERVER_PORT || 4000,
-    allowedOrigins: "http://localhost:4000,http:127.0.0.1:4000",
+    port: process.env.SERVER_PORT || 5000,
+    allowedOrigins: "http://localhost:5000,http:127.0.0.1:5000",
     JWT_SECRET: process.env.JWT_SECRET || "KOALY_KEY_LOCAL",
     otpConfirmationLimitsMinutes: 20,
     otpExpirationTimeInMinutes: 10,
@@ -81,7 +81,7 @@ const configByEnv = {
     mongoDB: {
       URI: `mongodb://${process.env.DB_MONGO_USER}:${process.env.DB_MONGO_PASSWORD}@your-documentdb-cluster-url:27017/koal-staging?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
     },
-    port: process.env.SERVER_PORT || 4000,
+    port: process.env.SERVER_PORT || 5000,
     allowedOrigins: "http://",
     JWT_SECRET: process.env.JWT_SECRET || "KOALY_KEY_LOCAL",
     otpConfirmationLimitsMinutes: 20,

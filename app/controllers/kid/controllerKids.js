@@ -90,11 +90,12 @@ class ControllerKids extends BaseController {
       if (list.length == 0) {
         return res.status(400).send("apps list is empty");
       }
-      const app_list = list.join(",");
-
-      if (app_list.length > ServerNumbers.max_devices_amount) {
+      if (list.length > ServerNumbers.max_devices_amount) {
         return res.status(400).send("apps list is too long");
       }
+      const app_list = list.join(",");
+
+
       //cal procedure handle_kid_new_apps aith app_list,kidId,kidDeviceId,deviceTypeId;
       SQL = "call handle_kid_new_apps(:app_list,:kidId,:deviceId)";
       const results = await this.sequelize.query(SQL, {
