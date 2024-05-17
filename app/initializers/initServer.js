@@ -5,7 +5,7 @@ import * as middlewares from "../middlewares/index.js";
 import initKidsRoutes from "./initKidsRoutes.js";
 import initParentsRoutes from "./initParentsRoutes.js";
 import initDatabase from "./initDatabase.js";
-import initializeSocketHandlers from "../handlers/websocketHandler.js";
+import SocketManager  from "../handlers/websocketHandler.js";
 import cors from "cors";
 // import initDocumentDb from "./initDocumentDb.js";
 
@@ -23,9 +23,9 @@ export default async (config) => {
   }
 
   app.set("dbModels", db);
-  // Initialize Socket.IO event handlers here with DB instance
-  initializeSocketHandlers(io, db);
-  //conect the middleware to socket
+ 
+  SocketManager.initialize(io, db);
+
   io.use(middlewares.adaptedFileLoggerMiddleware);
   //kid
   const kidsRouter = express.Router();

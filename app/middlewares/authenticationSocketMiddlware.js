@@ -14,9 +14,25 @@ const authenticationSocket = (socket, next) => {
   try {
     const token = getTokenFromBearer(accessToken);
     const decoded = jwt.verify(token, config.JWT_SECRET);
+    //add socket object the user_name and user_type from  jwt
+    // socket.user = {
+    //   userName: decoded.user_name,
+    // };
+    // socket.userType = {userType:decoded.user_type}
+    //check if the token contain user_name and user_type
+    if (!decoded.user_name || !decoded.user_type) {
+      return next(new Error("Invalid authentication token"));
+    }
+
     socket.user = {
       userName: decoded.user_name,
+      userType: decoded.user_type,
     };
+
+    // socket.user = {
+    //   userName: decoded.user_name,
+    // };
+    // socket.userType = decoded.user_type;
 
     next();
   } catch (err) {

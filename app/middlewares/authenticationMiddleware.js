@@ -15,6 +15,7 @@ const bypassPathsWhiteList = new Set([
   "/parent/confirm",
   "/parent/reset",
   "/parent/sayhi",
+  "/parent/simulatejwttoken",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
@@ -60,12 +61,11 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
 const getUserDataFromDB = async (sequelize, userName, userType) => {
   try {
     let SQL;
-    if(userType === "parent"){
-     SQL = `select * from users where  phone=:userName and is_active=1 and user_type='parent'`;
-    }else if(userType === "kid"){
-       SQL = `select * from users where  email=:userName and is_active=1 and user_type='kid'`;
-    }
-    else{
+    if (userType === "parent") {
+      SQL = `select * from users where  phone=:userName and is_active=1 and user_type='parent'`;
+    } else if (userType === "kid") {
+      SQL = `select * from users where  email=:userName and is_active=1 and user_type='kid'`;
+    } else {
       return { isValidUser: false, userName: "", userId: 0 };
     }
     const user = await sequelize.query(SQL, {

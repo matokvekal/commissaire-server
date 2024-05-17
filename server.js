@@ -14,9 +14,6 @@ initServer(config).then(({ app, server, io }) => {
     Logger.debug(`Server listening on port: ${config.port}`);
   });
 
-  // Initialize Socket.IO event handlers
-  // initializeSocketHandlers(io);
-
 });
 
 //test to git:hub1

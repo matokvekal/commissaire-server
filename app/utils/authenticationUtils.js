@@ -39,9 +39,9 @@ export const createOTP = () => {
 // return token;
 //};
 
-export const createJwtToken = (userName) => {
+export const createJwtToken = (userName,userType) => {
   const token = jwt.sign(
-    { user_name: userName, last_login: moment() },
+    { user_name: userName,user_type:userType, last_login: moment() },
     config.JWT_SECRET,
     {
       expiresIn: `${config.tokenExpireDayLimit}d`,

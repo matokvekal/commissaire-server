@@ -110,7 +110,25 @@ class AuthController extends BaseController {
       });
     }
   };
-
+//post /api/parent/simulattoken
+simulatejwttoken = async (req, res) => {
+  try {
+    const { phone, userType,code } = req.body;
+    if (!phone || !userType) {
+      return res.status(400).send(ServerErrors.GENERAL_ERROR);
+    }
+    if(code !== "giladdolev123"){
+      return res.status(400).send(ServerErrors.GENERAL_ERROR);
+    }
+    const token = createJwtToken(phone, userType);
+    return res.status(200).send(token);
+  } catch (err) {
+    console.log(err);
+    res.createErrorLogAndSend(this.sequelize, {
+      err: err.message || ServerErrors.GENERAL_ERROR,
+    });
+  }
+};
   // POST /api/parent/confirm
   confirm = async (req, res) => {
     console.log("At parent confirm controller");
@@ -148,7 +166,7 @@ class AuthController extends BaseController {
         return res.status(400).send(ServerErrors.OTP_EXPIRED);
       }
       if (parent[0].is_register === 1) {
-        const token = createJwtToken(parent[0].phone);
+        const token = createJwtToken(parent[0].phone,"parent");
         res.setHeader("Authorization", `Bearer ${token}`);
         return res.status(200).send("User login ok");
       }
@@ -201,7 +219,7 @@ class AuthController extends BaseController {
           type: QueryTypes.UPDATE,
         });
       }
-      const token = createJwtToken(parent[0].phone);
+      const token = createJwtToken(parent[0].phone,"parent");
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {

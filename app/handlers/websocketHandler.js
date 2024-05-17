@@ -1,48 +1,131 @@
 import Logger from "../utils/logger.js";
 import authenticationSocket from "../middlewares/authenticationSocketMiddlware.js";
 import { createSingleLog } from "../utils/apiLoggerUtils.js";
-const userSocketMap = {};
-export default function initializeSocketHandlers(io, db) {
-  io.use((socket, next) => {
-    // Verify the token using the authentication middleware
+import { QueryTypes } from "sequelize";
 
-    authenticationSocket(socket, next);
-  });
+class SocketManager {
+  constructor() {
+    if (!SocketManager.instance) {
+      this.userSocketMap = {};
+      SocketManager.instance = this;
+    }
+    return SocketManager.instance;
+  }
 
-  io.on("connection", async (socket) => {
-    Logger.debug("A user connected to WebSocket");
-    await createSingleLog(db.sequelize, "", `socket connected`, "");
-    const userId = socket.user.userName;
-    userSocketMap[userId] = socket.id;
-    console.log(userSocketMap);
+  initialize(io, db) {
+    this.io = io;
+    this.db = db;
 
-    socket.on("message", async (msg) => {
-      Logger.debug("Received chat message:", msg);
-      await createSingleLog(
-        db.sequelize,
-        "",
-        `socket connected`,
-        msg ? JSON.stringify(msg) : ""
+    io.use((socket, next) => {
+      authenticationSocket(socket, next);
+    });
+
+    io.on("connection", async (socket) => {
+      await createSingleLog(db.sequelize, "", `socket connected`, "");
+      const userName = socket.user.userName;
+      const userType = socket.user.userType;
+      const socketId = socket.id;
+      let userId;
+      Logger.debug(
+        ` A user connected to WebSocket ${userId} ${userType} ${socketId}`
       );
-      console.log("Received chat socket.user.userName:", socket.user.userName);
-      // Broadcast the message to all connected clients
-      // io.emit("chat message", msg);
-      sendMessageToUser(socket.user.userName, "Hello from server2");
-    });
 
-    // Handle disconnection events
-    socket.on("disconnect", () => {
-      Logger.debug("A user disconnected from WebSocket");
-      delete userSocketMap[userId];
-    });
-  });
+      let SQL;
+      let replacements;
 
-  function sendMessageToUser(userId, message) {
-    const socketId = userSocketMap[userId];
+      SQL = `select id from users where email=:userName and is_active=1 and is_register=1 and user_type=:userType`;
+      replacements = { userName, userType };
+      const result = await db.sequelize.query(SQL, {
+        replacements,
+        type: QueryTypes.SELECT,
+      });
+      if (result.length === 0) {
+        throw new Error("User not found or does not meet criteria");
+      }
+      userId = result[0].id;
+
+      this.setUserSocketId(userId, socketId);
+
+      SQL = `
+          UPDATE users 
+          SET socket_id = :socketId, socket_updated = NOW() 
+          WHERE id = :userId AND is_active = 1 AND is_register = 1 `;
+      replacements = { socketId, userId };
+
+      if (SQL && replacements) {
+        await db.sequelize.query(SQL, {
+          replacements,
+          type: QueryTypes.UPDATE,
+        });
+      }
+
+      socket.on("message", async (msg) => {
+        Logger.debug("Received chat message:", msg);
+        await createSingleLog(
+          db.sequelize,
+          "",
+          `Received chat message`,
+          msg ? JSON.stringify(msg) : ""
+        );
+        console.log(
+          "Received chat socket.user.userName:",
+          socket.user.userName
+        );
+      });
+
+      socket.on("disconnect", async () => {
+        Logger.debug("A user disconnected from WebSocket");
+        this.removeUserSocketId(userId); // Remove from in-memory map
+        SQL = ` UPDATE users   SET socket_id = NULL  WHERE id = :userId `;
+        if (SQL && replacements) {
+          await db.sequelize.query(SQL, {
+            replacements: { userId },
+            type: QueryTypes.UPDATE,
+          });
+        }
+      });
+    });
+  }
+
+  getUserSocketId(userId) {
+    return this.userSocketMap[userId];
+  }
+
+  setUserSocketId(userId, socketId) {
+    this.userSocketMap[userId] = socketId;
+  }
+
+  removeUserSocketId(userId) {
+    delete this.userSocketMap[userId];
+    console.log("removeUserSocketId", userId);
+    const SQL = ` UPDATE users SET socket_id = NULL WHERE id = :userId`;
+    this.db.sequelize.query(SQL, {
+      replacements: { userId },
+      type: QueryTypes.UPDATE,
+    });
+  }
+
+  async sendMessageToUser(userId, message) {
+    const socketId = this.getUserSocketId(userId);
     if (socketId) {
-      io.to(socketId).emit("private message", message);
+      this.io.to(socketId).emit("private message", message);
     } else {
-      Logger.debug(`User with ID ${userId} is not connected`);
+      // Fallback to database lookup if not found in map
+      const result = await this.db.sequelize.query(
+        `SELECT socket_id FROM users WHERE id = :userId`,
+        {
+          replacements: { userId },
+          type: QueryTypes.SELECT,
+        }
+      );
+      if (result.length > 0 && result[0].socket_id) {
+        this.io.to(result[0].socket_id).emit("private message", message);
+      } else {
+        Logger.debug(`User with ID ${userId} is not connected`);
+      }
     }
   }
 }
+
+const instance = new SocketManager();
+export default instance;

@@ -11,4 +11,10 @@ export default (router, app) => {
 
   //GET /api/parent/reset
   router.get(`/${modelBase}/reset`, authController.reset);
+
+  //POST /api/parent/simulatejwttoken
+  router.post(
+    `/${modelBase}/simulatejwttoken`,
+    authController.simulatejwttoken
+  );
 };

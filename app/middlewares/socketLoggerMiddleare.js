@@ -3,11 +3,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { ServerNumbers } from "../constants/serverConstants.js";
 
-// Convert the module URL to a file path
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Define the path to the log file in the 'logs' directory located appropriately
 const logFilePath = path.join(__dirname, "..", "..", "logs", "socket.log");
 
 let socketLogBuffer = "";

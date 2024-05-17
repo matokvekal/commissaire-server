@@ -15,6 +15,11 @@ export default (router, app) => {
     `/${modelBase}/confirmcode`,
     authenticationController.confirmCode
   );
+  //POST /api/kid/simulateJwtToken
+  router.post(
+    `/${modelBase}/simulatejwttoken`,
+    authenticationController.simulatejwttoken
+  );
 };
 
 //import ControllerKids from "../../controllers/kid/controllerKids.js";

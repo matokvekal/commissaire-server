@@ -4,6 +4,7 @@ import config from "../../config/index.js";
 import { QueryTypes } from "sequelize";
 import checkType from "../../utils/checkType.js";
 import { allowedFields } from "../../constants/serverConstants.js";
+import SocketManager from "../../handlers/websocketHandler.js";
 
 async function isKidInSameFamily(sequelize, parent_id, kidId) {
   const SQL = `
@@ -142,7 +143,7 @@ class ControllerParents extends BaseController {
       if (!isInSameFamily) {
         return res
           .status(400)
-          .send("The specified kid does not belong to the same family.");
+          .send("Some errors at postLimits.");
       }
 
       const invalidFields = Object.entries(incomingLimits).filter(
@@ -173,7 +174,7 @@ class ControllerParents extends BaseController {
         replacements: { ...incomingLimits, kidId },
         type: QueryTypes.UPDATE,
       });
-
+      SocketManager.sendMessageToUser(kidId, "limits"); 
       return res.status(200).send("Limits updated successfully.");
     } catch (err) {
       console.log(err);

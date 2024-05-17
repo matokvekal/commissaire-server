@@ -51,7 +51,7 @@ class ControllerKids extends BaseController {
         });
         const kidDeviceId = result[0]; //get the id of the kid device
 
-        const token = createJwtToken(email);
+        const token = createJwtToken(email,userType);
         res.setHeader("Authorization", `Bearer ${token}`);
         return res.status(200).send({ kidDeviceId });
       }
@@ -360,7 +360,7 @@ class ControllerKids extends BaseController {
 
   // GET /api/kid/simulatejwttoken
   simulateJwtToken = async (req, res) => {
-    console.log(" at simulateJwtToken");
+    console.log(" at kid simulateJwtToken");
     try {
       const token = jwt.sign({ id: 1 }, "mysecretkey", { expiresIn: "1h" });
       res.status(200).send(token);

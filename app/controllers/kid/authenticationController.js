@@ -18,6 +18,28 @@ class AuthenticationController extends BaseController {
   constructor(app, modelName) {
     super(app, modelName);
   }
+//post /api/kid/simulattoken
+  simulatejwttoken = async (req, res) => {
+    try {
+      console.log("at kid simulatejwttoken controller");
+      const { email, userType,code } = req.body;
+      if (!email || !userType) {
+        return res.status(400).send(ServerErrors.GENERAL_ERROR);
+      }
+      if(code !== "giladdolev123"){
+        return res.status(400).send(ServerErrors.GENERAL_ERROR);
+      }
+      const token = createJwtToken(email, userType);
+      return res.status(200).send(token);
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || ServerErrors.GENERAL_ERROR,
+      });
+    }
+  };
+
+
 
   //Post /api/kid/login
   login = async (req, res) => {
@@ -91,7 +113,7 @@ class AuthenticationController extends BaseController {
       //change this code to send Email instead of sms
       // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
       // singleSmsSender(phoneNumber, messageBody);
-      const token = createJwtToken(kid.email);
+      const token = createJwtToken(kid.email,"kid");
       return res
         .setHeader("Authorization", `Bearer ${token}`)
         .status(200)
@@ -275,7 +297,7 @@ class AuthenticationController extends BaseController {
       //     type: QueryTypes.INSERT,
       //   });
       // }
-      const token = createJwtToken(kid.email);
+      const token = createJwtToken(kid.email,"kid");
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).json({ devices: devices });
       //return token at header
