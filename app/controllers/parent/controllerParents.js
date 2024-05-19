@@ -82,6 +82,57 @@ class ControllerParents extends BaseController {
     }
   };
 
+  //GET api/parent/kidsusage
+  //kp-48
+  //this gat api is get the parent family id  and then go to table kid_usage for those kids and  get the lastrow by  created at of the kid_id  with all his device_ids that are  for today
+  getUsage = async (req, res) => {
+    console.log("At getUsage");
+    try {
+      const parent_id = req.user.userId;
+      const familyId = req.user.familyId;
+      if (!parent_id || !familyId) {
+        return res.status(400).send("Some data is missing");
+      }
+      const SQL = `
+      SELECT 
+        u.id as kid_id,
+        ku.deviceId,
+        ku.date_time,
+        ku.dailyTimeLimit,
+        ku.dailyTimeRemaining,
+        ku.playTimeRemaining,
+        ku.dailyTimeUsed,
+        ku.total_increment_apps,
+        ku.total_decrement_apps
+      FROM (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY kid_id, deviceId ORDER BY date_time DESC) as rn
+        FROM koalidb.kid_usage
+        WHERE date_time >= CURDATE() -- Filters entries from today (since midnight)
+      ) ku
+      JOIN (
+        SELECT id
+        FROM koalidb.users
+        WHERE family_id = :familyId
+          AND user_type = 'kid'
+          AND is_register = 1
+          AND is_active = 1
+      ) u ON ku.kid_id = u.id
+      WHERE ku.rn = 1;
+    `;
+      const usage = await this.sequelize.query(SQL, {
+        replacements: { familyId },
+        type: this.sequelize.QueryTypes.SELECT,
+      });
+      return res.status(200).send({ usage });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({
+        message: err.message || "Some error occurred in getting usage.",
+      });
+    }
+  };
+
   //GET api/parent/limits/:kidId
   //kp-49
   getLimits = async (req, res) => {
@@ -141,9 +192,7 @@ class ControllerParents extends BaseController {
         kidId
       );
       if (!isInSameFamily) {
-        return res
-          .status(400)
-          .send("Some errors at postLimits.");
+        return res.status(400).send("Some errors at postLimits.");
       }
 
       const invalidFields = Object.entries(incomingLimits).filter(
@@ -156,7 +205,6 @@ class ControllerParents extends BaseController {
           .status(400)
           .send("Invalid or improperly formatted fields provided.");
       }
-
 
       const updates = Object.entries(incomingLimits)
         .filter(([key, value]) => value !== null && value !== undefined)
@@ -174,7 +222,7 @@ class ControllerParents extends BaseController {
         replacements: { ...incomingLimits, kidId },
         type: QueryTypes.UPDATE,
       });
-      SocketManager.sendMessageToUser(kidId, "limits"); 
+      SocketManager.sendMessageToUser(kidId, "limits");
       return res.status(200).send("Limits updated successfully.");
     } catch (err) {
       console.log(err);

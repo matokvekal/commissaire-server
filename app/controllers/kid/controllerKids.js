@@ -254,7 +254,6 @@ class ControllerKids extends BaseController {
 
   //POST api/kid/usage   kp-34
   // the kid will send to the server every x minuts
-
   usage = async (req, res) => {
     console.log(" at usage");
     try {
@@ -266,8 +265,8 @@ class ControllerKids extends BaseController {
         dailyTimeRemaining,
         playTimeRemaining,
         dailyTimeUsed,
-        total_increment_apps,
-        total_decremant_apps,
+        totalIncrementApps,
+        totalDecrementApps,
       } = req.body;
 
       // Ensure all required data is provided
@@ -279,20 +278,20 @@ class ControllerKids extends BaseController {
         !dailyTimeRemaining ||
         !playTimeRemaining ||
         !dailyTimeUsed ||
-        !total_increment_apps ||
-        !total_decremant_apps
+        !totalIncrementApps ||
+        !totalDecrementApps
       ) {
         return res.status(400).send("Some data is missing");
       }
 
-      // Use prepared statements for better security and performance
-      const SQL = `
+      // Insert the usage data into the database
+      const insertSQL = `
         INSERT INTO kid_usage
-          (kid_id, deviceId, date_time, dailyTimeLimit, dailyTimeRemaining, playTimeRemaining, dailyTimeUsed, total_increment_apps, total_decremant_apps)
+          (kid_id, deviceId, date_time, dailyTimeLimit, dailyTimeRemaining, playTimeRemaining, dailyTimeUsed, total_increment_apps, total_decrement_apps)
         VALUES
-          (:kidId, :deviceId, :dateTime, :dailyTimeLimit, :dailyTimeRemaining, :playTimeRemaining, :dailyTimeUsed, :total_increment_apps, :total_decremant_apps)
+          (:kidId, :deviceId, :dateTime, :dailyTimeLimit, :dailyTimeRemaining, :playTimeRemaining, :dailyTimeUsed, :totalIncrementApps, :totalDecrementApps)
       `;
-      await this.sequelize.query(SQL, {
+      await this.sequelize.query(insertSQL, {
         replacements: {
           kidId,
           deviceId,
@@ -301,20 +300,112 @@ class ControllerKids extends BaseController {
           dailyTimeRemaining,
           playTimeRemaining,
           dailyTimeUsed,
-          total_increment_apps,
-          total_decremant_apps,
+          totalIncrementApps,
+          totalDecrementApps,
         },
-        type: QueryTypes.INSERT,
+        type: this.sequelize.QueryTypes.INSERT,
       });
 
-      return res.status(200).send("Data saved successfully");
+      // Retrieve the latest usage for all other devices used by the kid today, excluding the current device
+      const selectSQL = `
+        SELECT
+          kid_id,
+          deviceId,
+          date_time,
+          dailyTimeLimit,
+          dailyTimeRemaining,
+          playTimeRemaining,
+          dailyTimeUsed,
+          total_increment_apps,
+          total_decrement_apps
+        FROM (
+          SELECT *,
+                 ROW_NUMBER() OVER (PARTITION BY deviceId ORDER BY date_time DESC) AS rn
+          FROM kid_usage
+          WHERE kid_id = :kidId
+            AND date_time >= CURDATE() -- Filters entries from today (since midnight)
+            AND deviceId != :currentDeviceId -- Exclude the current device
+        ) as usage_today
+        WHERE rn = 1;
+      `;
+      const otherDevicesUsage = await this.sequelize.query(selectSQL, {
+        replacements: { kidId, currentDeviceId: deviceId },
+        type: this.sequelize.QueryTypes.SELECT,
+      });
+
+      // Send back the response with other devices' usage
+      return res.status(200).send({
+        message: "Data saved successfully",
+        otherDevicesUsage,
+      });
     } catch (err) {
       console.error(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in usage.",
+      res.status(500).send({
+        message: err.message || "Some error occurred in usage.",
       });
     }
   };
+
+  // usage = async (req, res) => {
+  //   console.log(" at usage");
+  //   try {
+  //     const { userId: kidId } = req.user;
+  //     const {
+  //       deviceId,
+  //       dateTime,
+  //       dailyTimeLimit,
+  //       dailyTimeRemaining,
+  //       playTimeRemaining,
+  //       dailyTimeUsed,
+  //       total_increment_apps,
+  //       total_decrement_apps,
+  //     } = req.body;
+
+  //     // Ensure all required data is provided
+  //     if (
+  //       !kidId ||
+  //       !deviceId ||
+  //       !dateTime ||
+  //       !dailyTimeLimit ||
+  //       !dailyTimeRemaining ||
+  //       !playTimeRemaining ||
+  //       !dailyTimeUsed ||
+  //       !total_increment_apps ||
+  //       !total_decrement_apps
+  //     ) {
+  //       return res.status(400).send("Some data is missing");
+  //     }
+
+  //     // Use prepared statements for better security and performance
+  //     const SQL = `
+  //       INSERT INTO kid_usage
+  //         (kid_id, deviceId, date_time, dailyTimeLimit, dailyTimeRemaining, playTimeRemaining, dailyTimeUsed, total_increment_apps, total_decrement_apps)
+  //       VALUES
+  //         (:kidId, :deviceId, :dateTime, :dailyTimeLimit, :dailyTimeRemaining, :playTimeRemaining, :dailyTimeUsed, :total_increment_apps, :total_decrement_apps)
+  //     `;
+  //     await this.sequelize.query(SQL, {
+  //       replacements: {
+  //         kidId,
+  //         deviceId,
+  //         dateTime,
+  //         dailyTimeLimit,
+  //         dailyTimeRemaining,
+  //         playTimeRemaining,
+  //         dailyTimeUsed,
+  //         total_increment_apps,
+  //         total_decrement_apps,
+  //       },
+  //       type: QueryTypes.INSERT,
+  //     });
+
+  //     return res.status(200).send("Data saved successfully");
+  //   } catch (err) {
+  //     console.error(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in usage.",
+  //     });
+  //   }
+  // };
 
   //POST api/kid/token
   //her the client will send the server the firebase token for push notificatin

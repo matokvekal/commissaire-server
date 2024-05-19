@@ -32,6 +32,11 @@ export default (router, app) => {
     parentsController.postLimits.bind(parentsController)
   );
 
+  //GET /api/parent/kidsusage
+  router.get(
+    `/${modelBase}/kidsusage`,
+    parentsController.getUsage.bind(parentsController)
+  );
   // router.post(
   // 	`/${modelBase}/uploadPassengersFile`,
   // 	ParentsController.uploadPassengersFile.bind(ParentsController)

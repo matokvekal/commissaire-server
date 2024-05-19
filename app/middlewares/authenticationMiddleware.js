@@ -35,7 +35,7 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
   try {
     const userType = req.path.split("/")[1];
     const decoded = jwt.verify(token, config.JWT_SECRET);
-    const { isValidUser, userName, userId } = await getUserDataFromDB(
+    const { isValidUser, userName, userId, familyId } = await getUserDataFromDB(
       db.sequelize,
       decoded.user_name,
       userType
@@ -44,7 +44,7 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
       return res.status(401).send("User not valid");
     }
 
-    req.user = { userName, userId };
+    req.user = { userName, userId, familyId };
     next();
   } catch (err) {
     console.log(err);
@@ -73,7 +73,12 @@ const getUserDataFromDB = async (sequelize, userName, userType) => {
       type: QueryTypes.SELECT,
     });
 
-    return { isValidUser: true, userName: user[0].email, userId: user[0].id };
+    return {
+      isValidUser: true,
+      userName: user[0].email,
+      userId: user[0].id,
+      familyId: user[0].family_id,
+    };
   } catch (err) {
     return { isValidUser: false, userName: "", userId: 0 };
   }
