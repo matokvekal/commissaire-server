@@ -51,7 +51,7 @@ class ControllerKids extends BaseController {
         });
         const kidDeviceId = result[0]; //get the id of the kid device
 
-        const token = createJwtToken(email,userType);
+        const token = createJwtToken(email, userType);
         res.setHeader("Authorization", `Bearer ${token}`);
         return res.status(200).send({ kidDeviceId });
       }
@@ -95,7 +95,6 @@ class ControllerKids extends BaseController {
       }
       const app_list = list.join(",");
 
-
       //cal procedure handle_kid_new_apps aith app_list,kidId,kidDeviceId,deviceTypeId;
       SQL = "call handle_kid_new_apps(:app_list,:kidId,:deviceId)";
       const results = await this.sequelize.query(SQL, {
@@ -128,8 +127,10 @@ class ControllerKids extends BaseController {
         return res.status(400).send("some data is missing");
       }
 
-      let SQL =
-        "select id,status,app_id from kid_apps where kid_id=:kidId and  kid_device_id = :deviceId and is_active=1 and is_exist=1";
+      let SQL = `select ka.id,ka.status,ka.app_id,ap.package_name from kid_apps ka 
+        left join apps ap on ka.app_id = ap.id
+        where ka.kid_id=:kidId and  ka.kid_device_id = :deviceId and ka.is_active=1 and ka.is_exist=1
+        `;
       const apps = await this.sequelize.query(SQL, {
         replacements: { kidId, deviceId },
         type: QueryTypes.SELECT,
@@ -168,7 +169,7 @@ class ControllerKids extends BaseController {
       // Since the query returns multiple result sets, we need to get the actual data from the first result set
       const limits = results[1][0];
 
-      return res.status(200).send({limits});
+      return res.status(200).send({ limits });
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
