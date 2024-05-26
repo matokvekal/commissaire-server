@@ -49,8 +49,3 @@ export const createJwtToken = (userName,userType) => {
   );
   return token;
 };
-// export const getModeFromEnv = () => {
-//   debugger
-//   console.log("getModeFromEnv", process.env.MODE);
-//   return process.env.MODE || "staging";
-// };

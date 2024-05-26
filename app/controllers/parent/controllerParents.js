@@ -5,6 +5,7 @@ import { QueryTypes } from "sequelize";
 import checkType from "../../utils/checkType.js";
 import { allowedFields } from "../../constants/serverConstants.js";
 import SocketManager from "../../handlers/websocketHandler.js";
+import { createSingleLog } from "../../utils/apiLoggerUtils.js";
 
 async function isKidInSameFamily(sequelize, parent_id, kidId) {
   const SQL = `
@@ -181,7 +182,12 @@ class ControllerParents extends BaseController {
     try {
       const { userId: parent_id } = req.user;
       const { kidId, ...incomingLimits } = req.body;
-
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `parent_id:${parent_id} kidId:${kidId}`,
+        "/parent/limits"
+      );
       if (!parent_id || !kidId) {
         return res.status(400).send("Required data is missing.");
       }

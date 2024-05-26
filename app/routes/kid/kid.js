@@ -39,8 +39,9 @@ export default (router, app) => {
     kidsController.limits.bind(kidsController)
   );
 
-  //POST api/kid/usage
-  router.post(`/${modelBase}/usage`, kidsController.usage.bind(kidsController));
+  //POST /api/kid/usage
+  router.post(`/${modelBase}/usage`,
+  kidsController.usage.bind(kidsController));
 
   
 };

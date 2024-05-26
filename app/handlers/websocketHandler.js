@@ -21,10 +21,15 @@ class SocketManager {
     });
 
     io.on("connection", async (socket) => {
-      await createSingleLog(db.sequelize, "", `socket connected`, "");
       const userName = socket.user.userName;
       const userType = socket.user.userType;
       const socketId = socket.id;
+      await createSingleLog(
+        db.sequelize,
+        "",
+        `socket connected userName:${userName}-${userType}`,
+        ""
+      );
       let userId;
       Logger.debug(
         ` A user connected to WebSocket ${userId} ${userType} ${socketId}`
