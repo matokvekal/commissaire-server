@@ -1,7 +1,9 @@
 import jwt from "jsonwebtoken";
 import { getTokenFromRequest } from "../utils/authenticationUtils.js";
 import config from "../config/index.js";
+import { serverFlags } from "../constants/serverConstants.js";
 import { QueryTypes } from "sequelize";
+import { createSingleLog } from "../utils/apiLoggerUtils.js";
 //import { isBefore } from "date-fns";
 
 const bypassPathsWhiteList = new Set([
@@ -40,6 +42,16 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
       decoded.user_name,
       userType
     );
+    //log the data to db
+    if (serverFlags.LOG_API) {
+      const path = req.path;
+      await createSingleLog(
+        db.sequelize,
+        req,
+        `${userType} userName:${userName},userId:${userId},familyId:${familyId} isValidUser:${isValidUser}`,
+        ""
+      );
+    }
     if (!isValidUser) {
       return res.status(401).send("User not valid");
     }

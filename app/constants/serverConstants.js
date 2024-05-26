@@ -3,6 +3,9 @@ export const ServerNumbers = {
   maxLogsBeforeWrite: 10,
   maxSocketLogsBeforeWrite: 10,
 };
+export const serverFlags = {
+  LOG_API:true
+};
 
 export const allowedFields = {
   ratio: "PERCENT", // Assuming 'PERCENT' means it should be a number from 0 to 100

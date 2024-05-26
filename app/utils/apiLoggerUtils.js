@@ -7,7 +7,7 @@ export const createSingleLog = async (sequelize, req, message, controller) => {
     const date = moment().toDate();
     const ip = req ? req.socket.remoteAddress : "";
     const path = req ? req.path : "";
-    controller = controller ? controller : "";
+    controller = controller ? controller : path;
     const SQL = `INSERT INTO logs (date, ip, path,controler, message, createdAt, updatedAt)
 					 VALUES (:date, :ip, :path,:controller, :message, NOW(), NOW())`;
     await sequelize.query(SQL, {
