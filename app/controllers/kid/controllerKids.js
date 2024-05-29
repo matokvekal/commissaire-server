@@ -35,9 +35,9 @@ class ControllerKids extends BaseController {
       deviceName = getFixedValue(deviceName);
 
       let SQL =
-        "select * from kid_devices where  device_type_id = :deviceTypeId and kid_id = :kidId and is_active=1";
+        "select * from kid_devices where  device_type_id = :deviceTypeId and kid_id = :kidId and is_active=1 and serial = :serial";
       const device = await this.sequelize.query(SQL, {
-        replacements: { serial, deviceTypeId, kidId },
+        replacements: { serial, deviceTypeId, kidId},
         type: QueryTypes.SELECT,
       });
       if (device.length > 0) {
