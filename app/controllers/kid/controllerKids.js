@@ -51,8 +51,8 @@ class ControllerKids extends BaseController {
         });
         const kidDeviceId = result[0]; //get the id of the kid device
 
-        const token = createJwtToken(email, userType);
-        res.setHeader("Authorization", `Bearer ${token}`);
+        // const token = createJwtToken(email, userType);
+        // res.setHeader("Authorization", `Bearer ${token}`);
         return res.status(200).send({ kidDeviceId });
       }
     } catch (err) {
