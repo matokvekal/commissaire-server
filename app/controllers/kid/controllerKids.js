@@ -37,11 +37,12 @@ class ControllerKids extends BaseController {
       let SQL =
         "select * from kid_devices where  device_type_id = :deviceTypeId and kid_id = :kidId and is_active=1 and serial = :serial";
       const device = await this.sequelize.query(SQL, {
-        replacements: { serial, deviceTypeId, kidId},
+        replacements: { serial, deviceTypeId, kidId },
         type: QueryTypes.SELECT,
       });
       if (device.length > 0) {
-        return res.status(400).send("device already registered");
+        const kidDeviceId = result[0].id;
+        return res.status(400).send({ device_id: kidDeviceId });
       } else {
         SQL =
           "insert into kid_devices (kid_id,device_type_id,serial,device_name) values (:kidId,:deviceTypeId,:serial,:deviceName)";
