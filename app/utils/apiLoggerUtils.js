@@ -2,14 +2,20 @@ import moment from "moment";
 import config from "../config/index.js";
 import { QueryTypes } from "sequelize";
 
-export const createSingleLog = async (sequelize, req, message, controller) => {
+export const createSingleLog = async (
+  sequelize,
+  req,
+  message,
+  controller,
+  data = null
+) => {
   try {
     const date = moment().toDate();
     const ip = req ? req.socket.remoteAddress : "";
     const path = req ? req.path : "";
     controller = controller ? controller : path;
-    const SQL = `INSERT INTO logs (date, ip, path,controler, message, createdAt, updatedAt)
-					 VALUES (:date, :ip, :path,:controller, :message, NOW(), NOW())`;
+    const SQL = `INSERT INTO logs (date, ip, path,controler, message, createdAt,data )
+					 VALUES (:date, :ip, :path,:controller, :message, NOW(), :data)`;
     await sequelize.query(SQL, {
       replacements: {
         date,
@@ -17,6 +23,7 @@ export const createSingleLog = async (sequelize, req, message, controller) => {
         path,
         controller,
         message,
+        data,
       },
       type: QueryTypes.INSERT,
     });

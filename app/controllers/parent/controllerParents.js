@@ -185,8 +185,9 @@ class ControllerParents extends BaseController {
       await createSingleLog(
         this.sequelize,
         req,
-        `parent_id:${parent_id} kidId:${kidId}`,
-        "/parent/limits"
+        `parent_id:${parent_id} set lomit to kidId:${kidId}`,
+        "/parent/limits",
+        JSON.stringify(incomingLimits)
       );
       if (!parent_id || !kidId) {
         return res.status(400).send("Required data is missing.");
