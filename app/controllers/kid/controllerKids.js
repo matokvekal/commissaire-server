@@ -301,36 +301,36 @@ class ControllerKids extends BaseController {
   };
 
   // GET /api/kid/sayhi
-  hello = async (req, res, io) => {
-    try {
-      Wlogger.log("info", "kid sey hello", "test1");
-      await createSingleLog(
-        this.sequelize,
-        req,
-        "Hello from kids controller",
-        "/hello"
-      );
-      res.status(200).send("Hello from kids controller");
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in hello.",
-      });
-    }
-  };
+  // hello = async (req, res, io) => {
+  //   try {
+  //     Wlogger.log("info", "kid sey hello", "test1");
+  //     await createSingleLog(
+  //       this.sequelize,
+  //       req,
+  //       "Hello from kids controller",
+  //       "/hello"
+  //     );
+  //     res.status(200).send("Hello from kids controller");
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in hello.",
+  //     });
+  //   }
+  // };
 
   // GET /api/kid/simulatejwttoken
-  simulateJwtToken = async (req, res) => {
-    console.log(" at kid simulateJwtToken");
-    try {
-      const token = jwt.sign({ id: 1 }, "mysecretkey", { expiresIn: "1h" });
-      res.status(200).send(token);
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in simulateJwtToken.",
-      });
-    }
-  };
+  // simulateJwtToken = async (req, res) => {
+  //   console.log(" at kid simulateJwtToken");
+  //   try {
+  //     const token = jwt.sign({ id: 1 }, "mysecretkey", { expiresIn: "1h" });
+  //     res.status(200).send(token);
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in simulateJwtToken.",
+  //     });
+  //   }
+  // };
 }
 export default ControllerKids;

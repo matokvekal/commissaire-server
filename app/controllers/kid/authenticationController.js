@@ -19,25 +19,25 @@ class AuthenticationController extends BaseController {
     super(app, modelName);
   }
 //post /api/kid/simulattoken
-  simulatejwttoken = async (req, res) => {
-    try {
-      console.log("at kid simulatejwttoken controller");
-      const { email, userType,code } = req.body;
-      if (!email || !userType) {
-        return res.status(400).send(ServerErrors.GENERAL_ERROR);
-      }
-      if(code !== "giladdolev123"){
-        return res.status(400).send(ServerErrors.GENERAL_ERROR);
-      }
-      const token = createJwtToken(email, userType);
-      return res.status(200).send(token);
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
-      });
-    }
-  };
+  // simulatejwttoken = async (req, res) => {
+  //   try {
+  //     console.log("at kid simulatejwttoken controller");
+  //     const { email, userType,code } = req.body;
+  //     if (!email || !userType) {
+  //       return res.status(400).send(ServerErrors.GENERAL_ERROR);
+  //     }
+  //     if(code !== "giladdolev123"){
+  //       return res.status(400).send(ServerErrors.GENERAL_ERROR);
+  //     }
+  //     const token = createJwtToken(email, userType);
+  //     return res.status(200).send(token);
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || ServerErrors.GENERAL_ERROR,
+  //     });
+  //   }
+  // };
 
 
 

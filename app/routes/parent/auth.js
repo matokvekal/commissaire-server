@@ -9,12 +9,6 @@ export default (router, app) => {
   // POST /api/parent/confirm
   router.post(`/${modelBase}/confirm`, authController.confirm);
 
-  //GET /api/parent/reset
-  router.get(`/${modelBase}/reset`, authController.reset);
 
-  //POST /api/parent/simulatejwttoken
-  router.post(
-    `/${modelBase}/simulatejwttoken`,
-    authController.simulatejwttoken
-  );
+
 };

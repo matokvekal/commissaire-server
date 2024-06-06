@@ -4,10 +4,7 @@ export default (router, app) => {
   const modelBase = "parent";
   const parentsController = new ControllerParents(app, modelBase);
 
-  router.get(
-    `/${modelBase}/sayhi`,
-    parentsController.hello.bind(parentsController)
-  );
+
 
   //POST api/parent/token
   router.post(

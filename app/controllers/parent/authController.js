@@ -20,27 +20,27 @@ class AuthController extends BaseController {
   }
 
   //very simple get api  /api/parent/reset  to delete user  with phone 0548847997 from the database from table users and table family
-  reset = async (req, res) => {
-    try {
-      const phone = "0548047997";
-      let SQL = `DELETE FROM users WHERE phone = :phone AND user_type = "parent"`;
-      await this.sequelize.query(SQL, {
-        replacements: { phone },
-        type: QueryTypes.DELETE,
-      });
-      SQL = `DELETE FROM family WHERE parent_phone = :phone`;
-      await this.sequelize.query(SQL, {
-        replacements: { phone },
-        type: QueryTypes.DELETE,
-      });
-      return res.status(200).send("User deleted successfully");
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
-      });
-    }
-  };
+  // reset = async (req, res) => {
+  //   try {
+  //     const phone = "0548047997";
+  //     let SQL = `DELETE FROM users WHERE phone = :phone AND user_type = "parent"`;
+  //     await this.sequelize.query(SQL, {
+  //       replacements: { phone },
+  //       type: QueryTypes.DELETE,
+  //     });
+  //     SQL = `DELETE FROM family WHERE parent_phone = :phone`;
+  //     await this.sequelize.query(SQL, {
+  //       replacements: { phone },
+  //       type: QueryTypes.DELETE,
+  //     });
+  //     return res.status(200).send("User deleted successfully");
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || ServerErrors.GENERAL_ERROR,
+  //     });
+  //   }
+  // };
 
   // POST /api/parent/register
   register = async (req, res) => {
@@ -111,24 +111,24 @@ class AuthController extends BaseController {
     }
   };
 //post /api/parent/simulattoken
-simulatejwttoken = async (req, res) => {
-  try {
-    const { phone, userType,code } = req.body;
-    if (!phone || !userType) {
-      return res.status(400).send(ServerErrors.GENERAL_ERROR);
-    }
-    if(code !== "giladdolev123"){
-      return res.status(400).send(ServerErrors.GENERAL_ERROR);
-    }
-    const token = createJwtToken(phone, userType);
-    return res.status(200).send(token);
-  } catch (err) {
-    console.log(err);
-    res.createErrorLogAndSend(this.sequelize, {
-      err: err.message || ServerErrors.GENERAL_ERROR,
-    });
-  }
-};
+// simulatejwttoken = async (req, res) => {
+//   try {
+//     const { phone, userType,code } = req.body;
+//     if (!phone || !userType) {
+//       return res.status(400).send(ServerErrors.GENERAL_ERROR);
+//     }
+//     if(code !== "giladdolev123"){
+//       return res.status(400).send(ServerErrors.GENERAL_ERROR);
+//     }
+//     const token = createJwtToken(phone, userType);
+//     return res.status(200).send(token);
+//   } catch (err) {
+//     console.log(err);
+//     res.createErrorLogAndSend(this.sequelize, {
+//       err: err.message || ServerErrors.GENERAL_ERROR,
+//     });
+//   }
+// };
   // POST /api/parent/confirm
   confirm = async (req, res) => {
     console.log("At parent confirm controller");

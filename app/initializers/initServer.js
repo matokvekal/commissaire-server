@@ -4,8 +4,9 @@ import { Server } from "socket.io";
 import * as middlewares from "../middlewares/index.js";
 import initKidsRoutes from "./initKidsRoutes.js";
 import initParentsRoutes from "./initParentsRoutes.js";
+import initTempRoutes from "./initTempRoutes.js";
 import initDatabase from "./initDatabase.js";
-import SocketManager  from "../handlers/websocketHandler.js";
+import SocketManager from "../handlers/websocketHandler.js";
 import cors from "cors";
 // import initDocumentDb from "./initDocumentDb.js";
 
@@ -17,13 +18,13 @@ export default async (config) => {
   const db = await initDatabase(config);
   if (config.use_mongo_db) {
     //replace  import initDocumentDb from "./initDocumentDb.js";
-    const initDocumentDb = (await import('./initDocumentDb.js')).default;
+    const initDocumentDb = (await import("./initDocumentDb.js")).default;
     const documentDb = await initDocumentDb(config);
     app.set("documentDb", documentDb);
   }
 
   app.set("dbModels", db);
- 
+
   SocketManager.initialize(io, db);
 
   io.use(middlewares.adaptedFileLoggerMiddleware);
@@ -45,6 +46,14 @@ export default async (config) => {
   initParentsRoutes(kidsRouter, app);
   //
 
+  //temp only for developers
+  const tempRouter = express.Router();
+  tempRouter.use(middlewares.apiMiddleware);
+  tempRouter.use(middlewares.errorLoggerMiddleware(db));
+  tempRouter.use(middlewares.authenticationMiddleware(db));
+  tempRouter.use(middlewares.fileLoggerMiddlaware);
+  initTempRoutes(tempRouter, app);
+
   app.use(
     cors({
       origin: [
@@ -58,6 +67,7 @@ export default async (config) => {
 
   app.use("/api", kidsRouter);
   app.use("/api", parentsRouter);
+  app.use("/api", tempRouter);
 
   return { app, server, io };
 };

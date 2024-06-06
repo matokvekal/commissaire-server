@@ -16,8 +16,6 @@ export default (router, app) => {
     kidsController.registerDevice.bind(kidsController)
   );
 
-  // GET /api/kid/sayhi
-  router.get(`/${modelBase}/sayhi`, kidsController.hello.bind(kidsController));
 
   //POST api/kid/token
   router.post(
@@ -25,11 +23,7 @@ export default (router, app) => {
     kidsController.googleToken.bind(kidsController)
   );
 
-  // GET /api/kid/simulatejwttoken
-  router.get(
-    `/${modelBase}/simulatejwttoken`,
-    kidsController.simulateJwtToken.bind(kidsController)
-  );
+
   //Get /api/kid/apps
   router.get(`/${modelBase}/apps`, kidsController.getApps.bind(kidsController));
 

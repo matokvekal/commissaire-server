@@ -242,16 +242,16 @@ class ControllerParents extends BaseController {
   ////////////////////////////
 
   // GET /api/parent/sayhi
-  hello = async (req, res) => {
-    try {
-      res.status(200).send("Hello from parents controller");
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in hello parent.",
-      });
-    }
-  };
+  // hello = async (req, res) => {
+  //   try {
+  //     res.status(200).send("Hello from parents controller");
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in hello parent.",
+  //     });
+  //   }
+  // };
 }
 export default ControllerParents;
 

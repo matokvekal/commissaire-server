@@ -11,13 +11,14 @@ const bypassPathsWhiteList = new Set([
   "/kid/register",
   "/kid/confirmcode",
   "/kid/simulatejwttoken",
-  "/kid/sayhi",
   "/parent/login",
   "/parent/register",
   "/parent/confirm",
-  "/parent/reset",
-  "/parent/sayhi",
-  "/parent/simulatejwttoken",
+  "/temp/resetavi",
+  "/temp/resetomri",
+  "/temp/hello1",
+  "/temp/hello2",
+  "/temp/simulatejwttoken",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
