@@ -4,11 +4,12 @@ export const ServerNumbers = {
   maxSocketLogsBeforeWrite: 10,
 };
 export const serverFlags = {
-  LOG_API:true
+  LOG_API: true,
 };
 
 export const allowedFields = {
   ratio: "PERCENT", // Assuming 'PERCENT' means it should be a number from 0 to 100
+  daily_hours: "HOURS",
   sun_start: "TIME",
   sun_end: "TIME",
   mon_start: "TIME",
