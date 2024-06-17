@@ -41,7 +41,7 @@ class ControllerKids extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (device.length > 0) {
-        const kidDeviceId = result[0].id;
+        const kidDeviceId = device[0].id;
         return res.status(400).send({ device_id: kidDeviceId });
       } else {
         SQL =
