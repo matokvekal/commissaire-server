@@ -78,7 +78,7 @@ class tempController extends BaseController {
       });
     }
   };
-  //very simple get api  /api/temp/resetavi  to delete user  with phone 0548847997 from the database from table users and table family
+  //very simple get api  /api/temp/resetavi  to delete user  with phone 0548047997 from the database from table users and table family
   resetavi = async (req, res) => {
     try {
       console.log("at resetavi");
@@ -148,6 +148,33 @@ class tempController extends BaseController {
         .send({ message: "User deleted successfully", kidId });
     } catch (err) {
       console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || ServerErrors.GENERAL_ERROR,
+      });
+    }
+  };
+  // api/temp/conectavioldkids : This endpoint updates the family_id of all kids in users table with last name Kaufman, from an old family id to a new family id    
+  conectavioldkids = async (req, res) => {
+    try {
+      console.log("Connect old Avi's children to the new Avi family");
+      const { oldFamilyId, newFamilyId } = req.body;
+
+      if (!(oldFamilyId && newFamilyId)) {
+        console.log("Failed: some details are missing");
+        return res
+          .status(400)
+          .send("Missing details: required oldFamilyId and newFamilyId");
+      }
+
+      const SQL = `UPDATE users SET family_id = :newFamilyId WHERE family_id = :oldFamilyId AND user_type = 'kid' AND l_name = 'Kaufman'`;
+      await this.sequelize.query(SQL, {
+        replacements: { newFamilyId, oldFamilyId },
+        type: QueryTypes.UPDATE,
+      });
+
+      return res.status(200).send("Updated kids' family successfully.");
+    } catch (err) {
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || ServerErrors.GENERAL_ERROR,
       });
