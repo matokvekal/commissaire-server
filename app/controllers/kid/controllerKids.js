@@ -50,11 +50,11 @@ class ControllerKids extends BaseController {
           replacements: { kidId, deviceTypeId, serial, deviceName },
           type: QueryTypes.INSERT,
         });
-        const kidDeviceId = result[0]; //get the id of the kid device
+        const device_id = result[0]; //get the id of the kid device
 
         // const token = createJwtToken(email, userType);
         // res.setHeader("Authorization", `Bearer ${token}`);
-        return res.status(200).send({ kidDeviceId });
+        return res.status(200).send({ device_id });
       }
     } catch (err) {
       console.log(err);
