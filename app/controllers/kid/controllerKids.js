@@ -42,7 +42,7 @@ class ControllerKids extends BaseController {
       });
       if (device.length > 0) {
         const kidDeviceId = device[0].id;
-        return res.status(400).send({ device_id: kidDeviceId });
+        return res.status(200).send({ device_id: kidDeviceId });
       } else {
         SQL =
           "insert into kid_devices (kid_id,device_type_id,serial,device_name) values (:kidId,:deviceTypeId,:serial,:deviceName)";
