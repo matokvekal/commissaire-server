@@ -26,7 +26,12 @@ class ControllerKids extends BaseController {
       let serial = req.body.serial;
       let deviceName = req.body.deviceName;
       const email = req.user.userName;
-
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `GET/kids/registerDevice deviceTypeId:${deviceTypeId}`
+      )
       if (!kidId || !deviceTypeId || !serial) {
         return res.status(400).send("some data is missing");
       }
@@ -71,7 +76,12 @@ class ControllerKids extends BaseController {
       const kidId = req.user.userId;
       const userName = req.user.userName;
       const deviceId = req.body.kidDeviceId;
-
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `Post/kids/apps`
+      )
       const apps = req.body.apps;
 
       if (!apps || !userName || !deviceId) {
@@ -121,9 +131,16 @@ class ControllerKids extends BaseController {
   //app status : (block, always, reduce, cumulate, allow)
   getApps = async (req, res) => {
     console.log(" at getApps");
+
     try {
       const kidId = req.user.userId;
       const deviceId = req.query.deviceid;
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `Get/kids/apps`
+      )
       if (!kidId || !deviceId) {
         return res.status(400).send("some data is missing");
       }
@@ -162,7 +179,7 @@ class ControllerKids extends BaseController {
         this.sequelize,
         req,
         `kidId:${kidId} `,
-        "/kids/limits "
+        "GET/kids/limits "
       );
       // Call stored procedure to handle kid limits
       const SQL = `CALL handle_kid_limits(:kidId, :code)`;
@@ -200,7 +217,12 @@ class ControllerKids extends BaseController {
         totalIncrementApps,
         totalDecrementApps,
       } = req.body;
-
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `POST/kids/usage dateTime:${dateTime},dailyTimeLimit: ${dailyTimeLimit},dailyTimeRemaining:${dailyTimeRemaining},playTimeRemaining:${playTimeRemaining}`
+      );
       // Ensure all required data is provided
       if (
         !kidId ||
