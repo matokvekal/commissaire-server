@@ -19,6 +19,7 @@ const bypassPathsWhiteList = new Set([
   "/temp/hello1",
   "/temp/hello2",
   "/temp/simulatejwttoken",
+  "/temp/conectavioldkids",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
