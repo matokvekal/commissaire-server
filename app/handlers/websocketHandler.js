@@ -127,6 +127,7 @@ class SocketManager {
         this.io.to(result[0].socket_id).emit("private message", message);
       } else {
         Logger.debug(`User with ID ${userId} is not connected`);
+        
       }
     }
   }
