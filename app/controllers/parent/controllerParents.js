@@ -178,14 +178,16 @@ class ControllerParents extends BaseController {
   //POST api/parent/limits
   //kp-41
   postLimits = async (req, res) => {
-    console.log("postLimits");
+
     try {
       const { userId: parent_id } = req.user;
       const { kidId, ...incomingLimits } = req.body;
+
+      console.log("At postLimits userId:",parent_id," kidId:",kidId," incomingLimits:",incomingLimits);
       await createSingleLog(
         this.sequelize,
         req,
-        `parent_id:${parent_id} set lomit to kidId:${kidId}`,
+        `parent_id:${parent_id} set limit to kidId:${kidId}`,
         "/parent/limits",
         JSON.stringify(incomingLimits)
       );
