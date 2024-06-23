@@ -20,6 +20,7 @@ const bypassPathsWhiteList = new Set([
   "/temp/hello2",
   "/temp/simulatejwttoken",
   "/temp/conectavioldkids",
+  "/temp/resetfamily",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
@@ -35,7 +36,7 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
   if (!token) {
     return res.status(403).send("A token is required for authentication");
   }
-  console.log("at authenticationMiddleware token:",token);
+  console.log("at authenticationMiddleware token:", token);
   try {
     const userType = req.path.split("/")[1];
     const decoded = jwt.verify(token, config.JWT_SECRET);

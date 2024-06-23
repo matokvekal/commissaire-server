@@ -180,5 +180,27 @@ class tempController extends BaseController {
       });
     }
   };
+
+  //get api to resert family , just add phone the api will get it from request and call storedprocidure
+  resetfamily = async (req, res) => {
+    try {
+      console.log("at resetfamily");
+      const phone = req.query.phone;
+      if (!phone) {
+        return res.status(400).send("phone is missing");
+      }
+      const SQL = `CALL reset_family(:phone)`;
+      await this.sequelize.query(SQL, {
+        replacements: { phone },
+        type: QueryTypes.CALL,
+      });
+      return res.status(200).send("Family reset successfully");
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in resetfamily.",
+      });
+    }
+  };
 }
 export default tempController;
