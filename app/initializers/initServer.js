@@ -57,9 +57,10 @@ export default async (config) => {
   app.use(
     cors({
       origin: [
-        "http://localhost",
-        "https://localhost",
+        "http://localhost:3000",
+        "http://localhost:5000",
         "https://localhost:3000",
+        "https://localhost:5000",
       ], // (Whatever your frontend url is)
       credentials: true, // <= Accept credentials (cookies) sent by the client
     })

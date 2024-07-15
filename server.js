@@ -11,7 +11,7 @@ initServer(config).then(({ app, server, io }) => {
 
   // Start the server
   server.listen(config.port, () => {
-    Logger.debug(`Server listening on port: ${config.port}`);
+    Logger.debug(`The Server is  listening on port: ${config.port}`);
   });
 
 });
