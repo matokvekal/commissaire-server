@@ -75,7 +75,7 @@ class AuthController extends BaseController {
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
-          return res.status(400).send(ServerErrors.SMS_FAILED);
+          return res.status(400).send(ServerErrors.SMS_TRYS);
         }
       }
 
@@ -134,7 +134,7 @@ class AuthController extends BaseController {
     console.log("At parent confirm controller");
     const { phone, otp } = req.body;
     if (!phone || !otp) {
-      return res.status(400).send(ServerErrors.MISSING_DETAILS);
+      return res.status(402).send(ServerErrors.MISSING_DETAILS);
     }
     try {
       await createSingleLog(
@@ -155,7 +155,7 @@ class AuthController extends BaseController {
       });
 
       if (parent.length === 0) {
-        return res.status(400).send(ServerErrors.INVALID_OTP);
+        return res.status(401).send(ServerErrors.INVALID_OTP);
       }
       const currentTime = moment();
       const otpExpirationTime = moment(parent[0].last_otp).add(
@@ -168,6 +168,7 @@ class AuthController extends BaseController {
       if (parent[0].is_register === 1) {
         const token = createJwtToken(parent[0].phone,"parent");
         res.setHeader("Authorization", `Bearer ${token}`);
+        res.setHeader("Access-Control-Expose-Headers", "Authorization"); // Expose the Authorization header
         return res.status(200).send("User login ok");
       }
 

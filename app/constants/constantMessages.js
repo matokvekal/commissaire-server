@@ -10,6 +10,7 @@ export const ServerErrors = {
   TOO_MANY_TRIES: "Too many tries, please wait before trying again.",
   INVALID_OTP: "Invalid OTP or OTP expired.",
   SMS_FAILED: "Failed to send SMS.",
+  SMS_TRYS:"To many trys,wait 20 seconds and try again",
   USER_DELETED_SUCCESSFULLY: "User deleted successfully",
   REGISTRATION_LOGIN_SUCCESSFUL: "Registration successful, we sent you an OTP.",
   REGISTRATION_FAILED: "An error occurred during registration.",

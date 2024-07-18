@@ -110,7 +110,7 @@ class AuthenticationController extends BaseController {
         return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       //TODO
-      //change this code to send Email instead of sms
+      //change this code to send Email instead of sms in case sms failer
       // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
       // singleSmsSender(phoneNumber, messageBody);
       const token = createJwtToken(kid.email,"kid");
