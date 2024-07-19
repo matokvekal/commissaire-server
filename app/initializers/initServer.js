@@ -11,6 +11,7 @@ import cors from "cors";
 // import initDocumentDb from "./initDocumentDb.js";
 
 export default async (config) => {
+  console.log("Initializing server");
   const app = express();
   app.set("trust proxy", true); // Trust the proxy to get the correct client IP address
   const server = http.createServer(app);
