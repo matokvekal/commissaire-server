@@ -40,20 +40,31 @@ export default async (config) => {
         "https://localhost:5000",
         "http://18.199.57.38:3000",
         "http://18.199.57.38:5000",
-        "https://18.199.57.38:3000",
+        "https://18.199.57.38:3000", 
         "https://18.199.57.38:5000",
+        "http://18.199.57.38",
+        "https://18.199.57.38"
       ],
       credentials: true, // <= Accept credentials (cookies) sent by the client
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization']
     })
   );
-
+ // Log incoming requests
+ app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
   // Handle preflight requests
-  app.options('*', cors());
-
-  app.use((req, res, next) => {
-    console.log(`Incoming request: ${req.method} ${req.url}`);
-    next();
+  app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(204);
   });
+
+
 
   //kid
   const kidsRouter = express.Router();
