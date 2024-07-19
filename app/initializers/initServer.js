@@ -28,6 +28,25 @@ export default async (config) => {
   SocketManager.initialize(io, db);
 
   io.use(middlewares.adaptedFileLoggerMiddleware);
+  app.use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:5000",
+        "https://localhost:3000",
+        "https://localhost:5000",
+        "http://18.199.57.38:3000",
+        "http://18.199.57.38:5000",
+      ],
+      credentials: true, // <= Accept credentials (cookies) sent by the client
+    })
+  );
+
+  app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+    next();
+  });
+
   //kid
   const kidsRouter = express.Router();
   kidsRouter.use(middlewares.apiMiddleware);
@@ -53,20 +72,6 @@ export default async (config) => {
   tempRouter.use(middlewares.authenticationMiddleware(db));
   tempRouter.use(middlewares.fileLoggerMiddlaware);
   initTempRoutes(tempRouter, app);
-
-  app.use(
-    cors({
-      origin: [
-        "http://localhost:3000",
-        "http://localhost:5000",
-        "https://localhost:3000",
-        "https://localhost:5000",
-        "http://18.199.57.38:3000", 
-      "http://18.199.57.38:5000", 
-      ], 
-      credentials: true, // <= Accept credentials (cookies) sent by the client
-    })
-  );
 
   app.use("/api", kidsRouter);
   app.use("/api", parentsRouter);
