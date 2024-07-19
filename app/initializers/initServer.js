@@ -61,7 +61,9 @@ export default async (config) => {
         "http://localhost:5000",
         "https://localhost:3000",
         "https://localhost:5000",
-      ], // (Whatever your frontend url is)
+        "http://18.199.57.38:3000", 
+      "http://18.199.57.38:5000", 
+      ], 
       credentials: true, // <= Accept credentials (cookies) sent by the client
     })
   );
