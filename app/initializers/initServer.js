@@ -29,6 +29,8 @@ export default async (config) => {
   SocketManager.initialize(io, db);
 
   io.use(middlewares.adaptedFileLoggerMiddleware);
+
+  // Apply CORS middleware early
   app.use(
     cors({
       origin: [
@@ -38,15 +40,16 @@ export default async (config) => {
         "https://localhost:5000",
         "http://18.199.57.38:3000",
         "http://18.199.57.38:5000",
-        "https://18.199.57.38:3000", 
+        "https://18.199.57.38:3000",
         "https://18.199.57.38:5000",
       ],
       credentials: true, // <= Accept credentials (cookies) sent by the client
     })
   );
 
+  // Handle preflight requests
   app.options('*', cors());
-  
+
   app.use((req, res, next) => {
     console.log(`Incoming request: ${req.method} ${req.url}`);
     next();
@@ -67,7 +70,7 @@ export default async (config) => {
   parentsRouter.use(middlewares.errorLoggerMiddleware(db));
   parentsRouter.use(middlewares.authenticationMiddleware(db));
   parentsRouter.use(middlewares.fileLoggerMiddlaware);
-  initParentsRoutes(kidsRouter, app);
+  initParentsRoutes(parentsRouter, app);
   //
 
   //temp only for developers
