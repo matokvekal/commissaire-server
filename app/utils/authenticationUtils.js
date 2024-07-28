@@ -4,7 +4,7 @@ import moment from "moment";
 import config from "../config/index.js";
 export const getTokenFromRequest = (req) => {
   const bearerHeader = req.headers["authorization"];
-  let token = getTokenFromBearer(bearerHeader); 
+  let token = getTokenFromBearer(bearerHeader);
   return token;
   return null;
 };
@@ -15,7 +15,7 @@ export const getTokenFromBearer = (bearerHeader) => {
     return token;
   }
   return null;
-}
+};
 
 // export const getDataFromGoogleToken = async (googleToken) => {
 //   const response = await fetch(
@@ -39,9 +39,9 @@ export const createOTP = () => {
 // return token;
 //};
 
-export const createJwtToken = (userName,userType) => {
+export const createJwtToken = (userName, userType) => {
   const token = jwt.sign(
-    { user_name: userName,user_type:userType, last_login: moment() },
+    { user_name: userName, user_type: userType, last_login: moment() },
     config.JWT_SECRET,
     {
       expiresIn: `${config.tokenExpireDayLimit}d`,

@@ -137,7 +137,7 @@ class AuthenticationController extends BaseController {
       }
       firstName = getFixedValue(firstName);
       parentPhone = getFixedValue(parentPhone);
-
+      console.log("at kid register controller googleToken",googleToken);
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
