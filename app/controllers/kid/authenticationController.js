@@ -18,7 +18,7 @@ class AuthenticationController extends BaseController {
   constructor(app, modelName) {
     super(app, modelName);
   }
-//post /api/kid/simulattoken
+  //post /api/kid/simulattoken
   // simulatejwttoken = async (req, res) => {
   //   try {
   //     console.log("at kid simulatejwttoken controller");
@@ -39,12 +39,10 @@ class AuthenticationController extends BaseController {
   //   }
   // };
 
-
-
   //Post /api/kid/login
   login = async (req, res) => {
     try {
-      console.log("at kid login controller");
+      console.log("at kid login controller...");
       const { googleToken } = req.body;
       console.log("googleToken", googleToken);
       await createSingleLog(
@@ -113,7 +111,7 @@ class AuthenticationController extends BaseController {
       //change this code to send Email instead of sms in case sms failer
       // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
       // singleSmsSender(phoneNumber, messageBody);
-      const token = createJwtToken(kid.email,"kid");
+      const token = createJwtToken(kid.email, "kid");
       return res
         .setHeader("Authorization", `Bearer ${token}`)
         .status(200)
@@ -137,7 +135,7 @@ class AuthenticationController extends BaseController {
       }
       firstName = getFixedValue(firstName);
       parentPhone = getFixedValue(parentPhone);
-      console.log("at kid register controller googleToken",googleToken);
+      console.log("at kid register controller googleToken", googleToken);
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
@@ -297,7 +295,7 @@ class AuthenticationController extends BaseController {
       //     type: QueryTypes.INSERT,
       //   });
       // }
-      const token = createJwtToken(kid.email,"kid");
+      const token = createJwtToken(kid.email, "kid");
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).json({ devices: devices });
       //return token at header
