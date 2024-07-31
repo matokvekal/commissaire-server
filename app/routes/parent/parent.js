@@ -4,8 +4,6 @@ export default (router, app) => {
   const modelBase = "parent";
   const parentsController = new ControllerParents(app, modelBase);
 
-
-
   //POST api/parent/token
   router.post(
     `/${modelBase}/token`,
@@ -15,6 +13,11 @@ export default (router, app) => {
   router.get(
     `/${modelBase}/kids`,
     parentsController.getKids.bind(parentsController)
+  );
+  //GET api/parent/kidsbydevices
+  router.get(
+    `/${modelBase}/kidsbydevices`,
+    parentsController.getKidsByDevices.bind(parentsController)
   );
 
   //GET /api/parent/limits
@@ -34,8 +37,10 @@ export default (router, app) => {
     `/${modelBase}/kidsusage`,
     parentsController.getUsage.bind(parentsController)
   );
-  // router.post(
-  // 	`/${modelBase}/uploadPassengersFile`,
-  // 	ParentsController.uploadPassengersFile.bind(ParentsController)
-  // );
+
+  //GET /api/parent/kidsdeviceusage
+  router.get(
+    `/${modelBase}/kidsdeviceusage`,
+    parentsController.KidsUsageByDevices.bind(parentsController)
+  );
 };

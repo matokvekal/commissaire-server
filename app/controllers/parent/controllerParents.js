@@ -178,12 +178,18 @@ class ControllerParents extends BaseController {
   //POST api/parent/limits
   //kp-41
   postLimits = async (req, res) => {
-
     try {
       const { userId: parent_id } = req.user;
       const { kidId, ...incomingLimits } = req.body;
 
-      console.log("At postLimits userId:",parent_id," kidId:",kidId," incomingLimits:",incomingLimits);
+      console.log(
+        "At postLimits userId:",
+        parent_id,
+        " kidId:",
+        kidId,
+        " incomingLimits:",
+        incomingLimits
+      );
       await createSingleLog(
         this.sequelize,
         req,
@@ -241,19 +247,88 @@ class ControllerParents extends BaseController {
     }
   };
 
-  ////////////////////////////
+  //GET api/parent/kidsbydevices
+  getKidsByDevices = async (req, res) => {
+    console.log("getKidsByDevices");
+    try {
+      const parent_id = req.user.userId;
+      if (!parent_id) {
+        return res.status(400).send("some data is missing");
+      }
 
-  // GET /api/parent/sayhi
-  // hello = async (req, res) => {
-  //   try {
-  //     res.status(200).send("Hello from parents controller");
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred in hello parent.",
-  //     });
-  //   }
-  // };
+      const SQL = `select u.id ,u.family_id,u.f_name as fName,u.l_name as lName,kd.serial,kd.device_name as deviceName,kd.id as deviceId  from users  u 
+                    left join kid_devices kd
+                    on u.id=kd.kid_id
+                    where u.family_id like
+                    (select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') 
+                    and u.is_register=1 and u.is_active=1 and u.user_type='kid'
+                    and kd.is_active=1`;
+      const kids = await this.sequelize.query(SQL, {
+        replacements: { parent_id },
+        type: QueryTypes.SELECT,
+      });
+      return res.status(200).send({ kids });
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in getting kids.",
+      });
+    }
+  };
+  //GET api/parent/kidsdeviceusage
+  KidsUsageByDevices = async (req, res) => {
+    console.log("At KidsUsageByDevices");
+    try {
+      const parent_id = req.user.userId;
+      const familyId = req.user.familyId;
+      if (!parent_id || !familyId) {
+        return res.status(400).send("Some data is missing");
+      }
+      const SQL = `
+      WITH LatestUsage AS (
+        SELECT 
+          ku.kid_id,
+          ku.deviceId,
+          ku.dailyTimeLimit AS total,
+          ku.dailyTimeUsed AS used,
+          ku.playTimeRemaining AS play,
+          ku.date_time,
+          ROW_NUMBER() OVER (PARTITION BY ku.kid_id, ku.deviceId ORDER BY ku.date_time DESC) AS row_num
+        FROM kid_usage ku
+        INNER JOIN kid_devices kd ON ku.deviceId = kd.id
+        WHERE kd.is_active = 1
+      )
+          SELECT 
+            kid_id,
+            deviceId,
+            total,
+            used,
+            play,
+            date_time
+          FROM LatestUsage
+          WHERE row_num = 1
+          AND kid_id IN (
+            SELECT id
+            FROM users
+            WHERE family_id = :familyId
+              AND is_active = 1
+              AND is_register = 1
+              AND user_type = 'kid'
+          );
+    `;
+      const usage = await this.sequelize.query(SQL, {
+        replacements: { familyId },
+        type: this.sequelize.QueryTypes.SELECT,
+      });
+      return res.status(200).send({ usage });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred in getting KidsUsageByDevices.",
+      });
+    }
+  };
 }
 export default ControllerParents;
 
