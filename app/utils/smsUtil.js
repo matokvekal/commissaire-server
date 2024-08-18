@@ -18,13 +18,17 @@ export const kidRegistrationSMS = async (
 };
 
 export const parentRegistrationSMS = async (phoneNumber, otp) => {
-  const messageBody = `welcome to  Koali Time your OTP :${otp}`;
+  const messageBody = `Your OTP :${otp}  welcome to  Koali Time `;
   const smsSender = config.smsSenderName;
   const result = await singleSmsSender(phoneNumber, messageBody, smsSender);
   return result;
 };
 
-export const singleSmsSender = async (phoneNumber, messageBody, sender = config.smsSenderName) => {
+export const singleSmsSender = async (
+  phoneNumber,
+  messageBody,
+  sender = config.smsSenderName
+) => {
   try {
     const token = config.SMS_API_TOKEN;
     const url = config.sms_api_url;

@@ -165,7 +165,9 @@ class ControllerParents extends BaseController {
         replacements: { kidId },
         type: QueryTypes.SELECT,
       });
-
+      if (kidLimits.length === 0) {
+        return res.status(400).send("No limits found for this kid.");
+      }
       return res.status(200).send({ kidLimits });
     } catch (err) {
       console.log(err);
@@ -256,13 +258,35 @@ class ControllerParents extends BaseController {
         return res.status(400).send("some data is missing");
       }
 
-      const SQL = `select u.id ,u.family_id,u.f_name as fName,u.l_name as lName,kd.serial,kd.device_name as deviceName,kd.id as deviceId  from users  u 
-                    left join kid_devices kd
-                    on u.id=kd.kid_id
-                    where u.family_id like
-                    (select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') 
-                    and u.is_register=1 and u.is_active=1 and u.user_type='kid'
-                    and kd.is_active=1`;
+      const SQL = `SELECT 
+        u.id, 
+        u.family_id,
+        u.f_name AS fName,
+        u.l_name AS lName,
+        kd.serial,
+        kd.device_name AS deviceName,
+        kd.id AS deviceId,
+        u.locationX,
+        u.locationY,
+        u.dailyTimeLimit AS total,
+        u.dailyTimeRemaining AS used,
+        u.playTimeRemaining AS play,
+        u.updateAt AS date_time
+      FROM users u
+      LEFT JOIN kid_devices kd ON u.id = kd.kid_id
+      WHERE u.family_id IN (
+        SELECT DISTINCT family_id 
+        FROM users 
+        WHERE id = :parent_id
+          AND is_active = 1 
+          AND is_register = 1 
+          AND user_type = 'parent'
+      )
+      AND u.is_register = 1 
+      AND u.is_active = 1 
+      AND u.user_type = 'kid'
+      AND kd.is_active = 1;'
+      and kd.is_active=1`;
       const kids = await this.sequelize.query(SQL, {
         replacements: { parent_id },
         type: QueryTypes.SELECT,
