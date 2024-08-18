@@ -258,7 +258,8 @@ class ControllerParents extends BaseController {
         return res.status(400).send("some data is missing");
       }
 
-      const SQL = `SELECT 
+      const SQL = `
+      SELECT 
         u.id, 
         u.family_id,
         u.f_name AS fName,
@@ -271,13 +272,13 @@ class ControllerParents extends BaseController {
         u.dailyTimeLimit AS total,
         u.dailyTimeRemaining AS used,
         u.playTimeRemaining AS play,
-        u.updateAt AS date_time
+        u.updateAt
       FROM users u
       LEFT JOIN kid_devices kd ON u.id = kd.kid_id
       WHERE u.family_id IN (
         SELECT DISTINCT family_id 
         FROM users 
-        WHERE id = :parent_id
+        WHERE id = :parent_id 
           AND is_active = 1 
           AND is_register = 1 
           AND user_type = 'parent'
@@ -285,8 +286,8 @@ class ControllerParents extends BaseController {
       AND u.is_register = 1 
       AND u.is_active = 1 
       AND u.user_type = 'kid'
-      AND kd.is_active = 1;'
-      and kd.is_active=1`;
+      AND kd.is_active = 1
+    `;
       const kids = await this.sequelize.query(SQL, {
         replacements: { parent_id },
         type: QueryTypes.SELECT,
