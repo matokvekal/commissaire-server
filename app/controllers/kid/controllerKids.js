@@ -31,7 +31,7 @@ class ControllerKids extends BaseController {
         req,
         `kidId:${kidId} `,
         `GET/kids/registerDevice deviceTypeId:${deviceTypeId}`
-      )
+      );
       if (!kidId || !deviceTypeId || !serial) {
         return res.status(400).send("some data is missing");
       }
@@ -81,7 +81,7 @@ class ControllerKids extends BaseController {
         req,
         `kidId:${kidId} `,
         `Post/kids/apps`
-      )
+      );
       const apps = req.body.apps;
 
       if (!apps || !userName || !deviceId) {
@@ -140,7 +140,7 @@ class ControllerKids extends BaseController {
         req,
         `kidId:${kidId} `,
         `Get/kids/apps`
-      )
+      );
       if (!kidId || !deviceId) {
         return res.status(400).send("some data is missing");
       }
@@ -237,7 +237,7 @@ class ControllerKids extends BaseController {
       ) {
         return res.status(400).send("Some data is missing");
       }
-      const insertSQL = `
+      let insertSQL = `
         INSERT INTO kid_usage
           (kid_id, deviceId, date_time, dailyTimeLimit, dailyTimeRemaining, playTimeRemaining, dailyTimeUsed, total_increment_apps, total_decrement_apps)
         VALUES
@@ -257,7 +257,28 @@ class ControllerKids extends BaseController {
         },
         type: this.sequelize.QueryTypes.INSERT,
       });
+      //update table users with the dailyTimeUsed,playTimeRemaining
+      let updateSQL = `
+      UPDATE users
+      SET 
+        dailyTimeUsed = :dailyTimeUsed,
+        playTimeRemaining = :playTimeRemaining,
+        updateAt = NOW()
+      WHERE 
+        id = :kidId AND 
+        is_register = 1 AND 
+        is_active = 1 AND 
+        user_type = 'kid'
+    `;
 
+      await this.sequelize.query(updateSQL, {
+        replacements: {
+          kidId,
+          dailyTimeUsed,
+          playTimeRemaining,
+        },
+        type: this.sequelize.QueryTypes.UPDATE,
+      });
       // get  the latest usage for all other devices used by the kid today, excluding the current device
       const selectSQL = `
         SELECT
