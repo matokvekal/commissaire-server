@@ -270,7 +270,7 @@ class ControllerParents extends BaseController {
         u.locationX,
         u.locationY,
         u.dailyTimeLimit AS total,
-        u.dailyTimeRemaining AS used,
+        u.dailyTimeUsed AS used,
         u.playTimeRemaining AS play,
         u.updateAt
       FROM users u
