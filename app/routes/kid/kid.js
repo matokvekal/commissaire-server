@@ -37,5 +37,9 @@ export default (router, app) => {
   router.post(`/${modelBase}/usage`,
   kidsController.usage.bind(kidsController));
 
+  //POST /api/kid/appusage
+  router.post(`/${modelBase}/usage`,
+  kidsController.appUsage.bind(kidsController));
+
   
 };
