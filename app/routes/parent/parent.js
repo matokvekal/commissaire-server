@@ -44,7 +44,7 @@ export default (router, app) => {
     parentsController.KidsUsageByDevices.bind(parentsController)
   );
   //POST api/parent/disable
-  router.get(
+  router.post(
     `/${modelBase}/disable`,
     parentsController.disableKids.bind(parentsController)
   );

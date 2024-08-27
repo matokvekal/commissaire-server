@@ -91,15 +91,15 @@ class ControllerParents extends BaseController {
       if (!parent_id) {
         return res.status(400).send("some data is missing");
       }
-      const { disableStatus } = req.body;
-
+      const { status } = req.body;
+      console.log("disableStatus", status);
       // const SQL =
       //   "select id,f_name,l_name from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
       // const kids = await this.sequelize.query(SQL, {
       //   replacements: { parent_id },
       //   type: QueryTypes.SELECT,
       // });
-      return res.status(200).send(disableStatus);
+      return res.status(200).send({"disableStatus": status});
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
