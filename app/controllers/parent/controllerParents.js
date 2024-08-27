@@ -83,6 +83,31 @@ class ControllerParents extends BaseController {
     }
   };
 
+  // //POST api/parent/disable
+  disableKids = async (req, res) => {
+    console.log("disableKids");
+    try {
+      const parent_id = req.user.userId;
+      if (!parent_id) {
+        return res.status(400).send("some data is missing");
+      }
+      const { disableStatus } = req.body;
+
+      // const SQL =
+      //   "select id,f_name,l_name from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
+      // const kids = await this.sequelize.query(SQL, {
+      //   replacements: { parent_id },
+      //   type: QueryTypes.SELECT,
+      // });
+      return res.status(200).send(disableStatus);
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in getting kids.",
+      });
+    }
+  };
+
   //GET api/parent/kidsusage
   //kp-48
   //this gat api is get the parent family id  and then go to table kid_usage for those kids and  get the lastrow by  created at of the kid_id  with all his device_ids that are  for today
