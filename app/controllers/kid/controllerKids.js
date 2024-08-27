@@ -7,6 +7,7 @@ import Wlogger from "../../utils/winstonLogger.js";
 import { ServerNumbers } from "../../constants/serverConstants.js";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import { createJwtToken } from "../../utils/authenticationUtils.js";
+import isValidLocation from "../../utils/locationValidator.js";
 // import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -191,6 +192,76 @@ class ControllerKids extends BaseController {
       });
     }
   }
+   //POST api/kid/position  
+  position = async (req, res) => {
+    console.log("at position");
+    try {
+      const { userId: kidId } = req.user;
+      const {
+        deviceId,
+        dateTime,
+        latitude,
+        longitude,
+      } = req.body;
+
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `POST/kids/position dateTime:${dateTime},latitude:${latitude},longitude:${longitude}`
+      );
+
+      // Ensure all required data is provided
+      if (!kidId || !deviceId || !dateTime || !latitude || !longitude) {
+        return res.status(400).send("Some data is missing");
+      }
+      if (!isValidLocation(parseFloat(latitude), parseFloat(longitude))) {
+        return res.status(400).send("Invalid latitude or longitude values");
+      }
+      // Insert location data into the 'location' table
+      let insertSQL = `
+        INSERT INTO location
+          (kid_id, device_id, user_time, longitude, latitude)
+        VALUES
+          (:kidId, :deviceId, :dateTime, :longitude, :latitude)
+      `;
+      await this.sequelize.query(insertSQL, {
+        replacements: {
+          kidId,
+          deviceId,
+          dateTime,
+          longitude,
+          latitude
+        },
+        type: this.sequelize.QueryTypes.INSERT,
+      });
+
+      // Update the 'users' table with the new location values
+      let updateSQL = `
+        UPDATE users
+        SET locationX = :longitude, locationY = :latitude
+        WHERE id = :kidId 
+         AND (locationX != :longitude OR locationY != :latitude)
+      `;
+      await this.sequelize.query(updateSQL, {
+        replacements: {
+          kidId,
+          longitude,
+          latitude
+        },
+        type: this.sequelize.QueryTypes.UPDATE,
+      });
+
+      return res.status(200).send({
+        message: "Data saved successfully",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message: err.message || "Some error occurred in position.",
+      });
+    }
+  };
   //Get /api/kid/apps   kp-32
   //kid app will get list of apps with theres status, also  devideid from the query string
   //kid will send at request the device id
