@@ -7,7 +7,9 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "dev": "nodemon index",
+    "swagger-autogen": "node ./swagger.js"
   },
   "jest": {
     "transform": {
@@ -43,6 +45,7 @@
     "rotating-file-stream": "^3.2.1",
     "sequelize": ">6.37.2",
     "socket.io": "^4.7.5",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.13.0"
   },
   "devDependencies": {
