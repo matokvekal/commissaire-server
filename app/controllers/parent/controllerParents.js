@@ -99,7 +99,7 @@ class ControllerParents extends BaseController {
       //   replacements: { parent_id },
       //   type: QueryTypes.SELECT,
       // });
-      return res.status(200).send({"disableStatus": status});
+      return res.status(200).send({ disableStatus: status });
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -297,6 +297,8 @@ class ControllerParents extends BaseController {
         u.dailyTimeLimit AS total,
         u.dailyTimeUsed AS used,
         u.playTimeRemaining AS play,
+        increment_apps As increment,
+        decrement_apps As decrement,
         u.updateAt
       FROM users u
       LEFT JOIN kid_devices kd ON u.id = kd.kid_id
