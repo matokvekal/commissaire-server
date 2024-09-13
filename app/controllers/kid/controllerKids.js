@@ -132,30 +132,29 @@ class ControllerKids extends BaseController {
       const userName = req.user.userName;
       const deviceId = req.body.deviceId;
       const appUsage = req.body.appUsage;
-  
+
       await createSingleLog(
         this.sequelize, // Use Sequelize instance here
         req,
         `kidId:${kidId}`,
         `Post/kids/appusage`
       );
-  
+
       if (!appUsage || !userName || !deviceId) {
         return res.status(400).send("Some data is missing");
       }
-  
 
       let SQL =
-      "select * from kid_devices where id = :deviceId and kid_id = :kidId and is_active=1";
-    const device = await this.sequelize.query(SQL, {
-      replacements: { deviceId, kidId },
-      type: QueryTypes.SELECT,
-    });
-    if (device.length == 0) {
-      return res.status(400).send("device not found");
-    }
+        "select * from kid_devices where id = :deviceId and kid_id = :kidId and is_active=1";
+      const device = await this.sequelize.query(SQL, {
+        replacements: { deviceId, kidId },
+        type: QueryTypes.SELECT,
+      });
+      if (device.length == 0) {
+        return res.status(400).send("device not found");
+      }
       // Prepare data for bulk insertion
-      const list = appUsage.map(app => ({
+      const list = appUsage.map((app) => ({
         kidId: kidId,
         deviceId: deviceId,
         packageName: app.packageName,
@@ -163,46 +162,46 @@ class ControllerKids extends BaseController {
         endDate: app.endDate,
         appId: app.appId,
         appType: app.appType,
-        uploadAt: app.uploadAt
+        uploadAt: app.uploadAt,
       }));
-  
+
       if (list.length === 0) {
         return res.status(400).send("App usage list is empty");
       }
 
       const KidAppUsage = KidAppUsageModel(this.sequelize);
 
-
       // Bulk insert data using Sequelize
       const chunkSize = 100; // Adjust this value based on performance testing
       for (let i = 0; i < list.length; i += chunkSize) {
         const chunk = list.slice(i, i + chunkSize);
-  
+
         await KidAppUsage.bulkCreate(chunk, {
-          updateOnDuplicate: ['package_name', 'start_date', 'end_date', 'appId', 'app_type', 'upload_at']
+          updateOnDuplicate: [
+            "package_name",
+            "start_date",
+            "end_date",
+            "appId",
+            "app_type",
+            "upload_at",
+          ],
         });
       }
-  
+
       return res.status(200).send("App usage saved successfully");
-  
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in appUsage.",
       });
     }
-  }
-   //POST api/kid/position  
+  };
+  //POST api/kid/position
   position = async (req, res) => {
     console.log("at position");
     try {
       const { userId: kidId } = req.user;
-      const {
-        deviceId,
-        dateTime,
-        latitude,
-        longitude,
-      } = req.body;
+      const { deviceId, dateTime, latitude, longitude } = req.body;
 
       await createSingleLog(
         this.sequelize,
@@ -231,7 +230,7 @@ class ControllerKids extends BaseController {
           deviceId,
           dateTime,
           longitude,
-          latitude
+          latitude,
         },
         type: this.sequelize.QueryTypes.INSERT,
       });
@@ -247,7 +246,7 @@ class ControllerKids extends BaseController {
         replacements: {
           kidId,
           longitude,
-          latitude
+          latitude,
         },
         type: this.sequelize.QueryTypes.UPDATE,
       });
@@ -401,6 +400,8 @@ class ControllerKids extends BaseController {
       SET 
         dailyTimeUsed = :dailyTimeUsed,
         playTimeRemaining = :playTimeRemaining,
+        total_increment_apps = :totalIncrementApps,
+        total_decrement_apps = :totalDecrementApps,
         updateAt = NOW()
       WHERE 
         id = :kidId AND 
@@ -414,6 +415,8 @@ class ControllerKids extends BaseController {
           kidId,
           dailyTimeUsed,
           playTimeRemaining,
+          totalIncrementApps,
+          totalDecrementApps,
         },
         type: this.sequelize.QueryTypes.UPDATE,
       });
