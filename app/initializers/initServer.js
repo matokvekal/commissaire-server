@@ -8,6 +8,8 @@ import initTempRoutes from "./initTempRoutes.js";
 import initDatabase from "./initDatabase.js";
 import SocketManager from "../handlers/websocketHandler.js";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "../../swagger.json" assert { type: "json" };
 // import initDocumentDb from "./initDocumentDb.js";
 
 export default async (config) => {
@@ -95,6 +97,8 @@ export default async (config) => {
   app.use("/api", kidsRouter);
   app.use("/api", parentsRouter);
   app.use("/api", tempRouter);
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   return { app, server, io };
 };
