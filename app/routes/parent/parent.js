@@ -48,4 +48,16 @@ export default (router, app) => {
     `/${modelBase}/disable`,
     parentsController.disableKids.bind(parentsController)
   );
+
+  //GET /api/parent/kidapps
+  router.get(
+    `/${modelBase}/kidapps`,
+    parentsController.getKidApps.bind(parentsController)
+  );
+
+  //POST /api/parent/appstatus
+  router.post(
+    `/${modelBase}/appstatus`,
+    parentsController.updateKidAppStatus.bind(parentsController)
+  );
 };

@@ -265,7 +265,7 @@ class ControllerKids extends BaseController {
   //kid app will get list of apps with theres status, also  devideid from the query string
   //kid will send at request the device id
   //this api will cal at login or at any time the kid will get notification
-  //app status : (block, always, reduce, cumulate, allow)
+  //app status : (>blocked, >always_on, leisure, beneficial, neutral)
   getApps = async (req, res) => {
     console.log(" at getApps");
 
@@ -291,6 +291,38 @@ class ControllerKids extends BaseController {
         type: QueryTypes.SELECT,
       });
       return res.status(200).send({ apps });
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in getApps.",
+      });
+    }
+  };
+  //Get /api/kid/diamonds
+  //kid get his total diamonds
+  getDiamonds = async (req, res) => {
+    console.log(" at getDiamonds");
+
+    try {
+      const kidId = req.user.userId;
+      await createSingleLog(
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `Get/kids/diamonds`
+      );
+      if (!kidId) {
+        return res.status(400).send("some data is missing");
+      }
+      const email = req.user.userName;
+      let SQL = `select total_diamonds as diamonds from users    where  email=:email and user_type="kid" and is_active=1 
+        `;
+      const results = await this.sequelize.query(SQL, {
+        replacements: { email },
+        type: QueryTypes.SELECT,
+      });
+
+      return res.status(200).send(results[0]);
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {

@@ -327,6 +327,93 @@ class ControllerParents extends BaseController {
       });
     }
   };
+
+  //GET api/parent/kidapps
+  async getKidApps(req, res) {
+    try {
+      const { kidId, deviceId } = req.query;
+
+      if (!kidId || !deviceId) {
+        return res.status(400).send("Missing required parameters.");
+      }
+
+      const SQL = `
+      SELECT 
+        id, 
+        status, 
+        IF(
+          TIMESTAMPDIFF(WEEK, update_date, NOW()) > 1, 
+          0, 
+          IF(parent_has_change = 1, 0, 1)
+        ) AS last_updated 
+      FROM kid_apps 
+      WHERE kid_id = :kidId 
+        AND kid_device_id = :deviceId 
+        AND is_exist = 1 
+        AND is_active = 1;
+    `;
+
+      const kidApps = await this.sequelize.query(SQL, {
+        replacements: { kidId, deviceId },
+        type: QueryTypes.SELECT,
+      });
+
+      if (kidApps.length === 0) {
+        return res.status(404).send("No apps found for this kid and device.");
+      }
+
+      return res.status(200).send({ kidApps });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message: err.message || "Some error occurred in fetching kid apps.",
+      });
+    }
+  }
+//POST api/parent/appstatus
+async updateKidAppStatus(req, res) {
+  try {
+    const { kidId, deviceId, appId, status } = req.body;
+
+    // Validate input
+    if (!kidId || !deviceId || !appId || !status) {
+      return res.status(400).send("Missing required parameters.");
+    }
+
+    // Allowed statuses (adjust if necessary)
+    const allowedStatuses = ['blocked', 'always_on', 'leisure', 'beneficial', 'neutral'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).send("Invalid status provided.");
+    }
+
+    // Update the status in the kid_apps table
+    const SQL = `
+      UPDATE kid_apps 
+      SET status = :status, parent_has_change = 1, update_date = NOW() 
+      WHERE kid_id = :kidId 
+        AND kid_device_id = :deviceId 
+        AND app_id = :appId
+        AND is_active = 1 
+        AND is_exist = 1;
+    `;
+
+    const [updatedRows] = await this.sequelize.query(SQL, {
+      replacements: { kidId, deviceId, appId, status },
+      type: QueryTypes.UPDATE,
+    });
+
+    if (updatedRows === 0) {
+      return res.status(404).send("No matching record found or nothing updated.");
+    }
+
+    return res.status(200).send("App status updated successfully.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message: err.message || "Some error occurred while updating app status.",
+    });
+  }
+}
   //GET api/parent/kidsdeviceusage
   KidsUsageByDevices = async (req, res) => {
     console.log("At KidsUsageByDevices");

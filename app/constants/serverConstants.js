@@ -8,8 +8,8 @@ export const serverFlags = {
 };
 
 export const allowedFields = {
-  ratio: "PERCENT", // Assuming 'PERCENT' means it should be a number from 0 to 100
-  daily_hours: "HOURS",
+  ratio: "NUMBER", // jow many minutes kid can get from using banifician app
+  daily_hours: "TIME",
   sun_start: "TIME",
   sun_end: "TIME",
   mon_start: "TIME",
@@ -24,4 +24,8 @@ export const allowedFields = {
   fri_end: "TIME",
   sat_start: "TIME",
   sat_end: "TIME",
+  screen_time_control: "BOOLEAN",
+  daily_schedule: "BOOLEAN",
+  quality_control: "BOOLEAN",
+
 };
