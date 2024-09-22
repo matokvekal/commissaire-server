@@ -60,4 +60,17 @@ export default (router, app) => {
     `/${modelBase}/appstatus`,
     parentsController.updateKidAppStatus.bind(parentsController)
   );
+
+  // GET /api/parent/schedule/:kidId
+router.get(
+  `/${modelBase}/kid_schedule/:kidId`,
+  parentsController.getKidSchedule.bind(parentsController)
+);
+
+
+  //POST /api/parent/schedule
+  router.post(
+    `/${modelBase}/schedule`,
+    parentsController.updateKidSchedule.bind(parentsController)
+  );
 };

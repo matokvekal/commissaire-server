@@ -332,25 +332,31 @@ class ControllerParents extends BaseController {
   async getKidApps(req, res) {
     try {
       const { kidId, deviceId } = req.query;
-
+      console.log("at getKidApps ,kidId", kidId, "deviceId", deviceId);
       if (!kidId || !deviceId) {
         return res.status(400).send("Missing required parameters.");
       }
 
       const SQL = `
       SELECT 
-        id, 
-        status, 
+        ka.id, 
+        ka.status, 
         IF(
-          TIMESTAMPDIFF(WEEK, update_date, NOW()) > 1, 
+          TIMESTAMPDIFF(WEEK, ka.update_date, NOW()) > 1, 
           0, 
-          IF(parent_has_change = 1, 0, 1)
-        ) AS last_updated 
-      FROM kid_apps 
-      WHERE kid_id = :kidId 
-        AND kid_device_id = :deviceId 
-        AND is_exist = 1 
-        AND is_active = 1;
+          IF(ka.parent_has_change = 1, 0, 1)
+        ) AS last_updated,
+        a.app_name, 
+        a.package_name, 
+        a.category
+      FROM kid_apps ka
+      LEFT JOIN koalidb.apps a 
+        ON ka.app_id = a.id
+      WHERE ka.kid_id = :kidId 
+        AND ka.kid_device_id = :deviceId 
+        AND ka.is_exist = 1 
+        AND ka.is_active = 1
+        AND a.is_active = 1;
     `;
 
       const kidApps = await this.sequelize.query(SQL, {
@@ -370,24 +376,30 @@ class ControllerParents extends BaseController {
       });
     }
   }
-//POST api/parent/appstatus
-async updateKidAppStatus(req, res) {
-  try {
-    const { kidId, deviceId, appId, status } = req.body;
+  //POST api/parent/appstatus
+  async updateKidAppStatus(req, res) {
+    try {
+      const { kidId, deviceId, appId, status } = req.body;
 
-    // Validate input
-    if (!kidId || !deviceId || !appId || !status) {
-      return res.status(400).send("Missing required parameters.");
-    }
+      // Validate input
+      if (!kidId || !deviceId || !appId || !status) {
+        return res.status(400).send("Missing required parameters.");
+      }
 
-    // Allowed statuses (adjust if necessary)
-    const allowedStatuses = ['blocked', 'always_on', 'leisure', 'beneficial', 'neutral'];
-    if (!allowedStatuses.includes(status)) {
-      return res.status(400).send("Invalid status provided.");
-    }
+      // Allowed statuses (adjust if necessary)
+      const allowedStatuses = [
+        "blocked",
+        "always_on",
+        "leisure",
+        "beneficial",
+        "neutral",
+      ];
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).send("Invalid status provided.");
+      }
 
-    // Update the status in the kid_apps table
-    const SQL = `
+      // Update the status in the kid_apps table
+      const SQL = `
       UPDATE kid_apps 
       SET status = :status, parent_has_change = 1, update_date = NOW() 
       WHERE kid_id = :kidId 
@@ -397,23 +409,26 @@ async updateKidAppStatus(req, res) {
         AND is_exist = 1;
     `;
 
-    const [updatedRows] = await this.sequelize.query(SQL, {
-      replacements: { kidId, deviceId, appId, status },
-      type: QueryTypes.UPDATE,
-    });
+      const [updatedRows] = await this.sequelize.query(SQL, {
+        replacements: { kidId, deviceId, appId, status },
+        type: QueryTypes.UPDATE,
+      });
 
-    if (updatedRows === 0) {
-      return res.status(404).send("No matching record found or nothing updated.");
+      if (updatedRows === 0) {
+        return res
+          .status(404)
+          .send("No matching record found or nothing updated.");
+      }
+
+      return res.status(200).send("App status updated successfully.");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while updating app status.",
+      });
     }
-
-    return res.status(200).send("App status updated successfully.");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({
-      message: err.message || "Some error occurred while updating app status.",
-    });
   }
-}
   //GET api/parent/kidsdeviceusage
   KidsUsageByDevices = async (req, res) => {
     console.log("At KidsUsageByDevices");
@@ -468,6 +483,113 @@ async updateKidAppStatus(req, res) {
       });
     }
   };
+
+  // GET /api/parent/schedule/:kidId
+  async getKidSchedule(req, res) {
+    try {
+      const { kidId } = req.params;
+
+      if (!kidId) {
+        return res.status(400).send("Missing kidId parameter.");
+      }
+
+      const SQL = `
+      SELECT day, start_time, end_time, screen_time_control, daily_schedule, quality_control, initial_play_time, total_usage_time, is_active
+      FROM daily_schedule
+      WHERE kid_id = :kidId AND is_active = 1;
+    `;
+
+      const schedule = await this.sequelize.query(SQL, {
+        replacements: { kidId },
+        type: QueryTypes.SELECT,
+      });
+
+      if (!schedule.length) {
+        return res
+          .status(404)
+          .send("No active schedule found for the specified kid.");
+      }
+
+      return res.status(200).send({ schedule });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred in fetching the kid's schedule.",
+      });
+    }
+  }
+
+  // POST /api/parent/schedule
+  async updateKidSchedule(req, res) {
+    try {
+      const { kidId, days } = req.body;
+
+      if (!kidId || !days || !Array.isArray(days) || days.length === 0) {
+        return res.status(400).send("Missing or invalid data.");
+      }
+
+      const updatePromises = days.map(async (dayData) => {
+        const { day, ...fields } = dayData;
+
+        if (!day) {
+          return;
+        }
+
+        const allowedFields = [
+          "start_time",
+          "end_time",
+          "screen_time_control",
+          "daily_schedule",
+          "quality_control",
+          "initial_play_time",
+          "total_usage_time",
+          "is_active",
+        ];
+
+        const updateFields = Object.keys(fields)
+          .filter(
+            (field) =>
+              allowedFields.includes(field) && fields[field] !== undefined
+          )
+          .map((field) => `${field} = :${field}`);
+
+        if (updateFields.length > 0) {
+          const SQL = `
+          UPDATE daily_schedule
+          SET ${updateFields.join(", ")}, updated_at = NOW()
+          WHERE kid_id = :kidId AND day = :day AND is_active = 1;
+        `;
+
+          return this.sequelize.query(SQL, {
+            replacements: {
+              kidId,
+              day,
+              ...fields,
+            },
+            type: QueryTypes.UPDATE,
+          });
+        }
+      });
+
+      const results = await Promise.allSettled(updatePromises);
+
+      const failedUpdates = results.filter(
+        (result) => result.status === "rejected"
+      );
+      if (failedUpdates.length > 0) {
+        console.warn(`${failedUpdates.length} updates failed`);
+      }
+
+      return res.status(200).send("Schedule update process completed.");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while updating the schedule.",
+      });
+    }
+  }
 }
 export default ControllerParents;
 
