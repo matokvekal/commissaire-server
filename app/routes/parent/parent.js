@@ -63,7 +63,7 @@ export default (router, app) => {
 
   // GET /api/parent/schedule/:kidId
 router.get(
-  `/${modelBase}/kid_schedule/:kidId`,
+  `/${modelBase}/schedule/:kidId`,
   parentsController.getKidSchedule.bind(parentsController)
 );
 

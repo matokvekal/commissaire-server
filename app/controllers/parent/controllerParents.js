@@ -332,9 +332,19 @@ class ControllerParents extends BaseController {
   async getKidApps(req, res) {
     try {
       const { kidId, deviceId } = req.query;
+      const parent_id = req.user.userId;
       console.log("at getKidApps ,kidId", kidId, "deviceId", deviceId);
       if (!kidId || !deviceId) {
         return res.status(400).send("Missing required parameters.");
+      }
+
+      const isInSameFamily = await isKidInSameFamily(
+        this.sequelize,
+        parent_id,
+        kidId
+      );
+      if (!isInSameFamily) {
+        return res.status(400).send("Some errors at getKidApps.");
       }
 
       const SQL = `
@@ -380,7 +390,14 @@ class ControllerParents extends BaseController {
   async updateKidAppStatus(req, res) {
     try {
       const { kidId, deviceId, appId, status } = req.body;
-
+      const isInSameFamily = await isKidInSameFamily(
+        this.sequelize,
+        parent_id,
+        kidId
+      );
+      if (!isInSameFamily) {
+        return res.status(400).send("Some errors at updateKidAppStatus.");
+      }
       // Validate input
       if (!kidId || !deviceId || !appId || !status) {
         return res.status(400).send("Missing required parameters.");
@@ -432,6 +449,9 @@ class ControllerParents extends BaseController {
   //GET api/parent/kidsdeviceusage
   KidsUsageByDevices = async (req, res) => {
     console.log("At KidsUsageByDevices");
+
+    //TODO check that this kid id belong to this parent
+
     try {
       const parent_id = req.user.userId;
       const familyId = req.user.familyId;
@@ -488,11 +508,20 @@ class ControllerParents extends BaseController {
   async getKidSchedule(req, res) {
     try {
       const { kidId } = req.params;
+      const parent_id = req.user.userId;
 
-      if (!kidId) {
+      if (!kidId || kidId === "" || kidId === undefined) {
         return res.status(400).send("Missing kidId parameter.");
       }
-
+      const isInSameFamily = await isKidInSameFamily(
+        this.sequelize,
+        parent_id,
+        kidId
+      );
+      if (!isInSameFamily) {
+        return res.status(400).send("Some errors at getKidSchedule.");
+      }
+      //TODO check that this kid id belong to this parent
       const SQL = `
       SELECT day, start_time, end_time, screen_time_control, daily_schedule, quality_control, initial_play_time, total_usage_time, is_active
       FROM daily_schedule
@@ -523,12 +552,21 @@ class ControllerParents extends BaseController {
   // POST /api/parent/schedule
   async updateKidSchedule(req, res) {
     try {
+      //TODO check that this kid id belong to this parent
       const { kidId, days } = req.body;
 
       if (!kidId || !days || !Array.isArray(days) || days.length === 0) {
         return res.status(400).send("Missing or invalid data.");
       }
 
+      const isInSameFamily = await isKidInSameFamily(
+        this.sequelize,
+        parent_id,
+        kidId
+      );
+      if (!isInSameFamily) {
+        return res.status(400).send("Some errors at updateKidSchedule.");
+      }
       const updatePromises = days.map(async (dayData) => {
         const { day, ...fields } = dayData;
 
