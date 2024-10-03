@@ -523,7 +523,7 @@ class ControllerParents extends BaseController {
       }
       //TODO check that this kid id belong to this parent
       const SQL = `
-      SELECT day, start_time, end_time, screen_time_control, daily_schedule, quality_control, initial_play_time, total_usage_time, is_active
+      SELECT day, start_time, end_time, screen_time_control, daily_schedule, quality_control, initial_play_time, total_usage_time
       FROM daily_schedule
       WHERE kid_id = :kidId AND is_active = 1;
     `;

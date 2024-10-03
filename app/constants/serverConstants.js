@@ -27,5 +27,13 @@ export const allowedFields = {
   screen_time_control: "BOOLEAN",
   daily_schedule: "BOOLEAN",
   quality_control: "BOOLEAN",
+};
 
+//app status : (>blocked, >always_on, leisure, beneficial, neutral)
+export const appStatus = {
+  blocked: "blocked",
+  alwaysOn: "always_on",
+  leisure: "leisure",
+  beneficial: "beneficial",
+  neutral: "neutral",
 };

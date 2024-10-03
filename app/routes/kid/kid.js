@@ -50,4 +50,9 @@ export default (router, app) => {
     `/${modelBase}/usage`,
     kidsController.position.bind(kidsController)
   );
+  //POST api/kid/updateapp
+  router.post(
+    `/${modelBase}/updateapp`,
+    kidsController.updateApp.bind(kidsController)
+  );
 };
