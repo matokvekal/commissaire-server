@@ -162,8 +162,6 @@ class ControllerKids extends BaseController {
         `kidId:${kidId}`,
         `Post/kids/updateapp`
       );
-
-      // Validate package names
       const errorList = validatePackageNames([packageName]);
       if (errorList.length > 0) {
         return res.status(400).json({
@@ -282,7 +280,7 @@ class ControllerKids extends BaseController {
         throw err;
       }
     } catch (err) {
-      console.log(err);
+      console.log("err",err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in updateApp.",
       });
