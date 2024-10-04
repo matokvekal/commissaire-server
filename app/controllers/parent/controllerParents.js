@@ -159,50 +159,6 @@ class ControllerParents extends BaseController {
     }
   };
 
-  // //GET api/parent/limits/:kidId
-  // //kp-49
-  // getLimits = async (req, res) => {
-  //   console.log("getLimits");
-  //   return res.status(400).send("This Api is deprecated!!");
-  //   try {
-  //     const parent_id = req.user.userId;
-  //     const kidId = req.params.id;
-
-  //     if (!parent_id || !kidId) {
-  //       return res.status(400).send("some data is missing");
-  //     }
-
-  //     const isInSameFamily = await isKidInSameFamily(
-  //       this.sequelize,
-  //       parent_id,
-  //       kidId
-  //     );
-  //     if (!isInSameFamily) {
-  //       return res
-  //         .status(400)
-  //         .send("Some problems at getLimits with the data.");
-  //     }
-  //     //get the limits of the kid
-  //     const SQL = `SELECT kid_id,ratio,sun_start,sun_end,mon_start,mon_end,tue_start,
-  //           tue_end,wed_start,wed_end,thu_start,thu_end,fri_start,fri_end,sat_start,sat_end 
-  //           FROM kids 
-  //           where    kid_id=:kidId and is_active=1 `;
-  //     const kidLimits = await this.sequelize.query(SQL, {
-  //       replacements: { kidId },
-  //       type: QueryTypes.SELECT,
-  //     });
-  //     if (kidLimits.length === 0) {
-  //       return res.status(400).send("No limits found for this kid.");
-  //     }
-  //     return res.status(200).send({ kidLimits });
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred in getting limits.",
-  //     });
-  //   }
-  // };
-
   //POST api/parent/limits
   //kp-41
   postLimits = async (req, res) => {
@@ -632,7 +588,3 @@ class ControllerParents extends BaseController {
 }
 export default ControllerParents;
 
-//test to be done
-//parent gets kids (no kids, one kids, multiple kids)
-//parent getLimits for each kid
-//parent postLimits for each kid (no change all fields change)

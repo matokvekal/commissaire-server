@@ -20,11 +20,11 @@ export default (router, app) => {
     parentsController.getKidsByDevices.bind(parentsController)
   );
 
-  //GET /api/parent/limits
-  router.get(
-    `/${modelBase}/limits/:id`,
-    parentsController.getLimits.bind(parentsController)
-  );
+  // //GET /api/parent/limits
+  // router.get(
+  //   `/${modelBase}/limits/:id`,
+  //   parentsController.getLimits.bind(parentsController)
+  // );
 
   //POST /api/parent/limits
   router.post(
@@ -43,11 +43,11 @@ export default (router, app) => {
     `/${modelBase}/kidsdeviceusage`,
     parentsController.KidsUsageByDevices.bind(parentsController)
   );
-  //POST api/parent/disable
-  router.post(
-    `/${modelBase}/disable`,
-    parentsController.disableKids.bind(parentsController)
-  );
+  // //POST api/parent/disable
+  // router.post(
+  //   `/${modelBase}/disable`,
+  //   parentsController.disableKids.bind(parentsController)
+  // );
 
   //GET /api/parent/kidapps
   router.get(
