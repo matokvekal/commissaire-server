@@ -84,29 +84,29 @@ class ControllerParents extends BaseController {
   };
 
   // //POST api/parent/disable
-  disableKids = async (req, res) => {
-    console.log("disableKids");
-    try {
-      const parent_id = req.user.userId;
-      if (!parent_id) {
-        return res.status(400).send("some data is missing");
-      }
-      const { status } = req.body;
-      console.log("disableStatus", status);
-      // const SQL =
-      //   "select id,f_name,l_name from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
-      // const kids = await this.sequelize.query(SQL, {
-      //   replacements: { parent_id },
-      //   type: QueryTypes.SELECT,
-      // });
-      return res.status(200).send({ disableStatus: status });
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in getting kids.",
-      });
-    }
-  };
+  // disableKids = async (req, res) => {
+  //   console.log("disableKids");
+  //   try {
+  //     const parent_id = req.user.userId;
+  //     if (!parent_id) {
+  //       return res.status(400).send("some data is missing");
+  //     }
+  //     const { status } = req.body;
+  //     console.log("disableStatus", status);
+  //     // const SQL =
+  //     //   "select id,f_name,l_name from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
+  //     // const kids = await this.sequelize.query(SQL, {
+  //     //   replacements: { parent_id },
+  //     //   type: QueryTypes.SELECT,
+  //     // });
+  //     return res.status(200).send({ disableStatus: status });
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in getting kids.",
+  //     });
+  //   }
+  // };
 
   //GET api/parent/kidsusage
   //kp-48
@@ -159,48 +159,49 @@ class ControllerParents extends BaseController {
     }
   };
 
-  //GET api/parent/limits/:kidId
-  //kp-49
-  getLimits = async (req, res) => {
-    console.log("getLimits");
-    try {
-      const parent_id = req.user.userId;
-      const kidId = req.params.id;
+  // //GET api/parent/limits/:kidId
+  // //kp-49
+  // getLimits = async (req, res) => {
+  //   console.log("getLimits");
+  //   return res.status(400).send("This Api is deprecated!!");
+  //   try {
+  //     const parent_id = req.user.userId;
+  //     const kidId = req.params.id;
 
-      if (!parent_id || !kidId) {
-        return res.status(400).send("some data is missing");
-      }
+  //     if (!parent_id || !kidId) {
+  //       return res.status(400).send("some data is missing");
+  //     }
 
-      const isInSameFamily = await isKidInSameFamily(
-        this.sequelize,
-        parent_id,
-        kidId
-      );
-      if (!isInSameFamily) {
-        return res
-          .status(400)
-          .send("Some problems at getLimits with the data.");
-      }
-      //get the limits of the kid
-      const SQL = `SELECT kid_id,ratio,sun_start,sun_end,mon_start,mon_end,tue_start,
-            tue_end,wed_start,wed_end,thu_start,thu_end,fri_start,fri_end,sat_start,sat_end 
-            FROM kids 
-            where    kid_id=:kidId and is_active=1 `;
-      const kidLimits = await this.sequelize.query(SQL, {
-        replacements: { kidId },
-        type: QueryTypes.SELECT,
-      });
-      if (kidLimits.length === 0) {
-        return res.status(400).send("No limits found for this kid.");
-      }
-      return res.status(200).send({ kidLimits });
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in getting limits.",
-      });
-    }
-  };
+  //     const isInSameFamily = await isKidInSameFamily(
+  //       this.sequelize,
+  //       parent_id,
+  //       kidId
+  //     );
+  //     if (!isInSameFamily) {
+  //       return res
+  //         .status(400)
+  //         .send("Some problems at getLimits with the data.");
+  //     }
+  //     //get the limits of the kid
+  //     const SQL = `SELECT kid_id,ratio,sun_start,sun_end,mon_start,mon_end,tue_start,
+  //           tue_end,wed_start,wed_end,thu_start,thu_end,fri_start,fri_end,sat_start,sat_end 
+  //           FROM kids 
+  //           where    kid_id=:kidId and is_active=1 `;
+  //     const kidLimits = await this.sequelize.query(SQL, {
+  //       replacements: { kidId },
+  //       type: QueryTypes.SELECT,
+  //     });
+  //     if (kidLimits.length === 0) {
+  //       return res.status(400).send("No limits found for this kid.");
+  //     }
+  //     return res.status(200).send({ kidLimits });
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in getting limits.",
+  //     });
+  //   }
+  // };
 
   //POST api/parent/limits
   //kp-41

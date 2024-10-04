@@ -280,115 +280,12 @@ class ControllerKids extends BaseController {
         throw err;
       }
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in updateApp.",
       });
     }
   };
-
-  // //Post /api/kid/updateapp   TODO finish this api
-  // updateApps = async (req, res) => {
-  //   console.log("at appusage");
-  //   // this api is use from client that report about added new app or remuved app as req.body.deviceId ,req.body.appName,req.body.statusadded/removed)
-  //   try {
-  //     const kidId = req.user.userId;
-  //     const userName = req.user.userName;
-  //     const deviceId = req.body.kidDeviceId;
-  //     const appName = req.body.appName;
-  //     const action = req.body.action; //add or removed
-  //     if (!appName || !userName || !deviceId || !action) {
-  //       return res.status(400).send("Some data is missing");
-  //     }
-  //     await createSingleLog(
-  //       this.sequelize,
-  //       req,
-  //       `kidId:${kidId}`,
-  //       `Post/kids/updateapp`
-  //     );
-
-  //     const errorList = validatePackageNames(appName);
-
-  //     if (errorList.length > 0) {
-  //       return res.status(400).json({
-  //         message: "Some package names are invalid",
-  //         invalidPackages: errorList,
-  //       });
-  //     }
-  //     if (action === "removed") {
-  //       let SQL =
-  //       "select app_name,default_status,is_active from apps where device_type_id=1 and app_name=:appName";
-  //     const results = await this.sequelize.query(SQL, {
-  //       replacements: { appName },
-  //       type: QueryTypes.SELECT,
-  //     });
-  //     if (results[0] && !results[0].is_active) {
-  //       return res.status(403).send("app not allowed");
-  //     }
-  //        SQL =
-  //         "update kid_apps set is_active=0 where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
-  //       await this.sequelize.query(SQL, {
-  //         replacements: { kidId, deviceId, appId:results[0].id },
-  //         type: QueryTypes.UPDATE,
-  //       });
-  //     } else if (action === "added") {
-  //       let SQL =
-  //         "select app_name,default_status,is_active from apps where device_type_id=1 and app_name=:appName";
-  //       const results = await this.sequelize.query(SQL, {
-  //         replacements: { appName },
-  //         type: QueryTypes.SELECT,
-  //       });
-  //       if (results[0] && !results[0].is_active) {
-  //         return res.status(403).send("app not allowed");
-  //       }
-  //       //not found at app table
-  //       else if (results.length === 0) {
-  //         SQL =
-  //           "insert into apps (app_name,package_name,device_type_id,default_status) values (:appName,:appName,1,`${appStatus.blocked}`)";
-  //         await this.sequelize.query(SQL, {
-  //           replacements: { appName },
-  //           type: QueryTypes.INSERT,
-  //         });
-
-  //         SQL =
-  //           "insert into kid_apps (kid_id,kid_device_id,app_id,status,is_active,is_exist) values (:kidId,:deviceId,:appId,:status,1,1)";
-  //         await this.sequelize.query(SQL, {
-  //           replacements: { kidId, deviceId, appName, appId:results[0].id ,status:results[0].status },
-  //           type: QueryTypes.INSERT,
-  //         });
-  //       } else {
-  //         SQL =
-  //           "select * from kid_apps where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
-  //         const kidApp = await this.sequelize.query(SQL, {
-  //           replacements: { kidId, deviceId, appName },
-  //           type: QueryTypes.SELECT,
-  //         });
-  //         if (kidApp.length === 0) {
-  //           SQL =
-  //             "insert into kid_apps (kid_id,kid_device_id,app_id,status,is_active,is_exist) values (:kidId,:deviceId,:appId,:status,1,1)";
-  //           await this.sequelize.query(SQL, {
-  //             replacements: { kidId, deviceId, appName, status },
-  //             type: QueryTypes.INSERT,
-  //           });
-  //         } else {
-  //           SQL =
-  //             "update kid_apps set is_active=1,status=:status where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
-  //           await this.sequelize.query(SQL, {
-  //             replacements: { kidId, deviceId, appName, status },
-  //             type: QueryTypes.UPDATE,
-  //           });
-  //         }
-  //       }
-  //     }
-  //     //TODO check if  parent app need soket to update app status
-  //     //TODO chenk if koali team need to change app ststus from blocked
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred in appUsage.",
-  //     });
-  //   }
-  // };
 
   //POST /api/kid/appusage
   appUsage = async (req, res) => {
@@ -604,7 +501,7 @@ class ControllerKids extends BaseController {
     console.log("at limits");
     const code = "default-9";
     try {
-      const age = 11; // TODO: get the age from the kid data
+      const code = 10; //in the future for forst time kid can get default/basic usage time schedule  using code, for now the default code is 1
       const kidId = req.user.userId;
 
       if (!kidId) {
@@ -617,7 +514,7 @@ class ControllerKids extends BaseController {
         "GET/kids/limits "
       );
       // Call stored procedure to handle kid limits
-      const SQL = `CALL handle_kid_limits(:kidId, :code)`;
+      const SQL = `CALL handle_schedule(:kidId, :code)`;
       const replacements = { kidId, code };
       const results = await this.sequelize.query(SQL, {
         replacements,
@@ -625,9 +522,9 @@ class ControllerKids extends BaseController {
       });
 
       // Since the query returns multiple result sets, we need to get the actual data from the first result set
-      const limits = results[1][0];
-
-      return res.status(200).send({ limits });
+      const limits = results ? results[1][0].week_schedule : [];
+      debugger;
+      return res.status(200).send(limits);
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -782,37 +679,5 @@ class ControllerKids extends BaseController {
     }
   };
 
-  // GET /api/kid/sayhi
-  // hello = async (req, res, io) => {
-  //   try {
-  //     Wlogger.log("info", "kid sey hello", "test1");
-  //     await createSingleLog(
-  //       this.sequelize,
-  //       req,
-  //       "Hello from kids controller",
-  //       "/hello"
-  //     );
-  //     res.status(200).send("Hello from kids controller");
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred in hello.",
-  //     });
-  //   }
-  // };
-
-  // GET /api/kid/simulatejwttoken
-  // simulateJwtToken = async (req, res) => {
-  //   console.log(" at kid simulateJwtToken");
-  //   try {
-  //     const token = jwt.sign({ id: 1 }, "mysecretkey", { expiresIn: "1h" });
-  //     res.status(200).send(token);
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred in simulateJwtToken.",
-  //     });
-  //   }
-  // };
 }
 export default ControllerKids;

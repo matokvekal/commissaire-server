@@ -27,14 +27,7 @@ export default (router, app) => {
     tempController.simulatejwttoken
   );
 
-  //GET api/temp/resetfamily
-  router.get(`/${modelBase}/resetfamily`, tempController.resetfamily);
 
-  //
-  //GET /api/temp/resetavi
-  router.get(`/${modelBase}/resetavi`, tempController.resetavi);
-  //GET /api/temp/resetavi
-  router.get(`/${modelBase}/resetomri`, tempController.resetomri);
-  //GET /api/temp/conectavioldkids
-  router.get(`/${modelBase}/conectavioldkids`, tempController.conectavioldkids);
+
+ 
 };
