@@ -71,6 +71,6 @@ router.get(
   //POST /api/parent/schedule
   router.post(
     `/${modelBase}/schedule`,
-    parentsController.updateKidSchedule.bind(parentsController)
+    parentsController.updateschedule.bind(parentsController)
   );
 };

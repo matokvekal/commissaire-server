@@ -507,11 +507,11 @@ class ControllerParents extends BaseController {
   }
 
   // POST /api/parent/schedule
-  async updateKidSchedule(req, res) {
+  async updateschedule(req, res) {
     try {
       //TODO check that this kid id belong to this parent
       const { kidId, days } = req.body;
-
+      const { userId: parent_id } = req.user;
       if (!kidId || !days || !Array.isArray(days) || days.length === 0) {
         return res.status(400).send("Missing or invalid data.");
       }
@@ -521,14 +521,32 @@ class ControllerParents extends BaseController {
         parent_id,
         kidId
       );
+      
       if (!isInSameFamily) {
-        return res.status(400).send("Some errors at updateKidSchedule.");
+        return res.status(403).send("Unauthorized access to this kid's schedule.");
       }
+      
+      const [[{ dayCount }]] = await this.sequelize.query(
+        `
+        SELECT COUNT(*) as dayCount 
+        FROM daily_schedule
+        WHERE kid_id = :kidId AND is_active = 1
+      `,
+        {
+          replacements: { kidId },
+          type: QueryTypes.SELECT,
+        }
+      );
+  
+      if (dayCount !== 7) {
+        return res.status(400).send("Not all days exist for this kid's schedule.");
+      }
+
       const updatePromises = days.map(async (dayData) => {
         const { day, ...fields } = dayData;
 
         if (!day) {
-          return;
+          return Promise.resolve();
         }
 
         const allowedFields = [
