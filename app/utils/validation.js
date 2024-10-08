@@ -12,7 +12,7 @@ const validatePackageNames = (packageNames, maxLength = 200) => {
 };
 
 export const validateAppNames = (appNames, maxLength = 200) => {
-  const validPattern = /^[a-zA-Z0-9@.\- ]+$/; // Allowed characters: letters, digits, @, ., -, spaces
+  const validPattern = /^[a-zA-Z0-9@.\- ]+$/;
   const errorList = [];
 
   appNames.forEach((appName) => {
