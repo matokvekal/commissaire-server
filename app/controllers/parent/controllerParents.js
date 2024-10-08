@@ -315,7 +315,8 @@ class ControllerParents extends BaseController {
         ) AS last_updated,
         a.app_name, 
         a.package_name, 
-        a.category
+        a.category,
+        a.id as appId
       FROM kid_apps ka
       LEFT JOIN koalidb.apps a 
         ON ka.app_id = a.id
@@ -334,7 +335,6 @@ class ControllerParents extends BaseController {
       if (kidApps.length === 0) {
         return res.status(404).send("No apps found for this kid and device.");
       }
-
       return res.status(200).send({ kidApps });
     } catch (err) {
       console.error(err);
@@ -346,7 +346,8 @@ class ControllerParents extends BaseController {
   //POST api/parent/appstatus
   async updateKidAppStatus(req, res) {
     try {
-      const { kidId, deviceId, appId, status } = req.body;
+      const { kidId, deviceId, appId, status, id } = req.body; //id is the row id of table kids app
+      const parent_id = req.user.userId;
       const isInSameFamily = await isKidInSameFamily(
         this.sequelize,
         parent_id,
@@ -356,7 +357,7 @@ class ControllerParents extends BaseController {
         return res.status(400).send("Some errors at updateKidAppStatus.");
       }
       // Validate input
-      if (!kidId || !deviceId || !appId || !status) {
+      if (!kidId || !deviceId || !appId || !status || !id) {
         return res.status(400).send("Missing required parameters.");
       }
 
@@ -387,6 +388,8 @@ class ControllerParents extends BaseController {
         replacements: { kidId, deviceId, appId, status },
         type: QueryTypes.UPDATE,
       });
+      //just for testing
+      console.log("SQL:", SQL);
 
       if (updatedRows === 0) {
         return res
@@ -521,11 +524,13 @@ class ControllerParents extends BaseController {
         parent_id,
         kidId
       );
-      
+
       if (!isInSameFamily) {
-        return res.status(403).send("Unauthorized access to this kid's schedule.");
+        return res
+          .status(403)
+          .send("Unauthorized access to this kid's schedule.");
       }
-      
+
       const [[{ dayCount }]] = await this.sequelize.query(
         `
         SELECT COUNT(*) as dayCount 
@@ -537,9 +542,11 @@ class ControllerParents extends BaseController {
           type: QueryTypes.SELECT,
         }
       );
-  
+
       if (dayCount !== 7) {
-        return res.status(400).send("Not all days exist for this kid's schedule.");
+        return res
+          .status(400)
+          .send("Not all days exist for this kid's schedule.");
       }
 
       const updatePromises = days.map(async (dayData) => {
@@ -605,4 +612,3 @@ class ControllerParents extends BaseController {
   }
 }
 export default ControllerParents;
-

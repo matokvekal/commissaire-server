@@ -8,7 +8,7 @@ import { ServerNumbers } from "../../constants/serverConstants.js";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import { createJwtToken } from "../../utils/authenticationUtils.js";
 import isValidLocation from "../../utils/locationValidator.js";
-import validatePackageNames from "../../utils/validation.js";
+import validatePackageNames,{validateAppNames} from "../../utils/validation.js";
 import { appStatus } from "../../constants/serverConstants.js";
 // import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
@@ -171,7 +171,7 @@ class ControllerKids extends BaseController {
       }
 
       if (appName) {
-        const errorList = validatePackageNames([appName]);
+        const errorList = validateAppNames([appName]);
         if (errorList.length > 0) {
           return res.status(400).json({
             message: "Some package names are invalid",
@@ -523,7 +523,6 @@ class ControllerKids extends BaseController {
 
       // Since the query returns multiple result sets, we need to get the actual data from the first result set
       const limits = results ? results[1][0].week_schedule : [];
-      debugger;
       return res.status(200).send(limits);
     } catch (err) {
       console.log(err);
