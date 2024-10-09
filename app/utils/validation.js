@@ -17,7 +17,7 @@ export const validateAppNames = (appNames, maxLength = 200) => {
 
   appNames.forEach((appName) => {
     if (appName.length > maxLength || !validPattern.test(appName)) {
-      errorList.push(appName); // Add invalid app name to the error list
+      errorList.push(appName); 
     }
   });
 

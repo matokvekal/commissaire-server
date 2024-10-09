@@ -530,8 +530,8 @@ class ControllerParents extends BaseController {
           .status(403)
           .send("Unauthorized access to this kid's schedule.");
       }
-
-      const [[{ dayCount }]] = await this.sequelize.query(
+//check that the kid has data befor update
+      const  dayCount  = await this.sequelize.query(
         `
         SELECT COUNT(*) as dayCount 
         FROM daily_schedule
@@ -543,7 +543,7 @@ class ControllerParents extends BaseController {
         }
       );
 
-      if (dayCount !== 7) {
+      if (dayCount[0]?.dayCount !== 7) {
         return res
           .status(400)
           .send("Not all days exist for this kid's schedule.");
