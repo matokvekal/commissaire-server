@@ -27,7 +27,18 @@ export default (router, app) => {
     tempController.simulatejwttoken
   );
 
+  //Get /api/temp/delete_kid/0542288530
+  //Get /api/temp/add_kid/0542288530
 
+  router.get(
+    `/${modelBase}/add_kid`,
+    tempController.addKid.bind(tempController)
+  );
 
- 
+  router.get(
+    `/${modelBase}/delete_kid`,
+    tempController.deleteKid.bind(tempController)
+  );
+
+  return router;
 };

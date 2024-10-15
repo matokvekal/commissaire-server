@@ -49,3 +49,15 @@ test to be done
 2.register with i agree kid
 3.POST /api/parent/token
 4.POST /api/kid/token 5. POST /api/kid/apps 5. POST /api/kid/device
+///////////////////
+NGINX
+sudo apt search nginx
+sudo systemctl enable nginx
+sudo systemctl status nginx
+cd /etc/nginx/sites-available
+at AWS open port 80/443 with http https
+https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04
+
+lidor 9 00:46:15 remove \_ for all file and insert domain
+//////this is the version to build the PWA
+

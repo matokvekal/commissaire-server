@@ -79,7 +79,65 @@ class tempController extends BaseController {
     }
   };
 
+  //controler to simulate kids
+  // GET /api/temp/add_kid this will add kid to parent
+  // GET /api/temp/delete_kid this will delete kid from parent
+  //use procidure
 
+  //1.add kid to users table and get the id
+  //2.add kid to daily_schedule
+  //3 add data to kid_apps table
+  //add data to kid_devices table
 
+  //Get /api/temp/add_kid/0542288530
+  addKid = async (req, res) => {
+    console.log(" at addKid");
+    try {
+      //get the phone from the url /api/temp/add_kid?phone=0542288530
+      const phone = req.query.phone;
+      if (!phone || phone.length !== 10) {
+        return res.status(400).send("Some error occurred in adding kid.");
+      }
+      await this.sequelize.query(`CALL add_kid(:phone)`, {
+        replacements: {
+          phone,
+        },
+        type: QueryTypes.INSERT,
+      });
+      return res.status(200).send("kid added");
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in adding kid.",
+      });
+    }
+  };
+
+  //Get /api/temp/delete_kid?phone=0542288530
+  deleteKid = async (req, res) => {
+    console.log(" at deleteKid");
+    try {
+      const phone = req.query.phone;
+      if (!phone || phone.length !== 10) {
+        return res.status(400).send("Some error occurred in adding kid.");
+      }
+
+      await this.sequelize.query(
+        `delete from users where id = (select id from (select id from users where family_id = (select family_id from users where user_type = "parent" and phone = :phone) and user_type = "kid" and is_active = 1 order by id desc limit 1) as temp_table)`,
+        {
+          replacements: {
+            phone,
+          },
+          type: QueryTypes.DELETE,
+        }
+      );
+      return res.status(200).send("kid deleted");
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in deleting kid.",
+      });
+    }
+  };
 }
 export default tempController;
