@@ -308,6 +308,7 @@ class ControllerParents extends BaseController {
       SELECT 
         ka.id, 
         ka.status, 
+        ka.order,
         IF(
           TIMESTAMPDIFF(WEEK, ka.update_date, NOW()) > 1, 
           0, 
