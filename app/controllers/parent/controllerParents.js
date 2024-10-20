@@ -326,7 +326,7 @@ class ControllerParents extends BaseController {
         AND ka.kid_device_id = :deviceId 
         AND ka.is_exist = 1 
         AND ka.is_active = 1
-        AND a.is_active = 1;
+        AND a.is_active = 1
         and a.app_name !="not found"
     `;
 
