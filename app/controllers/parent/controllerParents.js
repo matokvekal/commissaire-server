@@ -318,7 +318,7 @@ class ControllerParents extends BaseController {
         a.package_name, 
         a.category,
         a.id as appId,
-        a.google_icon 
+        a.google_icon as icon
       FROM kid_apps ka
       LEFT JOIN koalidb.apps a 
         ON ka.app_id = a.id
