@@ -688,23 +688,25 @@ class ControllerKids extends BaseController {
 
   //put /api/kid/converdiamonds?amount=10
 
- convertDiamonds = async (req, res) => {
+  convertDiamonds = async (req, res) => {
     console.log("at convertDiamonds");
-  
+
     try {
       const kidId = req.user.userId;
       const amount = parseInt(req.query.amount);
-  
+
       // Validate input
       if (!kidId || isNaN(amount) || amount <= 0) {
         return res.status(400).send("Invalid kid ID or amount");
       }
-  
+
       const maxDiamonds = ServerNumbers.maxDiamonds; // Use the maxDiamonds constant
       if (amount < 1 || amount > maxDiamonds) {
-        return res.status(400).send(`amount must be between 1 and ${maxDiamonds}`);
+        return res
+          .status(400)
+          .send(`amount must be between 1 and ${maxDiamonds}`);
       }
-  
+
       // Fetch kid's data
       const kidDataSQL = `
         SELECT total_diamonds, dailyTimeLimit, dailyTimeUsed, playTimeRemaining
@@ -715,31 +717,39 @@ class ControllerKids extends BaseController {
         replacements: { kidId },
         type: QueryTypes.SELECT,
       });
-  
+
       if (!kidData.length) {
         return res.status(404).send("Kid not found");
       }
-  
-      const { total_diamonds, dailyTimeLimit, dailyTimeUsed, playTimeRemaining } = kidData[0];
+
+      const {
+        total_diamonds,
+        dailyTimeLimit,
+        dailyTimeUsed,
+        playTimeRemaining,
+      } = kidData[0];
       //  If the kid has fewer diamonds than the requested amount, use the max they have
       let diamonds = Math.min(amount, total_diamonds);
       // Calculate available playtime to add (based on daily limit)
-      const availableSeconds = calculateAvailableTime(dailyTimeLimit, dailyTimeUsed);
+      const availableSeconds = calculateAvailableTime(
+        dailyTimeLimit,
+        dailyTimeUsed
+      );
       // Convert diamonds to playtime (1 diamond = 60 seconds)
       let addSeconds = diamonds * 60;
       //  If available time is less than what diamonds would provide, adjust the diamonds and time to add
       if (availableSeconds < addSeconds) {
-        addSeconds = availableSeconds; 
-        diamonds = Math.floor(addSeconds / 60); 
+        addSeconds = availableSeconds;
+        diamonds = Math.floor(addSeconds / 60);
       }
       //  If no playtime can be added, return an error
       if (addSeconds <= 0) {
-        return res.status(400).send("No available playtime to add");
+        return res.status(400).send("No diamonds left");
       }
-  
+
       const newPlayTime = timeStringToSeconds(playTimeRemaining) + addSeconds;
       const newPlayTimeStr = secondsToTimeString(newPlayTime);
-  
+
       const updateSQL = `
         UPDATE users
         SET 
@@ -752,7 +762,7 @@ class ControllerKids extends BaseController {
           is_active = 1 AND 
           user_type = 'kid'
       `;
-  
+
       await this.sequelize.query(updateSQL, {
         replacements: {
           diamonds,
@@ -761,10 +771,12 @@ class ControllerKids extends BaseController {
         },
         type: QueryTypes.UPDATE,
       });
-  
+
       // Return a success response
       return res.status(200).send({
-        message: `${diamonds} diamonds converted to ${addSeconds / 60} playtime minutes`,
+        message: `${diamonds} diamonds converted to ${
+          addSeconds / 60
+        } playtime minutes`,
       });
     } catch (err) {
       console.error("Error in convertDiamonds:", err);
