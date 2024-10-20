@@ -445,7 +445,7 @@ class ControllerKids extends BaseController {
         return res.status(400).send("some data is missing");
       }
 
-      let SQL = `select ka.id,ka.status,ka.app_id,ap.package_name from kid_apps ka 
+      let SQL = `select ka.id,ka.status,ka.app_id,ap.package_name,ap.category,ka.order from kid_apps ka 
         left join apps ap on ka.app_id = ap.id
         where ka.kid_id=:kidId and  ka.kid_device_id = :deviceId and ka.is_active=1 and ka.is_exist=1
         `;
