@@ -308,7 +308,7 @@ class ControllerParents extends BaseController {
       SELECT 
         ka.id, 
         ka.status, 
-        ka.order,
+        a.order,
         IF(
           TIMESTAMPDIFF(WEEK, ka.update_date, NOW()) > 1, 
           0, 
@@ -317,7 +317,8 @@ class ControllerParents extends BaseController {
         a.app_name, 
         a.package_name, 
         a.category,
-        a.id as appId
+        a.id as appId,
+        a.google_icon 
       FROM kid_apps ka
       LEFT JOIN koalidb.apps a 
         ON ka.app_id = a.id
