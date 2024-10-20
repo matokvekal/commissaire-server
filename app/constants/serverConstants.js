@@ -2,6 +2,7 @@ export const ServerNumbers = {
   max_devices_amount: 300,
   maxLogsBeforeWrite: 10,
   maxSocketLogsBeforeWrite: 10,
+  maxDiamonds: 100,
 };
 export const serverFlags = {
   LOG_API: true,

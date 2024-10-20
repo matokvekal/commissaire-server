@@ -55,4 +55,10 @@ export default (router, app) => {
     `/${modelBase}/updateapp`,
     kidsController.updateApp.bind(kidsController)
   );
+
+  //put /api/kid/converdiamonds?amount=10
+  router.put(
+    `/${modelBase}/converdiamonds`,
+    kidsController.convertDiamonds.bind(kidsController)
+  );
 };

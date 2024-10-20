@@ -4,12 +4,18 @@ import config from "../../config/index.js";
 import jwt from "jsonwebtoken";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
 import Wlogger from "../../utils/winstonLogger.js";
-import { ServerNumbers } from "../../constants/serverConstants.js";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import { createJwtToken } from "../../utils/authenticationUtils.js";
 import isValidLocation from "../../utils/locationValidator.js";
-import validatePackageNames,{validateAppNames} from "../../utils/validation.js";
-import { appStatus } from "../../constants/serverConstants.js";
+import validatePackageNames, {
+  validateAppNames,
+} from "../../utils/validation.js";
+import { appStatus, ServerNumbers } from "../../constants/serverConstants.js";
+import {
+  timeStringToSeconds,
+  secondsToTimeString,
+  calculateAvailableTime,
+} from "../../utils/time.js";
 // import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -179,8 +185,7 @@ class ControllerKids extends BaseController {
       //     });
       //   }
       // } else {
-        appName = packageName;
-      
+      appName = packageName;
 
       try {
         let SQL =
@@ -681,5 +686,92 @@ class ControllerKids extends BaseController {
     }
   };
 
+  //put /api/kid/converdiamonds?amount=10
+
+ convertDiamonds = async (req, res) => {
+    console.log("at convertDiamonds");
+  
+    try {
+      const kidId = req.user.userId;
+      const amount = parseInt(req.query.amount);
+  
+      // Validate input
+      if (!kidId || isNaN(amount) || amount <= 0) {
+        return res.status(400).send("Invalid kid ID or amount");
+      }
+  
+      const maxDiamonds = ServerNumbers.maxDiamonds; // Use the maxDiamonds constant
+      if (amount < 1 || amount > maxDiamonds) {
+        return res.status(400).send(`amount must be between 1 and ${maxDiamonds}`);
+      }
+  
+      // Fetch kid's data
+      const kidDataSQL = `
+        SELECT total_diamonds, dailyTimeLimit, dailyTimeUsed, playTimeRemaining
+        FROM users
+        WHERE id = :kidId AND is_register = 1 AND is_active = 1 AND user_type = 'kid'
+      `;
+      const kidData = await this.sequelize.query(kidDataSQL, {
+        replacements: { kidId },
+        type: QueryTypes.SELECT,
+      });
+  
+      if (!kidData.length) {
+        return res.status(404).send("Kid not found");
+      }
+  
+      const { total_diamonds, dailyTimeLimit, dailyTimeUsed, playTimeRemaining } = kidData[0];
+      //  If the kid has fewer diamonds than the requested amount, use the max they have
+      let diamonds = Math.min(amount, total_diamonds);
+      // Calculate available playtime to add (based on daily limit)
+      const availableSeconds = calculateAvailableTime(dailyTimeLimit, dailyTimeUsed);
+      // Convert diamonds to playtime (1 diamond = 60 seconds)
+      let addSeconds = diamonds * 60;
+      //  If available time is less than what diamonds would provide, adjust the diamonds and time to add
+      if (availableSeconds < addSeconds) {
+        addSeconds = availableSeconds; 
+        diamonds = Math.floor(addSeconds / 60); 
+      }
+      //  If no playtime can be added, return an error
+      if (addSeconds <= 0) {
+        return res.status(400).send("No available playtime to add");
+      }
+  
+      const newPlayTime = timeStringToSeconds(playTimeRemaining) + addSeconds;
+      const newPlayTimeStr = secondsToTimeString(newPlayTime);
+  
+      const updateSQL = `
+        UPDATE users
+        SET 
+          total_diamonds = total_diamonds - :diamonds,
+          playTimeRemaining = :newPlayTimeStr,
+          updateAt = NOW()
+        WHERE 
+          id = :kidId AND 
+          is_register = 1 AND 
+          is_active = 1 AND 
+          user_type = 'kid'
+      `;
+  
+      await this.sequelize.query(updateSQL, {
+        replacements: {
+          diamonds,
+          newPlayTimeStr,
+          kidId,
+        },
+        type: QueryTypes.UPDATE,
+      });
+  
+      // Return a success response
+      return res.status(200).send({
+        message: `${diamonds} diamonds converted to ${addSeconds / 60} playtime minutes`,
+      });
+    } catch (err) {
+      console.error("Error in convertDiamonds:", err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred while converting diamonds.",
+      });
+    }
+  };
 }
 export default ControllerKids;
