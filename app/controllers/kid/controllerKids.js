@@ -742,14 +742,12 @@ class ControllerKids extends BaseController {
         addSeconds = availableSeconds;
         diamonds = Math.floor(addSeconds / 60);
       }
-      //  If no playtime can be added, return an error
+
       if (addSeconds <= 0) {
         return res.status(400).send("No diamonds left");
       }
-
       const newPlayTime = timeStringToSeconds(playTimeRemaining) + addSeconds;
       const newPlayTimeStr = secondsToTimeString(newPlayTime);
-
       const updateSQL = `
         UPDATE users
         SET 
@@ -762,7 +760,6 @@ class ControllerKids extends BaseController {
           is_active = 1 AND 
           user_type = 'kid'
       `;
-
       await this.sequelize.query(updateSQL, {
         replacements: {
           diamonds,
