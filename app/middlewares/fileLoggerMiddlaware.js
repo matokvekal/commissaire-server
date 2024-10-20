@@ -20,7 +20,6 @@ let logCount = 0;
 
 // Helper function to write logs to a file
 function writeLogsToFile() {
-  debugger
   fs.appendFile(logFilePath, bufferedLogs, "utf8", (err) => {
     if (err) {
       console.error(`Failed to write logs: ${err}`);

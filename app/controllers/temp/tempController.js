@@ -7,6 +7,7 @@ import checkType from "../../utils/checkType.js";
 import { allowedFields } from "../../constants/serverConstants.js";
 import SocketManager from "../../handlers/websocketHandler.js";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
+import { createJwtToken } from "../../utils/authenticationUtils.js";
 
 class tempController extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -44,11 +45,26 @@ class tempController extends BaseController {
     }
   };
 
-  // GET /api/temp/simulatejwttoken
+  // GET /api/temp/token?id=id  working
   simulateJwtToken = async (req, res) => {
-    console.log(" at get temp simulateJwtToken");
+    const id = req.query.id;
+    console.log(" at get temp simulateJwtToken id:", id);
     try {
-      const token = jwt.sign({ id: 1 }, "mysecretkey", { expiresIn: "1h" });
+      let SQL = `select * from users where id = :id`;
+      const user = await this.sequelize.query(SQL, {
+        replacements: { id },
+        type: QueryTypes.SELECT,
+      });
+      if (user.length === 0) {
+        return res.status(400).send("User not found");
+      }
+      const kid = user[0];
+      const token = createJwtToken(kid.email, "kid");
+      SQL = "insert into demo_tokens (user_id,token) values (:user_id,:token)";
+      await this.sequelize.query(SQL, {
+        replacements: { user_id: id, token },
+        type: QueryTypes.INSERT,
+      });
       res.status(200).send(token);
     } catch (err) {
       console.log(err);
@@ -59,25 +75,25 @@ class tempController extends BaseController {
   };
 
   //post /api/temp/simulattoken
-  simulatejwttoken = async (req, res) => {
-    try {
-      console.log("at post temp  simulatejwttoken controller");
-      const { email, userType, code } = req.body;
-      if (!email || !userType) {
-        return res.status(400).send(ServerErrors.GENERAL_ERROR);
-      }
-      if (code !== "giladdolev123") {
-        return res.status(400).send(ServerErrors.GENERAL_ERROR);
-      }
-      const token = createJwtToken(email, userType);
-      return res.status(200).send(token);
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
-      });
-    }
-  };
+  // simulatejwttoken = async (req, res) => {
+  //   try {
+  //     console.log("at post temp  simulatejwttoken controller");
+  //     const { email, userType, code } = req.body;
+  //     if (!email || !userType) {
+  //       return res.status(400).send(ServerErrors.GENERAL_ERROR);
+  //     }
+  //     if (code !== "giladdolev123") {
+  //       return res.status(400).send(ServerErrors.GENERAL_ERROR);
+  //     }
+  //     const token = createJwtToken(email, userType);
+  //     return res.status(200).send(token);
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || ServerErrors.GENERAL_ERROR,
+  //     });
+  //   }
+  // };
 
   //controler to simulate kids
   // GET /api/temp/add_kid this will add kid to parent

@@ -20,6 +20,7 @@ const bypassPathsWhiteList = new Set([
   "/temp/conectavioldkids",
   "/temp/delete_kid",
   "/temp/add_kid",
+  "/temp/token",
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
@@ -44,9 +45,20 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
       decoded.user_name,
       userType
     );
+    console.log(
+      "at authenticationMiddleware",
+      "isValidUser:",
+      isValidUser,
+      "userName:",
+      userName,
+      "userId:",
+      userId,
+      "familyId:",
+      familyId
+    );
     //log the data to db
     if (serverFlags.LOG_API) {
-      const path = req.path;
+      // const path = req.path;
       await createSingleLog(
         db.sequelize,
         req,

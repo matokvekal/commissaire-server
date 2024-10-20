@@ -14,22 +14,12 @@ export default (router, app) => {
     `/${modelBase}/hello2`,
     tempController.hello2.bind(tempController)
   );
-
-  // GET /api/temp/simulatejwttoken
+  // GET /api/temp/token?id=  working and save at demo_tokens
   router.get(
-    `/${modelBase}/simulatejwttoken`,
+    `/${modelBase}/token`,
     tempController.simulateJwtToken.bind(tempController)
   );
-
-  //POST /api/temp/simulatejwttoken
-  router.post(
-    `/${modelBase}/simulatejwttoken`,
-    tempController.simulatejwttoken
-  );
-
-  //Get /api/temp/delete_kid/0542288530
-  //Get /api/temp/add_kid/0542288530
-
+  // GET /api/temp/add_kid?phone=
   router.get(
     `/${modelBase}/add_kid`,
     tempController.addKid.bind(tempController)

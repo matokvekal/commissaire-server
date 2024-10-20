@@ -153,8 +153,11 @@ class ControllerParents extends BaseController {
       return res.status(200).send({ usage });
     } catch (err) {
       console.log(err);
-      res.status(500).send({
-        message: err.message || "Some error occurred in getting usage.",
+      // res.status(500).send({
+      //    "Some error occurred in getting usage."
+      // });
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in getUsage.",
       });
     }
   };
@@ -341,8 +344,11 @@ class ControllerParents extends BaseController {
       return res.status(200).send({ kidApps });
     } catch (err) {
       console.error(err);
-      res.status(500).send({
-        message: err.message || "Some error occurred in fetching kid apps.",
+      // res.status(500).send({
+      //    "Some error occurred in fetching kid apps."
+      // });
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in kid apps.",
       });
     }
   }
@@ -403,9 +409,12 @@ class ControllerParents extends BaseController {
       return res.status(200).send("App status updated successfully.");
     } catch (err) {
       console.error(err);
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while updating app status.",
+      // res.status(500).send({
+      //   message:
+      //      "Some error occurred while updating app status."
+      // });
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in app status.",
       });
     }
   }
@@ -460,9 +469,12 @@ class ControllerParents extends BaseController {
       return res.status(200).send({ usage });
     } catch (err) {
       console.log(err);
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred in getting KidsUsageByDevices.",
+      // res.status(500).send({
+      //   message:
+      //     "Some error occurred in getting KidsUsageByDevices."
+      // });
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in KidsUsageByDevices.",
       });
     }
   };
@@ -505,9 +517,12 @@ class ControllerParents extends BaseController {
       return res.status(200).send({ schedule });
     } catch (err) {
       console.error(err);
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred in fetching the kid's schedule.",
+      // res.status(500).send({
+      //   message:
+      //     "Some error occurred in fetching the kid's schedule."
+      // });
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in kid's schedule.",
       });
     }
   }
@@ -607,9 +622,12 @@ class ControllerParents extends BaseController {
       return res.status(200).send("Schedule update process completed.");
     } catch (err) {
       console.error(err);
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while updating the schedule.",
+      // res.status(500).send({
+      //   message:
+      //     "Some error occurred while updating the schedule."
+      // });
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in schedule.",
       });
     }
   }

@@ -148,7 +148,7 @@ class ControllerKids extends BaseController {
       const kidId = req.user.userId;
       const userName = req.user.userName;
       const deviceId = req.body.kidDeviceId;
-      let appName = req.body.appName;
+      // let appName = req.body.appName;
       const packageName = req.body.packageName;
       const action = req.body.action; // add or remove
       let appDefaultStatus = appStatus.blocked;
@@ -170,17 +170,17 @@ class ControllerKids extends BaseController {
         });
       }
 
-      if (appName) {
-        const errorList = validateAppNames([appName]);
-        if (errorList.length > 0) {
-          return res.status(400).json({
-            message: "Some package names are invalid",
-            invalidPackages: errorList,
-          });
-        }
-      } else {
+      // if (appName) {
+      //   const errorList = validateAppNames([appName]);
+      //   if (errorList.length > 0) {
+      //     return res.status(400).json({
+      //       message: "Some package names are invalid",
+      //       invalidPackages: errorList,
+      //     });
+      //   }
+      // } else {
         appName = packageName;
-      }
+      
 
       try {
         let SQL =
@@ -419,8 +419,11 @@ class ControllerKids extends BaseController {
       });
     } catch (err) {
       console.error(err);
-      res.status(500).send({
-        message: err.message || "Some error occurred in position.",
+      // res.status(500).send(
+      //    "Some error occurred in position."
+      // );
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in position.",
       });
     }
   };
@@ -594,8 +597,8 @@ class ControllerKids extends BaseController {
       SET 
         dailyTimeUsed = :dailyTimeUsed,
         playTimeRemaining = :playTimeRemaining,
-        total_increment_apps = :totalIncrementApps,
-        total_decrement_apps = :totalDecrementApps,
+        increment_apps = :totalIncrementApps,
+        decrement_apps = :totalDecrementApps,
         updateAt = NOW()
       WHERE 
         id = :kidId AND 
@@ -647,8 +650,8 @@ class ControllerKids extends BaseController {
       });
     } catch (err) {
       console.error(err);
-      res.status(500).send({
-        message: err.message || "Some error occurred in usage.",
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in usage.",
       });
     }
   };
