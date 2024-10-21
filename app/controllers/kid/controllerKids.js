@@ -148,7 +148,7 @@ class ControllerKids extends BaseController {
 
   // Post /api/kid/updateapp
   updateApp = async (req, res) => {
-    console.log("at appusage");
+    console.log("at updateApp");
 
     try {
       const kidId = req.user.userId;
@@ -185,7 +185,7 @@ class ControllerKids extends BaseController {
       //     });
       //   }
       // } else {
-      appName = packageName;
+      const appName = packageName;
 
       try {
         let SQL =
