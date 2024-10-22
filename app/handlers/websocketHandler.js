@@ -25,6 +25,7 @@ class SocketManager {
       const userType = socket.user.userType;
       const socketId = socket.id;
       await createSingleLog(
+        userName,
         db.sequelize,
         "",
         `socket connected userName:${userName}-${userType}`,
@@ -67,6 +68,7 @@ class SocketManager {
       socket.on("message", async (msg) => {
         Logger.debug("Received chat message:", msg);
         await createSingleLog(
+          socket.user.userName,
           db.sequelize,
           "",
           `Received chat message`,

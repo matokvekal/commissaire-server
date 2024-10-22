@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
 import Wlogger from "../../utils/winstonLogger.js";
 import { getFixedValue } from "../../utils/getFixedValues.js";
-import { createJwtToken } from "../../utils/authenticationUtils.js";
+// import { createJwtToken } from "../../utils/authenticationUtils.js";
 import isValidLocation from "../../utils/locationValidator.js";
 import validatePackageNames, {
   validateAppNames,
@@ -36,6 +36,7 @@ class ControllerKids extends BaseController {
       let deviceName = req.body.deviceName;
       const email = req.user.userName;
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,
@@ -64,10 +65,7 @@ class ControllerKids extends BaseController {
           replacements: { kidId, deviceTypeId, serial, deviceName },
           type: QueryTypes.INSERT,
         });
-        const device_id = result[0]; //get the id of the kid device
-
-        // const token = createJwtToken(email, userType);
-        // res.setHeader("Authorization", `Bearer ${token}`);
+        const device_id = result[0]; 
         return res.status(200).send({ device_id });
       }
     } catch (err) {
@@ -86,6 +84,7 @@ class ControllerKids extends BaseController {
       const userName = req.user.userName;
       const deviceId = req.body.kidDeviceId;
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,
@@ -163,6 +162,7 @@ class ControllerKids extends BaseController {
         return res.status(400).send("Some data is missing");
       }
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId}`,
@@ -302,13 +302,14 @@ class ControllerKids extends BaseController {
       const appUsage = req.body.appUsage;
 
       await createSingleLog(
+        kidId,
         this.sequelize, // Use Sequelize instance here
         req,
         `kidId:${kidId}`,
         `Post/kids/appusage`
       );
 
-      if (!appUsage || !userName || !deviceId) {
+      if (!appUsage || !userName || !deviceId || !kidId) {
         return res.status(400).send("Some data is missing");
       }
 
@@ -368,10 +369,12 @@ class ControllerKids extends BaseController {
   position = async (req, res) => {
     console.log("at position");
     try {
-      const { userId: kidId } = req.user;
+      const kidId = req.user.userId;
+      // const { userId: kidId } = req.user;
       const { deviceId, dateTime, latitude, longitude } = req.body;
 
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,
@@ -444,6 +447,7 @@ class ControllerKids extends BaseController {
       const kidId = req.user.userId;
       const deviceId = req.query.deviceid;
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,
@@ -477,6 +481,7 @@ class ControllerKids extends BaseController {
     try {
       const kidId = req.user.userId;
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,
@@ -516,6 +521,7 @@ class ControllerKids extends BaseController {
         return res.status(400).send("Some data is missing");
       }
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,
@@ -545,7 +551,8 @@ class ControllerKids extends BaseController {
   usage = async (req, res) => {
     console.log(" at usage");
     try {
-      const { userId: kidId } = req.user;
+      // const { userId: kidId } = req.user;
+      const kidId = req.user.userId;
       const {
         deviceId,
         dateTime,
@@ -556,7 +563,9 @@ class ControllerKids extends BaseController {
         totalIncrementApps,
         totalDecrementApps,
       } = req.body;
+      
       await createSingleLog(
+        kidId,
         this.sequelize,
         req,
         `kidId:${kidId} `,

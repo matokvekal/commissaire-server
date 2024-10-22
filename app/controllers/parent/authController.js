@@ -46,8 +46,9 @@ class AuthController extends BaseController {
   register = async (req, res) => {
     const { name, familyName, parentPhone, email, readAndAgreeTerms } =
       req.body;
-    let parentStatus = "registered";
+    // let parentStatus = "registered";
     await createSingleLog(
+      email,
       this.sequelize,
       req,
       `parentPhone ${parentPhone} email:${email}`,
@@ -138,6 +139,7 @@ class AuthController extends BaseController {
     }
     try {
       await createSingleLog(
+        phone,
         this.sequelize,
         req,
         `parentPhone ${phone} otp:${otp}`,

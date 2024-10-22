@@ -18,26 +18,7 @@ class AuthenticationController extends BaseController {
   constructor(app, modelName) {
     super(app, modelName);
   }
-  //post /api/kid/simulattoken
-  // simulatejwttoken = async (req, res) => {
-  //   try {
-  //     console.log("at kid simulatejwttoken controller");
-  //     const { email, userType,code } = req.body;
-  //     if (!email || !userType) {
-  //       return res.status(400).send(ServerErrors.GENERAL_ERROR);
-  //     }
-  //     if(code !== "giladdolev123"){
-  //       return res.status(400).send(ServerErrors.GENERAL_ERROR);
-  //     }
-  //     const token = createJwtToken(email, userType);
-  //     return res.status(200).send(token);
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || ServerErrors.GENERAL_ERROR,
-  //     });
-  //   }
-  // };
+
 
   //Post /api/kid/login
   login = async (req, res) => {
@@ -46,6 +27,7 @@ class AuthenticationController extends BaseController {
       const { googleToken } = req.body;
       console.log("googleToken", googleToken);
       await createSingleLog(
+        "try login kid",
         this.sequelize,
         req,
         `googleToken ${googleToken} `,
@@ -56,8 +38,13 @@ class AuthenticationController extends BaseController {
         return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      const { email } = getUserData(decodedToken);
+      if (!email) {
+        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
+      }
       console.log("valid", valid, "decodedToken", decodedToken, "error", error);
       await createSingleLog(
+        email,
         this.sequelize,
         req,
         `valid ${valid};error ${error} `,
@@ -67,17 +54,7 @@ class AuthenticationController extends BaseController {
         console.log("Failed to verify token:", error.message || error);
         return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
       }
-      const { email } = getUserData(decodedToken);
-      if (!email) {
-        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
-      }
-
-      await createSingleLog(
-        this.sequelize,
-        req,
-        `email:${email}`,
-        "/kid/login"
-      );
+ 
       let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
@@ -147,6 +124,7 @@ class AuthenticationController extends BaseController {
         return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
       }
       await createSingleLog(
+        email,
         this.sequelize,
         req,
         `parentPhone ${parentPhone} email:${email}`,
@@ -248,6 +226,7 @@ class AuthenticationController extends BaseController {
       }
 
       await createSingleLog(
+        email,
         this.sequelize,
         req,
         `otp: ${otp} email: ${email}`,

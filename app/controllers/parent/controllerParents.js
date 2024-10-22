@@ -178,6 +178,7 @@ class ControllerParents extends BaseController {
         incomingLimits
       );
       await createSingleLog(
+        parent_id,
         this.sequelize,
         req,
         `parent_id:${parent_id} set limit to kidId:${kidId}`,

@@ -3,6 +3,7 @@ import config from "../config/index.js";
 import { QueryTypes } from "sequelize";
 
 export const createSingleLog = async (
+  user_name = null,
   sequelize,
   req,
   message,
@@ -14,8 +15,8 @@ export const createSingleLog = async (
     const ip = req ? req.socket.remoteAddress : "";
     const path = req ? req.path : "";
     controller = controller ? controller : path;
-    const SQL = `INSERT INTO logs (date, ip, path,controler, message, createdAt,data )
-					 VALUES (:date, :ip, :path,:controller, :message, NOW(), :data)`;
+    const SQL = `INSERT INTO logs (user_name,date, ip, path,controler, message, createdAt,data )
+					 VALUES (:user_name,:date, :ip, :path,:controller, :message, NOW(), :data)`;
     await sequelize.query(SQL, {
       replacements: {
         date,
@@ -24,6 +25,7 @@ export const createSingleLog = async (
         controller,
         message,
         data,
+        user_name,
       },
       type: QueryTypes.INSERT,
     });

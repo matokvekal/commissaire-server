@@ -58,8 +58,8 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
     );
     //log the data to db
     if (serverFlags.LOG_API) {
-      // const path = req.path;
       await createSingleLog(
+        userId,
         db.sequelize,
         req,
         `${userType} userName:${userName},userId:${userId},familyId:${familyId} isValidUser:${isValidUser}`,

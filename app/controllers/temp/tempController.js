@@ -31,6 +31,7 @@ class tempController extends BaseController {
     try {
       Wlogger.log("info", "temp sey hello2", "test1");
       await createSingleLog(
+        "temp/hello2",
         this.sequelize,
         req,
         "Hello from hello2 controller",
