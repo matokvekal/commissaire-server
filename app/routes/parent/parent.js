@@ -27,10 +27,10 @@ export default (router, app) => {
   // );
 
   //POST /api/parent/limits
-  router.post(
-    `/${modelBase}/limits`,
-    parentsController.postLimits.bind(parentsController)
-  );
+  // router.post(
+  //   `/${modelBase}/limits`,
+  //   parentsController.postLimits.bind(parentsController)
+  // );
 
   //GET /api/parent/kidsusage
   router.get(

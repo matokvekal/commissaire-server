@@ -164,76 +164,76 @@ class ControllerParents extends BaseController {
 
   //POST api/parent/limits
   //kp-41
-  postLimits = async (req, res) => {
-    try {
-      const { userId: parent_id } = req.user;
-      const { kidId, ...incomingLimits } = req.body;
+  // postLimits = async (req, res) => {
+  //   try {
+  //     const { userId: parent_id } = req.user;
+  //     const { kidId, ...incomingLimits } = req.body;
 
-      console.log(
-        "At postLimits userId:",
-        parent_id,
-        " kidId:",
-        kidId,
-        " incomingLimits:",
-        incomingLimits
-      );
-      await createSingleLog(
-        parent_id,
-        this.sequelize,
-        req,
-        `parent_id:${parent_id} set limit to kidId:${kidId}`,
-        "/parent/limits",
-        JSON.stringify(incomingLimits)
-      );
-      if (!parent_id || !kidId) {
-        return res.status(400).send("Required data is missing.");
-      }
+  //     console.log(
+  //       "At postLimits userId:",
+  //       parent_id,
+  //       " kidId:",
+  //       kidId,
+  //       " incomingLimits:",
+  //       incomingLimits
+  //     );
+  //     await createSingleLog(
+  //       parent_id,
+  //       this.sequelize,
+  //       req,
+  //       `parent_id:${parent_id} set limit to kidId:${kidId}`,
+  //       "/parent/limits",
+  //       JSON.stringify(incomingLimits)
+  //     );
+  //     if (!parent_id || !kidId) {
+  //       return res.status(400).send("Required data is missing.");
+  //     }
 
-      const isInSameFamily = await isKidInSameFamily(
-        this.sequelize,
-        parent_id,
-        kidId
-      );
-      if (!isInSameFamily) {
-        return res.status(400).send("Some errors at postLimits.");
-      }
+  //     const isInSameFamily = await isKidInSameFamily(
+  //       this.sequelize,
+  //       parent_id,
+  //       kidId
+  //     );
+  //     if (!isInSameFamily) {
+  //       return res.status(400).send("Some errors at postLimits.");
+  //     }
 
-      const invalidFields = Object.entries(incomingLimits).filter(
-        ([key, value]) =>
-          !allowedFields[key] || !checkType(value, allowedFields[key])
-      );
+  //     const invalidFields = Object.entries(incomingLimits).filter(
+  //       ([key, value]) =>
+  //         !allowedFields[key] || !checkType(value, allowedFields[key])
+  //     );
 
-      if (invalidFields.length > 0) {
-        return res
-          .status(400)
-          .send("Invalid or improperly formatted fields provided.");
-      }
+  //     if (invalidFields.length > 0) {
+  //       return res
+  //         .status(400)
+  //         .send("Invalid or improperly formatted fields provided.");
+  //     }
 
-      const updates = Object.entries(incomingLimits)
-        .filter(([key, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => `${key} = :${key}`)
-        .join(", ");
+  //     const updates = Object.entries(incomingLimits)
+  //       .filter(([key, value]) => value !== null && value !== undefined)
+  //       .map(([key, value]) => `${key} = :${key}`)
+  //       .join(", ");
 
-      if (updates.length === 0) {
-        return res.status(400).send("No valid fields to update.");
-      }
+  //     if (updates.length === 0) {
+  //       return res.status(400).send("No valid fields to update.");
+  //     }
 
-      const SQL = `UPDATE kids SET ${updates}, updateAt = NOW() WHERE kid_id = :kidId AND is_active = 1 ;`;
-      console.log(SQL);
-      console.log({ ...incomingLimits, kidId });
-      await this.sequelize.query(SQL, {
-        replacements: { ...incomingLimits, kidId },
-        type: QueryTypes.UPDATE,
-      });
-      SocketManager.sendMessageToUser(kidId, "limits");
-      return res.status(200).send("Limits updated successfully.");
-    } catch (err) {
-      console.log(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred while updating limits.",
-      });
-    }
-  };
+  //     const SQL = `UPDATE kids SET ${updates}, updateAt = NOW() WHERE kid_id = :kidId AND is_active = 1 ;`;
+  //     console.log(SQL);
+  //     console.log({ ...incomingLimits, kidId });
+  //     await this.sequelize.query(SQL, {
+  //       replacements: { ...incomingLimits, kidId },
+  //       type: QueryTypes.UPDATE,
+  //     });
+  //     SocketManager.sendMessageToUser(kidId, "limits");
+  //     return res.status(200).send("Limits updated successfully.");
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred while updating limits.",
+  //     });
+  //   }
+  // };
 
   //GET api/parent/kidsbydevices
   getKidsByDevices = async (req, res) => {

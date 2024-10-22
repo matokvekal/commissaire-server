@@ -613,6 +613,7 @@ class ControllerKids extends BaseController {
         playTimeRemaining = :playTimeRemaining,
         increment_apps = :totalIncrementApps,
         decrement_apps = :totalDecrementApps,
+        dailyTimeLimit = :dailyTimeLimit,
         updateAt = NOW()
       WHERE 
         id = :kidId AND 
