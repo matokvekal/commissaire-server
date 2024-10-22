@@ -65,7 +65,7 @@ class ControllerKids extends BaseController {
           replacements: { kidId, deviceTypeId, serial, deviceName },
           type: QueryTypes.INSERT,
         });
-        const device_id = result[0]; 
+        const device_id = result[0];
         return res.status(200).send({ device_id });
       }
     } catch (err) {
@@ -563,7 +563,7 @@ class ControllerKids extends BaseController {
         totalIncrementApps,
         totalDecrementApps,
       } = req.body;
-      
+
       await createSingleLog(
         kidId,
         this.sequelize,
@@ -629,6 +629,7 @@ class ControllerKids extends BaseController {
           playTimeRemaining,
           totalIncrementApps,
           totalDecrementApps,
+          dailyTimeLimit,
         },
         type: this.sequelize.QueryTypes.UPDATE,
       });
