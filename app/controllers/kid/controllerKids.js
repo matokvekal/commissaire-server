@@ -104,7 +104,10 @@ class ControllerKids extends BaseController {
       if (device.length == 0) {
         return res.status(400).send("device not found");
       }
-
+      //test
+      apps.forEach((app) => {
+        console.log("app-------------", app.packageName);
+      });
       const appsList = apps.map((app) => app.packageName);
 
       if (appsList.length == 0) {
