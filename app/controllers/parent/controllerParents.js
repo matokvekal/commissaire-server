@@ -331,7 +331,7 @@ class ControllerParents extends BaseController {
         AND ka.is_exist = 1 
         AND ka.is_active = 1
         AND a.is_active = 1
-        and a.app_name !="not found"
+        and a.app_name !="unknown"
     `;
 
       const kidApps = await this.sequelize.query(SQL, {
