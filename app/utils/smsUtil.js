@@ -11,7 +11,7 @@ export const kidRegistrationSMS = async (
 ) => {
   const action = isLogin ? "login" : "register";
   otp = otp ? `Your OTP is ${otp}.` : "";
-  const messageBody = `${kidName} Otp is ${otp}   to connect to KoaliTime app `;
+  const messageBody = ` Hi,  ${otp}  is the Otp for ${kidName} to KoaliTime app `;
   const smsSender = config.smsSenderName;
   const result = await singleSmsSender(phoneNumber, messageBody, smsSender);
   return result;
