@@ -5,10 +5,10 @@ export default (router, app) => {
   const kidsController = new ControllerKids(app, modelBase);
 
   //POST /api/kid/apps
-  router.post(
-    `/${modelBase}/apps`,
-    kidsController.kidApps.bind(kidsController)
-  );
+  // router.post(
+  //   `/${modelBase}/apps`,
+  //   kidsController.kidApps.bind(kidsController)
+  // );
 
   // POST /api/kid/device
   router.post(

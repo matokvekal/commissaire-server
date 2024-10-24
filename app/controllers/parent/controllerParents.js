@@ -307,7 +307,7 @@ class ControllerParents extends BaseController {
       if (!isInSameFamily) {
         return res.status(400).send("Some errors at getKidApps.");
       }
-
+////////////////////////////////to do    fix with unknown and  if is_active = 0 ??????
       const SQL = `
       SELECT 
         ka.id, 
@@ -330,7 +330,6 @@ class ControllerParents extends BaseController {
         AND ka.kid_device_id = :deviceId 
         AND ka.is_exist = 1 
         AND ka.is_active = 1
-        AND a.is_active = 1
         and a.app_name !="unknown"
     `;
 

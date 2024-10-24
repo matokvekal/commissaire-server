@@ -37,4 +37,5 @@ export const appStatus = {
   leisure: "leisure",
   beneficial: "beneficial",
   neutral: "neutral",
+  unknown: "unknown",
 };

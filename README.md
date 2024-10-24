@@ -61,3 +61,46 @@ https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-
 lidor 9 00:46:15 remove \_ for all file and insert domain
 //////this is the version to build the PWA
 
+//////////////////////
+hadle Apps problem
+at kids:
+1.remove kid post apps
+2.addcolumn new defaullt = 1 to  kid_aps
+3.at first kid registration all aps status=neutral and all new=1
+4.run loop until  all apps.new = 0 
+every 10 seconds call updateApp >the only change is that you will also get the new. if new=0 then its on the loop else remove it
+
+5.after all apps.new=0  keep the same
+
+====================================
+at parent web
+
+also use the new column
+at fetchKidApps >>
+change   if ((now - lastFetchTime < twentyFourHours)||(apps.filter(app=>app.new===1))) {
+        apps = await getAppsFromDb();
+      } 
+
+כלומר
+שליפה מDB תהיה  כל עוד יש לפחות אפליקציה אחת בסטסטוס חדש
+---------------------------------
+סיכום
+הילד בפעם הראונשה מעביר את כל האפליקציות למצב חדש ולסטטוס ניוטרל
+כל עוד יש לו אפליקציות במצב חדש הילד כל עשר שניות משתמש ב updateapp ועובר אחת אחד
+אאם הוא מקבל סטטוס ומקבל עדכון לשדה new
+אז מעדכן וממשיך ככה עד שמסיים את האפליקציות 
+זהו מצב חד פעמי
+
+ההורה
+אין עדכון אוטומטי
+אלא שבכל פעם שמשנה דף
+כל עוד יש לו אפליקציות במצב NEW
+הוא ילד לשרת למשוך
+
+השרת
+מבטל את APPS POST
+יקבל את אפליקציות הילדים דרך UPDATEAPPS
+אם האפליקציה עם  
+NEW=0
+יחזיר לילד פרטים מעודכנים
+אחרת חוזר NEW=1
