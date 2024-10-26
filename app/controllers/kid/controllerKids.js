@@ -16,6 +16,7 @@ import {
   secondsToTimeString,
   calculateAvailableTime,
 } from "../../utils/time.js";
+import { logAppAction } from "../statistic/apps.js"; 
 // import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -194,6 +195,8 @@ class ControllerKids extends BaseController {
             replacements: { kidId, deviceId, appId: appResults[0].id },
             type: QueryTypes.UPDATE,
             });
+            logAppAction(req.user.userId, packageName, appResults[0].id, 1, "remove");
+
               //TODO here we send notification to the parent by socket
             return res.status(200).send("App removed successfully");
             }
@@ -232,6 +235,7 @@ class ControllerKids extends BaseController {
           type: QueryTypes.INSERT,
           });
         }
+        logAppAction(req.user.userId, packageName, appId, 1, "add");
         return res.status(200).send({new:0, status:appstatus});
       }
      

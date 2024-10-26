@@ -6,6 +6,7 @@ import checkType from "../../utils/checkType.js";
 import { allowedFields } from "../../constants/serverConstants.js";
 import SocketManager from "../../handlers/websocketHandler.js";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
+import { logAppAction } from '../../statistic/apps.js';
 
 async function isKidInSameFamily(sequelize, parent_id, kidId) {
   const SQL = `
@@ -405,6 +406,7 @@ class ControllerParents extends BaseController {
           .status(404)
           .send("No matching record found or nothing updated.");
       }
+      logAppAction(req.user.userId, req.body.package_name, appId, req.body.device_type, 'update');
 
       return res.status(200).send("App status updated successfully.");
     } catch (err) {
