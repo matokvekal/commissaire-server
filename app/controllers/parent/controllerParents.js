@@ -6,7 +6,7 @@ import checkType from "../../utils/checkType.js";
 import { allowedFields } from "../../constants/serverConstants.js";
 import SocketManager from "../../handlers/websocketHandler.js";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
-import { logAppAction } from '../../statistic/apps.js';
+import { logAppAction } from "../../statistic/apps.js";
 
 async function isKidInSameFamily(sequelize, parent_id, kidId) {
   const SQL = `
@@ -308,7 +308,7 @@ class ControllerParents extends BaseController {
       if (!isInSameFamily) {
         return res.status(400).send("Some errors at getKidApps.");
       }
-////////////////////////////////to do    fix with unknown and  if is_active = 0 ??????
+      ////////////////////////////////to do    fix with unknown and  if is_active = 0 ??????
       const SQL = `
       SELECT 
         ka.id, 
@@ -406,7 +406,14 @@ class ControllerParents extends BaseController {
           .status(404)
           .send("No matching record found or nothing updated.");
       }
-      logAppAction(req.user.userId, req.body.package_name, appId, req.body.device_type, 'update');
+      logAppAction(
+        this.sequelize,
+        req.user.userId,
+        req.body.package_name,
+        appId,
+        req.body.device_type,
+        "update"
+      );
 
       return res.status(200).send("App status updated successfully.");
     } catch (err) {
@@ -550,8 +557,8 @@ class ControllerParents extends BaseController {
           .status(403)
           .send("Unauthorized access to this kid's schedule.");
       }
-//check that the kid has data befor update
-      const  dayCount  = await this.sequelize.query(
+      //check that the kid has data befor update
+      const dayCount = await this.sequelize.query(
         `
         SELECT COUNT(*) as dayCount 
         FROM daily_schedule

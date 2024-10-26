@@ -16,7 +16,7 @@ import {
   secondsToTimeString,
   calculateAvailableTime,
 } from "../../utils/time.js";
-import { logAppAction } from "../statistic/apps.js"; 
+import { logAppAction } from "../../statistic/apps.js";
 // import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
@@ -157,7 +157,7 @@ class ControllerKids extends BaseController {
       // const userName = req.user.userName;
       const deviceId = req.body.kidDeviceId;
       const packageName = req.body.packageName;
-      const action = req.body.action; 
+      const action = req.body.action;
       let appDefaultStatus = appStatus.neutral;
 
       if (!packageName || !kidId || !deviceId || !action) {
@@ -170,75 +170,90 @@ class ControllerKids extends BaseController {
         `kidId:${kidId} `,
         `Post/kid/updateapp`
       );
-      if(action !=="add"  && action !=="remove"){
+      if (action !== "add" && action !== "remove") {
         return res.status(400).send("Invalid action");
       }
-      let  kidAppResults=[];
-      let SQL ="select id, default_status, is_active from apps where device_type_id=1 and package_name=:packageName";
+      let kidAppResults = [];
+      let SQL =
+        "select id, default_status, is_active from apps where device_type_id=1 and package_name=:packageName";
       const appResults = await this.sequelize.query(SQL, {
-      replacements: { packageName },
-      type: QueryTypes.SELECT,
+        replacements: { packageName },
+        type: QueryTypes.SELECT,
       });
-      if (appResults.length > 0 ){
-      SQL ="select * from kid_apps where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
-      kidAppResults = await this.sequelize.query(SQL, {
-      replacements: { kidId, deviceId, appId: appResults[0].id },
-      type: QueryTypes.SELECT,
-      });
-    }
-
+      if (appResults.length > 0) {
+        SQL =
+          "select * from kid_apps where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
+        kidAppResults = await this.sequelize.query(SQL, {
+          replacements: { kidId, deviceId, appId: appResults[0].id },
+          type: QueryTypes.SELECT,
+        });
+      }
 
       if (action === "remove") {
         if (kidAppResults.length > 0 && kidAppResults[0].is_active) {
-            SQL ="update kid_apps set is_active=0 where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
-            await this.sequelize.query(SQL, {
+          SQL =
+            "update kid_apps set is_active=0 where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
+          await this.sequelize.query(SQL, {
             replacements: { kidId, deviceId, appId: appResults[0].id },
             type: QueryTypes.UPDATE,
-            });
-            logAppAction(req.user.userId, packageName, appResults[0].id, 1, "remove");
+          });
+          logAppAction(
+            this.sequelize,
+            req.user.userId,
+            packageName,
+            appResults[0].id,
+            1,
+            "remove"
+          );
 
-              //TODO here we send notification to the parent by socket
-            return res.status(200).send("App removed successfully");
-            }
+          //TODO here we send notification to the parent by socket
+          return res.status(200).send("App removed successfully");
+        }
         return res.status(404).send("App is not exist");
-
-      } else  {
+      } else {
         let insertedAppid;
-        if (appResults.length === 0){
-            SQL = `insert into apps (app_name, package_name, device_type_id, default_status,add_by_user)
+        if (appResults.length === 0) {
+          SQL = `insert into apps (app_name, package_name, device_type_id, default_status,add_by_user)
             values (:packageName, :packageName, 1, :defaultStatus,:kidId);`;
-            const [id, metadata] = await this.sequelize.query(SQL, {
+          const [id, metadata] = await this.sequelize.query(SQL, {
             replacements: {
               packageName,
               defaultStatus: appDefaultStatus,
               kidId,
             },
             type: QueryTypes.INSERT,
-           });
-           insertedAppid= id;
+          });
+          insertedAppid = id;
         }
-       
-        let appId = appResults[0]?.id||insertedAppid;
+
+        let appId = appResults[0]?.id || insertedAppid;
         let appstatus = appResults[0]?.default_status || appDefaultStatus;
 
-        if (kidAppResults.length > 0){
-          SQL ="update kid_apps set is_active=1,parent_has_change=0  where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
+        if (kidAppResults.length > 0) {
+          SQL =
+            "update kid_apps set is_active=1,parent_has_change=0  where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId";
           await this.sequelize.query(SQL, {
-          replacements: { kidId, deviceId, appId },
-          type: QueryTypes.UPDATE,
+            replacements: { kidId, deviceId, appId },
+            type: QueryTypes.UPDATE,
           });
-        }else{
-          SQL=`insert into kid_apps (kid_id, kid_device_id, app_id, status, is_active, is_exist,parent_has_change)
+        } else {
+          SQL = `insert into kid_apps (kid_id, kid_device_id, app_id, status, is_active, is_exist,parent_has_change)
           values (:kidId, :deviceId, :appId, :status, 1, 1,0)`;
           await this.sequelize.query(SQL, {
-          replacements: { kidId,deviceId,appId,status:appstatus },
-          type: QueryTypes.INSERT,
+            replacements: { kidId, deviceId, appId, status: appstatus },
+            type: QueryTypes.INSERT,
           });
         }
-        logAppAction(req.user.userId, packageName, appId, 1, "add");
-        return res.status(200).send({new:0, status:appstatus});
+        logAppAction(
+          this.sequelize,
+          req.user.userId,
+          packageName,
+          appId,
+          1,
+          "add"
+        );
+        return res.status(200).send({ new: 0, status: appstatus });
       }
-     
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -246,8 +261,6 @@ class ControllerKids extends BaseController {
       });
     }
   };
-
-
 
   // // Post /api/kid/updateapp
   // updateApp = async (req, res) => {
@@ -280,7 +293,6 @@ class ControllerKids extends BaseController {
   //       });
   //     }
 
-
   //     const appName = packageName;
 
   //     try {
@@ -311,7 +323,7 @@ class ControllerKids extends BaseController {
   //         // If app does not exist in the `apps` table
   //         if (appResults.length === 0) {
   //           // Insert new app into `apps` table
-  //           SQL = `insert into apps (app_name, package_name, device_type_id, default_status) 
+  //           SQL = `insert into apps (app_name, package_name, device_type_id, default_status)
   //                 values (:appName, :packageName, 1, :defaultStatus);`;
   //           const [id, metadata] = await this.sequelize.query(SQL, {
   //             replacements: {
@@ -342,7 +354,7 @@ class ControllerKids extends BaseController {
 
   //         // If the app does not exist for the kid, insert it
   //         if (kidAppResults.length === 0) {
-  //           SQL = `insert into kid_apps (kid_id, kid_device_id, app_id, status, is_active, is_exist) 
+  //           SQL = `insert into kid_apps (kid_id, kid_device_id, app_id, status, is_active, is_exist)
   //                 values (:kidId, :deviceId, :appId, :status, 1, 1)`;
   //           await this.sequelize.query(SQL, {
   //             replacements: {
@@ -359,7 +371,7 @@ class ControllerKids extends BaseController {
   //             return res.status(200).send("app already exists");
   //           } else {
   //             // If the app already exists for the kid, update its status
-  //             SQL = `update kid_apps set is_active=1, status=:status 
+  //             SQL = `update kid_apps set is_active=1, status=:status
   //                 where kid_id=:kidId and kid_device_id=:deviceId and app_id=:appId`;
   //             await this.sequelize.query(SQL, {
   //               replacements: {
