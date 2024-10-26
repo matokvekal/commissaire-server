@@ -406,14 +406,7 @@ class ControllerParents extends BaseController {
           .status(404)
           .send("No matching record found or nothing updated.");
       }
-      logAppAction(
-        this.sequelize,
-        req.user.userId,
-        "",
-        appId,
-        req.body.device_type,
-        "update"
-      );
+      logAppAction(this.sequelize, req.user.userId, "", appId, 9999, "update");
 
       return res.status(200).send("App status updated successfully.");
     } catch (err) {
