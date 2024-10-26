@@ -409,7 +409,7 @@ class ControllerParents extends BaseController {
       logAppAction(
         this.sequelize,
         req.user.userId,
-        req.body.package_name,
+        "",
         appId,
         req.body.device_type,
         "update"
