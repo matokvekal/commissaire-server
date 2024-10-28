@@ -54,7 +54,9 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
       "userId:",
       userId,
       "familyId:",
-      familyId
+      familyId,
+      "token:",
+      token
     );
     //log the data to db
     if (serverFlags.LOG_API) {
