@@ -182,17 +182,17 @@ class ControllerKids extends BaseController {
             type: QueryTypes.INSERT,
           });
         }
-        if (kidAppResults.length === 0) {
+  
           //update statistic
           SQL = `UPDATE apps 
         SET total_add = total_add + 1, 
-            total_instaled = CASE WHEN total_instaled > 0 THEN total_instaled - 1 ELSE 0 END 
+            total_instaled = total_instaled+1 
         WHERE id = :appId`;
           await this.sequelize.query(SQL, {
             replacements: { appId },
             type: QueryTypes.UPDATE,
           });
-        }
+        
         logAppAction(
           this.sequelize,
           req.user.userId,
