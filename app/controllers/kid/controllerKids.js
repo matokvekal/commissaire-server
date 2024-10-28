@@ -137,7 +137,7 @@ class ControllerKids extends BaseController {
           let app_id = appResults[0]?.id || insertedAppid;
           SQL = `UPDATE apps 
           SET total_remove = total_remove + 1, 
-              total_add = CASE WHEN total_add > 0 THEN total_add - 1 ELSE 0 END
+              total_instaled = CASE WHEN total_instaled > 0 THEN total_instaled - 1 ELSE 0 END
           WHERE id = :app_id`;
           await this.sequelize.query(SQL, {
             replacements: { app_id },
@@ -186,7 +186,7 @@ class ControllerKids extends BaseController {
           //update statistic
           SQL = `UPDATE apps 
         SET total_add = total_add + 1, 
-            total_remove = CASE WHEN total_remove > 0 THEN total_remove - 1 ELSE 0 END 
+            total_instaled = CASE WHEN total_instaled > 0 THEN total_instaled - 1 ELSE 0 END 
         WHERE id = :appId`;
           await this.sequelize.query(SQL, {
             replacements: { appId },
