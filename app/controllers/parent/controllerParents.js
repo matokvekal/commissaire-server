@@ -347,7 +347,6 @@ class ControllerParents extends BaseController {
       await this.sequelize.query(incrementSQL, {
         replacements: { appId, status },
         type: QueryTypes.UPDATE,
-        transaction,
       });
 
       return res.status(200).send("App status updated successfully.");
