@@ -134,23 +134,15 @@ class ControllerKids extends BaseController {
             1,
             "remove"
           );
+          let app_id = appResults[0]?.id || insertedAppid;
           SQL = `UPDATE apps 
           SET total_remove = total_remove + 1, 
               total_add = CASE WHEN total_add > 0 THEN total_add - 1 ELSE 0 END
-          WHERE id = :appId`;
+          WHERE id = :app_id`;
           await this.sequelize.query(SQL, {
-            replacements: { appId },
+            replacements: { app_id },
             type: QueryTypes.UPDATE,
           });
-
-          logAppAction(
-            this.sequelize,
-            req.user.userId,
-            packageName,
-            appId,
-            1,
-            "remove"
-          );
 
           //TODO here we send notification to the parent by socket
           return res.status(200).send("App removed successfully");
@@ -190,14 +182,17 @@ class ControllerKids extends BaseController {
             type: QueryTypes.INSERT,
           });
         }
-        SQL = `UPDATE apps 
+        if (kidAppResults.length === 0) {
+          //update statistic
+          SQL = `UPDATE apps 
         SET total_add = total_add + 1, 
             total_remove = CASE WHEN total_remove > 0 THEN total_remove - 1 ELSE 0 END 
         WHERE id = :appId`;
-        await this.sequelize.query(SQL, {
-          replacements: { appId },
-          type: QueryTypes.UPDATE,
-        });
+          await this.sequelize.query(SQL, {
+            replacements: { appId },
+            type: QueryTypes.UPDATE,
+          });
+        }
         logAppAction(
           this.sequelize,
           req.user.userId,
