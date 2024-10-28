@@ -84,31 +84,6 @@ class ControllerParents extends BaseController {
     }
   };
 
-  // //POST api/parent/disable
-  // disableKids = async (req, res) => {
-  //   console.log("disableKids");
-  //   try {
-  //     const parent_id = req.user.userId;
-  //     if (!parent_id) {
-  //       return res.status(400).send("some data is missing");
-  //     }
-  //     const { status } = req.body;
-  //     console.log("disableStatus", status);
-  //     // const SQL =
-  //     //   "select id,f_name,l_name from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
-  //     // const kids = await this.sequelize.query(SQL, {
-  //     //   replacements: { parent_id },
-  //     //   type: QueryTypes.SELECT,
-  //     // });
-  //     return res.status(200).send({ disableStatus: status });
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred in getting kids.",
-  //     });
-  //   }
-  // };
-
   //GET api/parent/kidsusage
   //kp-48
   //this gat api is get the parent family id  and then go to table kid_usage for those kids and  get the lastrow by  created at of the kid_id  with all his device_ids that are  for today
@@ -162,79 +137,6 @@ class ControllerParents extends BaseController {
       });
     }
   };
-
-  //POST api/parent/limits
-  //kp-41
-  // postLimits = async (req, res) => {
-  //   try {
-  //     const { userId: parent_id } = req.user;
-  //     const { kidId, ...incomingLimits } = req.body;
-
-  //     console.log(
-  //       "At postLimits userId:",
-  //       parent_id,
-  //       " kidId:",
-  //       kidId,
-  //       " incomingLimits:",
-  //       incomingLimits
-  //     );
-  //     await createSingleLog(
-  //       parent_id,
-  //       this.sequelize,
-  //       req,
-  //       `parent_id:${parent_id} set limit to kidId:${kidId}`,
-  //       "/parent/limits",
-  //       JSON.stringify(incomingLimits)
-  //     );
-  //     if (!parent_id || !kidId) {
-  //       return res.status(400).send("Required data is missing.");
-  //     }
-
-  //     const isInSameFamily = await isKidInSameFamily(
-  //       this.sequelize,
-  //       parent_id,
-  //       kidId
-  //     );
-  //     if (!isInSameFamily) {
-  //       return res.status(400).send("Some errors at postLimits.");
-  //     }
-
-  //     const invalidFields = Object.entries(incomingLimits).filter(
-  //       ([key, value]) =>
-  //         !allowedFields[key] || !checkType(value, allowedFields[key])
-  //     );
-
-  //     if (invalidFields.length > 0) {
-  //       return res
-  //         .status(400)
-  //         .send("Invalid or improperly formatted fields provided.");
-  //     }
-
-  //     const updates = Object.entries(incomingLimits)
-  //       .filter(([key, value]) => value !== null && value !== undefined)
-  //       .map(([key, value]) => `${key} = :${key}`)
-  //       .join(", ");
-
-  //     if (updates.length === 0) {
-  //       return res.status(400).send("No valid fields to update.");
-  //     }
-
-  //     const SQL = `UPDATE kids SET ${updates}, updateAt = NOW() WHERE kid_id = :kidId AND is_active = 1 ;`;
-  //     console.log(SQL);
-  //     console.log({ ...incomingLimits, kidId });
-  //     await this.sequelize.query(SQL, {
-  //       replacements: { ...incomingLimits, kidId },
-  //       type: QueryTypes.UPDATE,
-  //     });
-  //     SocketManager.sendMessageToUser(kidId, "limits");
-  //     return res.status(200).send("Limits updated successfully.");
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.createErrorLogAndSend(this.sequelize, {
-  //       err: err.message || "Some error occurred while updating limits.",
-  //     });
-  //   }
-  // };
 
   //GET api/parent/kidsbydevices
   getKidsByDevices = async (req, res) => {
@@ -382,7 +284,27 @@ class ControllerParents extends BaseController {
       if (!allowedStatuses.includes(status)) {
         return res.status(400).send("Invalid status provided.");
       }
+      // Get the current status from the `kid_apps` table (parent's previous status for this app)
+      const getKidAppStatusQuery = `
+        SELECT distinct status 
+        FROM kid_apps 
+        WHERE kid_id = :kidId 
+          AND kid_device_id = :deviceId 
+          AND app_id = :appId
+          AND is_active = 1 
+          AND is_exist = 1;
+        `;
+      const [kidAppData] = await this.sequelize.query(getKidAppStatusQuery, {
+        replacements: { kidId, deviceId, appId },
+        type: QueryTypes.SELECT,
+      });
 
+      if (!kidAppData || !kidAppData.status) {
+        return res
+          .status(404)
+          .send("No matching record found for the kid app.");
+      }
+      const previousStatus = kidAppData.status;
       // Update the status in the kid_apps table
       const SQL = `
       UPDATE kid_apps 
@@ -406,7 +328,27 @@ class ControllerParents extends BaseController {
           .status(404)
           .send("No matching record found or nothing updated.");
       }
-      logAppAction(this.sequelize, req.user.userId, "", appId, 9999, "update",status);
+      logAppAction(
+        this.sequelize,
+        req.user.userId,
+        "",
+        appId,
+        9999,
+        "update",
+        status
+      );
+
+      const incrementSQL = `
+      UPDATE apps 
+      SET ${status} = ${status} + 1, 
+          ${previousStatus} = CASE WHEN ${previousStatus} > 0 THEN ${previousStatus} - 1 ELSE 0 END, 
+      WHERE id = :appId AND is_active = 1;
+  `;
+      await this.sequelize.query(incrementSQL, {
+        replacements: { appId, status },
+        type: QueryTypes.UPDATE,
+        transaction,
+      });
 
       return res.status(200).send("App status updated successfully.");
     } catch (err) {
