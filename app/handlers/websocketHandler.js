@@ -17,6 +17,7 @@ class SocketManager {
     this.db = db;
 
     io.use((socket, next) => {
+      console.log("socket.handshake.auth", socket.handshake.auth);
       authenticationSocket(socket, next);
     });
 
@@ -46,7 +47,10 @@ class SocketManager {
         type: QueryTypes.SELECT,
       });
       if (result.length === 0) {
-        throw new Error("User not found or does not meet criteria");
+        Logger.error(`Connection refused for ${userName}: User not found or does not meet criteria`);
+        socket.emit("error", "User not found or does not meet criteria");
+        socket.disconnect(); // Gracefully disconnect the user
+        return;
       }
       userId = result[0].id;
 

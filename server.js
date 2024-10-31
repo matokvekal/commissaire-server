@@ -1,5 +1,4 @@
 import initServer from "./app/initializers/initServer.js";
-// import initializeSocketHandlers from "./app/handlers/websocketHandler.js";
 import config from "./app/config/index.js";
 import Logger from "./app/utils/logger.js";
 initServer(config).then(({ app, server, io }) => {

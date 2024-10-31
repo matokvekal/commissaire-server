@@ -1,8 +1,6 @@
-//import Logger from "../utils/logger.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-// import Logger from "../utils/logger.js";
 import getModeFromEnv from "../utils/mode.js";
 const mode = getModeFromEnv();
 const configByEnv = {

@@ -30,8 +30,7 @@ export const createSingleLog = async (
       type: QueryTypes.INSERT,
     });
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    console.error("Error in createSingleLog:", err);
   }
 };
 export const createErrorLog = async (sequelize, req, err) => {
@@ -54,7 +53,6 @@ export const createErrorLog = async (sequelize, req, err) => {
       type: QueryTypes.INSERT,
     });
   } catch (err) {
-    console.log(err);
-    throw new Error(err);
+    console.error("Error in createErrorLog:", err);
   }
 };

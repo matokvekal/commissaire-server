@@ -1,15 +1,10 @@
 import BaseController from "./baseController.js";
 import { QueryTypes } from "sequelize";
-import config from "../../config/index.js";
-import jwt from "jsonwebtoken";
+
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
-import Wlogger from "../../utils/winstonLogger.js";
 import { getFixedValue } from "../../utils/getFixedValues.js";
-// import { createJwtToken } from "../../utils/authenticationUtils.js";
 import isValidLocation from "../../utils/locationValidator.js";
-import validatePackageNames, {
-  validateAppNames,
-} from "../../utils/validation.js";
+
 import { appStatus, ServerNumbers } from "../../constants/serverConstants.js";
 import {
   timeStringToSeconds,
@@ -17,13 +12,11 @@ import {
   calculateAvailableTime,
 } from "../../utils/time.js";
 import { logAppAction } from "../../statistic/apps.js";
-// import emitMessageToAllClients from "../../utils/socketEmitterUtil.js";
 class ControllerKids extends BaseController {
   constructor(app, modelName, sequelize) {
     super(app, modelName, sequelize);
   }
   //TODO
-  // ADD table kids defaults with  basic default, avarage , so when create new kids he will get default by his age countru etc
 
   //post /api/kid/device
   //get user_id,device_type_id ,recive the kid_device_id
@@ -182,17 +175,17 @@ class ControllerKids extends BaseController {
             type: QueryTypes.INSERT,
           });
         }
-  
-          //update statistic
-          SQL = `UPDATE apps 
-        SET total_add = total_add + 1, 
+
+        //update statistic
+        SQL = `UPDATE apps 
+            SET total_add = total_add + 1, 
             total_instaled = total_instaled+1 
-        WHERE id = :appId`;
-          await this.sequelize.query(SQL, {
-            replacements: { appId },
-            type: QueryTypes.UPDATE,
-          });
-        
+            WHERE id = :appId`;
+        await this.sequelize.query(SQL, {
+          replacements: { appId },
+          type: QueryTypes.UPDATE,
+        });
+
         logAppAction(
           this.sequelize,
           req.user.userId,

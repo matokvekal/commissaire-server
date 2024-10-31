@@ -1,11 +1,10 @@
 import BaseController from "../kid/baseController.js";
-import { getFixedValue } from "../../utils/getFixedValues.js";
-import config from "../../config/index.js";
+// import config from "../../config/index.js";
 import { QueryTypes } from "sequelize";
-import checkType from "../../utils/checkType.js";
-import { allowedFields } from "../../constants/serverConstants.js";
-import SocketManager from "../../handlers/websocketHandler.js";
-import { createSingleLog } from "../../utils/apiLoggerUtils.js";
+// import checkType from "../../utils/checkType.js";
+// import { allowedFields } from "../../constants/serverConstants.js";
+// import SocketManager from "../../handlers/websocketHandler.js";
+// import { createSingleLog } from "../../utils/apiLoggerUtils.js";
 import { logAppAction } from "../../statistic/apps.js";
 
 async function isKidInSameFamily(sequelize, parent_id, kidId) {
@@ -341,7 +340,7 @@ class ControllerParents extends BaseController {
       const incrementSQL = `
       UPDATE apps 
       SET ${status} = ${status} + 1, 
-          ${previousStatus} = CASE WHEN ${previousStatus} > 0 THEN ${previousStatus} - 1 ELSE 0 END, 
+          ${previousStatus} = CASE WHEN ${previousStatus} > 0 THEN ${previousStatus} - 1 ELSE 0 END
       WHERE id = :appId AND is_active = 1;
   `;
       await this.sequelize.query(incrementSQL, {
