@@ -73,34 +73,3 @@ every 10 seconds call updateApp >the only change is that you will also get the n
 5.after all apps.new=0  keep the same
 
 ====================================
-at parent web
-
-also use the new column
-at fetchKidApps >>
-change   if ((now - lastFetchTime < twentyFourHours)||(apps.filter(app=>app.new===1))) {
-        apps = await getAppsFromDb();
-      } 
-
-כלומר
-שליפה מDB תהיה  כל עוד יש לפחות אפליקציה אחת בסטסטוס חדש
----------------------------------
-סיכום
-הילד בפעם הראונשה מעביר את כל האפליקציות למצב חדש ולסטטוס ניוטרל
-כל עוד יש לו אפליקציות במצב חדש הילד כל עשר שניות משתמש ב updateapp ועובר אחת אחד
-אאם הוא מקבל סטטוס ומקבל עדכון לשדה new
-אז מעדכן וממשיך ככה עד שמסיים את האפליקציות 
-זהו מצב חד פעמי
-
-ההורה
-אין עדכון אוטומטי
-אלא שבכל פעם שמשנה דף
-כל עוד יש לו אפליקציות במצב NEW
-הוא ילד לשרת למשוך
-
-השרת
-מבטל את APPS POST
-יקבל את אפליקציות הילדים דרך UPDATEAPPS
-אם האפליקציה עם  
-NEW=0
-יחזיר לילד פרטים מעודכנים
-אחרת חוזר NEW=1

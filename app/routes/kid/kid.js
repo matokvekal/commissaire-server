@@ -4,11 +4,18 @@ export default (router, app) => {
   const modelBase = "kid";
   const kidsController = new ControllerKids(app, modelBase);
 
-  //POST /api/kid/apps
-  // router.post(
-  //   `/${modelBase}/apps`,
-  //   kidsController.kidApps.bind(kidsController)
-  // );
+  //POST api/kid/convertminutes
+  router.post(
+    `/${modelBase}/convertminutes`,
+    kidsController.convertMinutes.bind(kidsController)
+  );
+
+  //put /api/kid/converdiamonds?amount=10 but can be also without amount
+  //convertDiamonds = async (req, res) => {
+  router.put(
+    `/${modelBase}/converdiamonds`,
+    kidsController.convertDiamonds.bind(kidsController)
+  );
 
   // POST /api/kid/device
   router.post(

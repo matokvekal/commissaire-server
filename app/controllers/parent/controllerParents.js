@@ -69,7 +69,7 @@ class ControllerParents extends BaseController {
       }
 
       const SQL =
-        "select id,f_name,l_name from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
+        "select id,f_name,l_name,icon from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
       const kids = await this.sequelize.query(SQL, {
         replacements: { parent_id },
         type: QueryTypes.SELECT,
@@ -162,7 +162,10 @@ class ControllerParents extends BaseController {
         u.playTimeRemaining AS play,
         increment_apps As increment,
         decrement_apps As decrement,
-        u.updateAt
+        u.updateAt,
+        u.icon,
+        u.daily_left_diamonds,
+        u.diamond_last_update
       FROM users u
       LEFT JOIN kid_devices kd ON u.id = kd.kid_id
       WHERE u.family_id IN (

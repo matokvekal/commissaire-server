@@ -80,7 +80,7 @@ class ControllerKids extends BaseController {
       const deviceId = req.body.kidDeviceId;
       const packageName = req.body.packageName;
       const action = req.body.action;
-      let appDefaultStatus = appStatus.neutral;
+      let appDefaultStatus = appStatus.leisure;
 
       if (!packageName || !kidId || !deviceId || !action) {
         return res.status(400).send("Some data is missing");
@@ -609,35 +609,76 @@ class ControllerKids extends BaseController {
       });
     }
   };
-
-  //put /api/kid/converdiamonds?amount=10
-
-  convertDiamonds = async (req, res) => {
-    console.log("at convertDiamonds");
-
+  //POST api/kid/convertminutes
+  convertMinutes = async (req, res) => {
+    console.log(" at convertminutes");
+    const convertRate = 1;
     try {
       const kidId = req.user.userId;
-      const amount = parseInt(req.query.amount);
-
-      // Validate input
-      if (!kidId || isNaN(amount) || amount <= 0) {
-        return res.status(400).send("Invalid kid ID or amount");
+      if (!kidId) {
+        return res.status(400).send("some data is missing");
       }
-
-      const maxDiamonds = ServerNumbers.maxDiamonds; // Use the maxDiamonds constant
-      if (amount < 1 || amount > maxDiamonds) {
-        return res
-          .status(400)
-          .send(`amount must be between 1 and ${maxDiamonds}`);
+      const SQL = `select total_diamonds, dailyTimeLimit, dailyTimeUsed, playTimeRemaining from users where id = :kidId and is_register = 1 and is_active = 1 and user_type = 'kid'`;
+      const kidData = await this.sequelize.query(SQL, {
+        replacements: { kidId },
+        type: QueryTypes.SELECT,
+      });
+      if (!kidData.length) {
+        await transaction.rollback();
+        return res.status(404).send("Kid not found");
       }
+      const { total_diamonds, playTimeRemaining } = kidData[0];
 
-      // Fetch kid's data
-      const kidDataSQL = `
+      const remainSecondsToPlay = timeStringToSeconds(playTimeRemaining);
+      if (remainSecondsToPlay <= 0) {
+        return res.status(400).send("No playtime left");
+      }
+      const remainingMinutes = Math.floor(remainSecondsToPlay / 60);
+      const diamonds = Math.floor(remainingMinutes / convertRate);
+      const newDiamonds = total_diamonds + diamonds;
+      const newPlayTime = 0;
+
+      const updateSQL = `update users set total_diamonds = :newDiamonds, playTimeRemaining = :newPlayTime where id = :kidId and is_register = 1 and is_active = 1 and user_type = 'kid'`;
+      await this.sequelize.query(updateSQL, {
+        replacements: { newDiamonds, newPlayTime, kidId },
+        type: QueryTypes.UPDATE,
+      });
+
+      const insertSQL = `insert into convertdiamonds (userId,user_type,convert_from,minutes_amount,diamons_amount,total_diamonds_after) values (:kidId,'kid','minutes',:remainingMinutes,:diamonds,:newDiamonds)`;
+      await this.sequelize.query(insertSQL, {
+        replacements: { remainingMinutes, diamonds, newDiamonds, kidId },
+        type: QueryTypes.INSERT,
+      });
+
+      return res
+        .status(200)
+        .send({ convertedDiamonds: diamonds, totalDiamonds: newDiamonds });
+    } catch (err) {
+      console.log(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in converminutes.",
+      });
+    }
+  };
+
+  //put /api/kid/converdiamonds?amount=10 but can be also without amount
+  convertDiamonds = async (req, res) => {
+    console.log("At convertDiamonds");
+    const convertRate = 1; // 1 diamond = 1 minute
+    try {
+      const kidId = req.user.userId;
+      const requestedAmount = req.query.amount
+        ? parseInt(req.query.amount)
+        : null;
+      if (!kidId) {
+        return res.status(400).send("Invalid kid ID");
+      }
+      const SQL = `
         SELECT total_diamonds, dailyTimeLimit, dailyTimeUsed, playTimeRemaining
-        FROM users
+        FROM users 
         WHERE id = :kidId AND is_register = 1 AND is_active = 1 AND user_type = 'kid'
       `;
-      const kidData = await this.sequelize.query(kidDataSQL, {
+      const kidData = await this.sequelize.query(SQL, {
         replacements: { kidId },
         type: QueryTypes.SELECT,
       });
@@ -645,64 +686,78 @@ class ControllerKids extends BaseController {
       if (!kidData.length) {
         return res.status(404).send("Kid not found");
       }
-
       const {
         total_diamonds,
         dailyTimeLimit,
         dailyTimeUsed,
         playTimeRemaining,
       } = kidData[0];
-      //  If the kid has fewer diamonds than the requested amount, use the max they have
-      let diamonds = Math.min(amount, total_diamonds);
-      // Calculate available playtime to add (based on daily limit)
-      const availableSeconds = calculateAvailableTime(
-        dailyTimeLimit,
-        dailyTimeUsed
-      );
-      // Convert diamonds to playtime (1 diamond = 60 seconds)
-      let addSeconds = diamonds * 60;
-      //  If available time is less than what diamonds would provide, adjust the diamonds and time to add
-      if (availableSeconds < addSeconds) {
-        addSeconds = availableSeconds;
-        diamonds = Math.floor(addSeconds / 60);
+
+      const dailyLimitSeconds = timeStringToSeconds(dailyTimeLimit);
+      const dailyUsedSeconds = timeStringToSeconds(dailyTimeUsed);
+      const playTimeRemainingSeconds = timeStringToSeconds(playTimeRemaining);
+      const maxConvertibleSeconds =
+        dailyLimitSeconds - dailyUsedSeconds - playTimeRemainingSeconds;
+
+      if (maxConvertibleSeconds <= 0) {
+        return res.status(400).send("No time available to convert");
       }
 
-      if (addSeconds <= 0) {
-        return res.status(400).send("No diamonds left");
+      const maxConvertibleMinutes = Math.floor(maxConvertibleSeconds / 60);
+
+      // Determine the diamonds to convert: use the requested amount if provided, otherwise the maximum possible
+      const diamondsToConvert = Math.min(
+        requestedAmount ?? total_diamonds, // If requestedAmount is null, use total_diamonds
+        total_diamonds,
+        maxConvertibleMinutes * convertRate
+      );
+
+      if (diamondsToConvert <= 0) {
+        return res
+          .status(400)
+          .send("Not enough diamonds or playtime to convert");
       }
-      const newPlayTime = timeStringToSeconds(playTimeRemaining) + addSeconds;
-      const newPlayTimeStr = secondsToTimeString(newPlayTime);
+
+      const newDiamonds = total_diamonds - diamondsToConvert;
+      const additionalPlaytime = diamondsToConvert * 60; // convert minutes to seconds
+      const newPlayTimeRemaining =
+        playTimeRemainingSeconds + additionalPlaytime;
+      const newPlayTimeFormatted = secondsToTimeString(newPlayTimeRemaining);
+
       const updateSQL = `
-        UPDATE users
-        SET 
-          total_diamonds = total_diamonds - :diamonds,
-          playTimeRemaining = :newPlayTimeStr,
-          updateAt = NOW()
-        WHERE 
-          id = :kidId AND 
-          is_register = 1 AND 
-          is_active = 1 AND 
-          user_type = 'kid'
+        UPDATE users 
+        SET total_diamonds = :newDiamonds, playTimeRemaining = :newPlayTime 
+        WHERE id = :kidId AND is_register = 1 AND is_active = 1 AND user_type = 'kid'
       `;
       await this.sequelize.query(updateSQL, {
-        replacements: {
-          diamonds,
-          newPlayTimeStr,
-          kidId,
-        },
+        replacements: { newDiamonds, newPlayTime: newPlayTimeFormatted, kidId },
         type: QueryTypes.UPDATE,
       });
 
-      // Return a success response
+      const insertSQL = `
+        INSERT INTO convertdiamonds 
+        (userId, user_type, convert_from, minutes_amount, diamons_amount, total_diamonds_after, createdAt) 
+        VALUES (:kidId, 'kid', 'diamonds_to_minutes', :convertedMinutes, :diamondsUsed, :newDiamonds, CURRENT_TIMESTAMP)
+      `;
+      await this.sequelize.query(insertSQL, {
+        replacements: {
+          kidId,
+          convertedMinutes: diamondsToConvert,
+          diamondsUsed: diamondsToConvert,
+          newDiamonds,
+        },
+        type: QueryTypes.INSERT,
+      });
+
       return res.status(200).send({
-        message: `${diamonds} diamonds converted to ${
-          addSeconds / 60
-        } playtime minutes`,
+        convertedMinutes: diamondsToConvert,
+        totalDiamonds: newDiamonds,
+        newPlayTimeRemaining: newPlayTimeFormatted,
       });
     } catch (err) {
-      console.error("Error in convertDiamonds:", err);
+      console.log("Error in convertDiamonds:", err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred while converting diamonds.",
+        err: err.message || "Some error occurred in convertDiamonds.",
       });
     }
   };
