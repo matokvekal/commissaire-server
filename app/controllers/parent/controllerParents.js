@@ -576,5 +576,106 @@ class ControllerParents extends BaseController {
       });
     }
   }
+  // POST /api/parent/diamonds
+
+  updateDiamonds = async (req, res) => {
+    console.log("At updateDiamonds");
+    const { parent_id } = req.user;
+    const { kidid, leftDiamond, giveDiamonds } = req.body;
+
+    // Validate input
+    if (!kidid || giveDiamonds == null || leftDiamond == null || !parent_id) {
+      return res
+        .status(400)
+        .send(
+          "Invalid parameters"
+        );
+    }
+
+    if (giveDiamonds > 50) {
+      return res
+        .status(400)
+        .send(
+          "The amount of diamonds given cannot exceed the maximum "
+        );
+    }
+
+    try {
+      // Fetch the kid's current daily diamonds and last update date
+      const SQL = `
+      SELECT daily_left_diamonds, diamond_last_update,total_diamonds 
+      FROM users 
+      WHERE id = :kidid AND is_register = 1 AND is_active = 1 AND user_type = 'kid'
+    `;
+      const kidData = await this.sequelize.query(SQL, {
+        replacements: { kidid },
+        type: QueryTypes.SELECT,
+      });
+
+      if (!kidData.length) {
+        return res.status(404).send("Kid not found");
+      }
+
+      let { daily_left_diamonds, diamond_last_update, total_diamonds } =
+        kidData[0];
+      const today = new Date();
+      const lastUpdateDate = diamond_last_update
+        ? new Date(diamond_last_update)
+        : null;
+
+      // Check if diamond_last_update is today
+      const isLastUpdateToday =
+        lastUpdateDate &&
+        lastUpdateDate.getFullYear() === today.getFullYear() &&
+        lastUpdateDate.getMonth() === today.getMonth() &&
+        lastUpdateDate.getDate() === today.getDate();
+
+      // Reset daily_left_diamonds to 50 if last update is not today
+      if (!isLastUpdateToday) {
+        daily_left_diamonds = 50;
+      }
+
+      // Validate that the number of diamonds given does not exceed the available diamonds
+      if (giveDiamonds > daily_left_diamonds) {
+        return res.status(400).send("Insufficient daily diamonds remaining");
+      }
+
+      // Deduct diamonds and update the database
+      const newDailyleftDiamonds = daily_left_diamonds - giveDiamonds;
+      const updateSQL = `
+      UPDATE users 
+      SET daily_left_diamonds = :newDailyleftDiamonds, diamond_last_update = CURRENT_DATE ,total_diamonds = total_diamonds + :giveDiamonds
+      WHERE id = :kidid AND is_register = 1 AND is_active = 1 AND user_type = 'kid'
+    `;
+      await this.sequelize.query(updateSQL, {
+        replacements: { newDailyleftDiamonds, kidid, giveDiamonds },
+        type: QueryTypes.UPDATE,
+      });
+      // Insert the diamond transaction into the give_diamonds table
+      const insertSQL = `
+      INSERT INTO give_diamonds (parent_id, kid_id, amount, kid_total_diamonds, created_at) 
+      VALUES (:parent_id, :kidid, :giveDiamonds, :total_diamonds + :giveDiamonds, CURRENT_TIMESTAMP)
+      `;
+      await this.sequelize.query(insertSQL, {
+        replacements: {
+          parent_id,
+          kidid,
+          giveDiamonds,
+          total_diamonds,
+        },
+        type: QueryTypes.INSERT,
+      });
+
+      return res.status(200).send({
+        message: "Diamonds awarded successfully",
+        daily_left_diamonds: newDailyleftDiamonds,
+      });
+    } catch (err) {
+      console.log("Error in updateDiamonds:", err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in updateDiamonds.",
+      });
+    }
+  };
 }
 export default ControllerParents;
