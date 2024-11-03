@@ -48,7 +48,11 @@ export default (router, app) => {
   //   `/${modelBase}/disable`,
   //   parentsController.disableKids.bind(parentsController)
   // );
-
+// POST /api/parent/diamonds
+router.post(
+  `/${modelBase}/diamonds`,
+  parentsController.updateDiamonds.bind(parentsController)
+);
   //GET /api/parent/kidapps
   router.get(
     `/${modelBase}/kidapps`,

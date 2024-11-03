@@ -644,7 +644,7 @@ class ControllerKids extends BaseController {
         type: QueryTypes.UPDATE,
       });
 
-      const insertSQL = `insert into convertdiamonds (userId,user_type,convert_from,minutes_amount,diamons_amount,total_diamonds_after) values (:kidId,'kid','minutes',:remainingMinutes,:diamonds,:newDiamonds)`;
+      const insertSQL = `insert into convert_diamonds (userId,user_type,convert_from,minutes_amount,diamons_amount,total_diamonds_after) values (:kidId,'kid','minutes',:remainingMinutes,:diamonds,:newDiamonds)`;
       await this.sequelize.query(insertSQL, {
         replacements: { remainingMinutes, diamonds, newDiamonds, kidId },
         type: QueryTypes.INSERT,
@@ -662,6 +662,7 @@ class ControllerKids extends BaseController {
   };
 
   //put /api/kid/converdiamonds?amount=10 but can be also without amount
+  //kid can ask to convert his diamonds to minutes
   convertDiamonds = async (req, res) => {
     console.log("At convertDiamonds");
     const convertRate = 1; // 1 diamond = 1 minute
@@ -735,7 +736,7 @@ class ControllerKids extends BaseController {
       });
 
       const insertSQL = `
-        INSERT INTO convertdiamonds 
+        INSERT INTO convert_diamonds 
         (userId, user_type, convert_from, minutes_amount, diamons_amount, total_diamonds_after, createdAt) 
         VALUES (:kidId, 'kid', 'diamonds_to_minutes', :convertedMinutes, :diamondsUsed, :newDiamonds, CURRENT_TIMESTAMP)
       `;

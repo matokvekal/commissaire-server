@@ -577,7 +577,7 @@ class ControllerParents extends BaseController {
     }
   }
   // POST /api/parent/diamonds
-
+//parent can git to kid up to 50 diaminods per day
   updateDiamonds = async (req, res) => {
     console.log("At updateDiamonds");
     const { parent_id } = req.user;
