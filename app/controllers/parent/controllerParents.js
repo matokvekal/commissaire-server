@@ -577,27 +577,21 @@ class ControllerParents extends BaseController {
     }
   }
   // POST /api/parent/diamonds
-//parent can git to kid up to 50 diaminods per day
-  updateDiamonds = async (req, res) => {
-    console.log("At updateDiamonds");
-    const { parent_id } = req.user;
-    const { kidid, leftDiamond, giveDiamonds } = req.body;
+  //parent can git to kid up to 50 diaminods per day
+  giveDiamonds = async (req, res) => {
+    console.log("At giveDiamonds");
+    const { userId: parent_id } = req.user;
+    const { kidid, giveDiamonds } = req.body;
 
     // Validate input
-    if (!kidid || giveDiamonds == null || leftDiamond == null || !parent_id) {
-      return res
-        .status(400)
-        .send(
-          "Invalid parameters"
-        );
+    if (!kidid || giveDiamonds == null || !parent_id) {
+      return res.status(400).send("Invalid parameters");
     }
 
     if (giveDiamonds > 50) {
       return res
         .status(400)
-        .send(
-          "The amount of diamonds given cannot exceed the maximum "
-        );
+        .send("The amount of diamonds given cannot exceed the maximum ");
     }
 
     try {
@@ -653,7 +647,7 @@ class ControllerParents extends BaseController {
       });
       // Insert the diamond transaction into the give_diamonds table
       const insertSQL = `
-      INSERT INTO give_diamonds (parent_id, kid_id, amount, kid_total_diamonds, created_at) 
+      INSERT INTO give_diamonds (parent_id, kid_id, amount, kid_total_diamonds, createdAt) 
       VALUES (:parent_id, :kidid, :giveDiamonds, :total_diamonds + :giveDiamonds, CURRENT_TIMESTAMP)
       `;
       await this.sequelize.query(insertSQL, {
@@ -671,9 +665,9 @@ class ControllerParents extends BaseController {
         daily_left_diamonds: newDailyleftDiamonds,
       });
     } catch (err) {
-      console.log("Error in updateDiamonds:", err);
+      console.log("Error in giveDiamonds:", err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in updateDiamonds.",
+        err: err.message || "Some error occurred in giveDiamonds.",
       });
     }
   };

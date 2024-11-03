@@ -610,6 +610,7 @@ class ControllerKids extends BaseController {
     }
   };
   //POST api/kid/convertminutes
+  //every night the kids app will convert the remaining playtime to diamonds
   convertMinutes = async (req, res) => {
     console.log(" at convertminutes");
     const convertRate = 1;

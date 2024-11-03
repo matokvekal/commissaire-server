@@ -48,11 +48,11 @@ export default (router, app) => {
   //   `/${modelBase}/disable`,
   //   parentsController.disableKids.bind(parentsController)
   // );
-// POST /api/parent/diamonds
-router.post(
-  `/${modelBase}/diamonds`,
-  parentsController.updateDiamonds.bind(parentsController)
-);
+  // POST /api/parent/diamonds
+  router.post(
+    `/${modelBase}/diamonds`,
+    parentsController.giveDiamonds.bind(parentsController)
+  );
   //GET /api/parent/kidapps
   router.get(
     `/${modelBase}/kidapps`,
@@ -66,11 +66,10 @@ router.post(
   );
 
   // GET /api/parent/schedule/:kidId
-router.get(
-  `/${modelBase}/schedule/:kidId`,
-  parentsController.getKidSchedule.bind(parentsController)
-);
-
+  router.get(
+    `/${modelBase}/schedule/:kidId`,
+    parentsController.getKidSchedule.bind(parentsController)
+  );
 
   //POST /api/parent/schedule
   router.post(
