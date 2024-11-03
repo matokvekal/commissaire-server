@@ -581,14 +581,13 @@ class ControllerParents extends BaseController {
   giveDiamonds = async (req, res) => {
     console.log("At giveDiamonds");
     const { userId: parent_id } = req.user;
-    const { kidid, giveDiamonds } = req.body;
-
-    // Validate input
-    if (!kidid || giveDiamonds == null || !parent_id) {
+    const { amount, kidid } = req.body;
+    console.log("amount", amount, "kidid", kidid, "parent_id", parent_id);
+    if (!kidid || amount == null || !parent_id) {
       return res.status(400).send("Invalid parameters");
     }
 
-    if (giveDiamonds > 50) {
+    if (amount > 50) {
       return res
         .status(400)
         .send("The amount of diamonds given cannot exceed the maximum ");
@@ -630,31 +629,31 @@ class ControllerParents extends BaseController {
       }
 
       // Validate that the number of diamonds given does not exceed the available diamonds
-      if (giveDiamonds > daily_left_diamonds) {
+      if (amount > daily_left_diamonds) {
         return res.status(400).send("Insufficient daily diamonds remaining");
       }
 
       // Deduct diamonds and update the database
-      const newDailyleftDiamonds = daily_left_diamonds - giveDiamonds;
+      const newDailyleftDiamonds = daily_left_diamonds - amount;
       const updateSQL = `
       UPDATE users 
-      SET daily_left_diamonds = :newDailyleftDiamonds, diamond_last_update = CURRENT_DATE ,total_diamonds = total_diamonds + :giveDiamonds
+      SET daily_left_diamonds = :newDailyleftDiamonds, diamond_last_update = CURRENT_DATE ,total_diamonds = total_diamonds + :amount
       WHERE id = :kidid AND is_register = 1 AND is_active = 1 AND user_type = 'kid'
     `;
       await this.sequelize.query(updateSQL, {
-        replacements: { newDailyleftDiamonds, kidid, giveDiamonds },
+        replacements: { newDailyleftDiamonds, kidid, amount },
         type: QueryTypes.UPDATE,
       });
       // Insert the diamond transaction into the give_diamonds table
       const insertSQL = `
       INSERT INTO give_diamonds (parent_id, kid_id, amount, kid_total_diamonds, createdAt) 
-      VALUES (:parent_id, :kidid, :giveDiamonds, :total_diamonds + :giveDiamonds, CURRENT_TIMESTAMP)
+      VALUES (:parent_id, :kidid, :amount, :total_diamonds + :amount, CURRENT_TIMESTAMP)
       `;
       await this.sequelize.query(insertSQL, {
         replacements: {
           parent_id,
           kidid,
-          giveDiamonds,
+          amount,
           total_diamonds,
         },
         type: QueryTypes.INSERT,
