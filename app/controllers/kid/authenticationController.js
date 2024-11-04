@@ -19,7 +19,6 @@ class AuthenticationController extends BaseController {
     super(app, modelName);
   }
 
-
   //Post /api/kid/login
   login = async (req, res) => {
     try {
@@ -54,7 +53,7 @@ class AuthenticationController extends BaseController {
         console.log("Failed to verify token:", error.message || error);
         return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
       }
- 
+
       let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
@@ -118,7 +117,8 @@ class AuthenticationController extends BaseController {
         console.log("Failed to verify token:", error.message || error);
         return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
       }
-      const { email, uid, name, picture } = getUserData(decodedToken);
+      const { email, uid, name, picture, phone_number } =
+        getUserData(decodedToken);
 
       if (!email) {
         return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);

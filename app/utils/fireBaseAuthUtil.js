@@ -29,8 +29,8 @@ const verifyIdToken = async (idToken) => {
  * @returns {object} - User data including email, uid, name, and picture
  */
 const getUserData = (decodedToken) => {
-  const { email, uid, name, picture } = decodedToken;
-  return { email, uid, name, picture };
+  const { email, uid, name, picture, phone_number } = decodedToken;
+  return { email, uid, name, picture, phone_number };
 };
 
 export { verifyIdToken, getUserData };

@@ -163,7 +163,7 @@ class ControllerParents extends BaseController {
         increment_apps As increment,
         decrement_apps As decrement,
         u.updateAt,
-        u.icon,
+        u.google_picture as icon,
         u.daily_left_diamonds,
         u.diamond_last_update
       FROM users u
