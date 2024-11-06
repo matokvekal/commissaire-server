@@ -146,6 +146,7 @@ class AuthenticationController extends BaseController {
         getUserData(decodedToken);
 
       if (!email) {
+        console.log("no email kid register email:", email);
         return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
       }
       await createSingleLog(
@@ -165,8 +166,10 @@ class AuthenticationController extends BaseController {
       if (kid.length > 0) {
         kid = kid[0];
         if (kid.is_active === 0) {
+          console.log("error kid is not active");
           return res.status(400).send(ServerErrors.CONTACT_ADMIN);
         } else if (kid.is_register === 1) {
+          console.log("error kid is already registered");
           return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
         } else if (
           kid.otp_trys >= 3 &&
@@ -188,6 +191,7 @@ class AuthenticationController extends BaseController {
       });
       console.log("family data", family);
       if (family.length === 0) {
+        console.log("error family not exist");
         // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
         res.createErrorLogAndSend(this.sequelize, {
           err: err.message || "Some error occurred in register kid.3",
