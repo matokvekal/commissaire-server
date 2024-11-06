@@ -39,7 +39,11 @@ class AuthenticationController extends BaseController {
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       const { email } = getUserData(decodedToken);
       if (!email) {
-        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
+        console.log("no email kid login");
+        // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in kid login 1.",
+        });
       }
       console.log("valid", valid, "decodedToken", decodedToken, "error", error);
       await createSingleLog(
@@ -51,7 +55,10 @@ class AuthenticationController extends BaseController {
       );
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
-        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+        // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in login kid.2",
+        });
       }
 
       let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
@@ -59,16 +66,25 @@ class AuthenticationController extends BaseController {
         replacements: { email },
         type: QueryTypes.SELECT,
       });
-      console.log("kid data", kid);
+      console.log("kid data1", kid);
       if (kid.length === 0) {
-        return res.status(400).send(ServerErrors.NOT_REGISTERED);
+        // return res.status(400).send(ServerErrors.NOT_REGISTERED);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in login kid.3",
+        });
       }
       kid = kid[0];
       if (kid.is_active !== 1) {
-        return res.status(400).send(ServerErrors.CONTACT_ADMIN);
+        // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in login kid.4",
+        });
       }
       if (!kid.is_register) {
-        return res.status(400).send(ServerErrors.NOT_REGISTERED);
+        // return res.status(400).send(ServerErrors.NOT_REGISTERED);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in login kid.5",
+        });
       }
       SQL = `select distinct * from family where id=:family_id and is_active=1`;
       let family = await this.sequelize.query(SQL, {
@@ -76,12 +92,18 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (family.length === 0) {
-        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in login kid.6",
+        });
       }
       family = family[0];
       const phoneNumber = family.parent_phone;
       if (!phoneNumber) {
-        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in login kid.7",
+        });
       }
       //TODO
       //change this code to send Email instead of sms in case sms failer
@@ -95,7 +117,7 @@ class AuthenticationController extends BaseController {
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
+        err: err.message || "Some error occurred in login kid.8",
       });
     }
   };
@@ -115,7 +137,10 @@ class AuthenticationController extends BaseController {
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
-        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+        // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in register kid.1",
+        });
       }
       const { email, uid, name, picture, phone_number } =
         getUserData(decodedToken);
@@ -149,7 +174,10 @@ class AuthenticationController extends BaseController {
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
-          return res.status(400).send(ServerErrors.TOO_MANY_TRIES);
+          // return res.status(400).send(ServerErrors.TOO_MANY_TRIES);
+          res.createErrorLogAndSend(this.sequelize, {
+            err: err.message || "Some error occurred in register kid.2",
+          });
         }
       }
 
@@ -160,7 +188,10 @@ class AuthenticationController extends BaseController {
       });
       console.log("family data", family);
       if (family.length === 0) {
-        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in register kid.3",
+        });
       }
 
       family = family[0];
@@ -193,7 +224,10 @@ class AuthenticationController extends BaseController {
           return res.status(200).send(ServerMessages.OTP_SENT_SUCCESS);
         }
       } else {
-        return res.status(400).send(ServerErrors.GENERAL_ERROR);
+        // return res.status(400).send(ServerErrors.GENERAL_ERROR);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in register kid.4",
+        });
       }
     } catch (err) {
       console.log(err);
@@ -217,12 +251,18 @@ class AuthenticationController extends BaseController {
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
-        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+        // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in confirmCode kid.1",
+        });
       }
       const { email } = getUserData(decodedToken);
 
       if (!email) {
-        return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
+        // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in confirmCode kid.2",
+        });
       }
 
       await createSingleLog(
@@ -240,11 +280,15 @@ class AuthenticationController extends BaseController {
       });
 
       if (kid.length === 0) {
+        console.log("Invalid OTP");
         return res.status(400).send(ServerErrors.INVALID_OTP);
       }
       kid = kid[0];
       if (kid.user_type === "kid" && kid.is_register === 1) {
-        return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
+        // return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
+        res.createErrorLogAndSend(this.sequelize, {
+          err: err.message || "Some error occurred in confirmCode kid.3",
+        });
       }
 
       SQL = `update users set is_register=1,otp_trys=0,user_type="kid" where id=${kid.id}`;
