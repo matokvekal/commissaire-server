@@ -169,8 +169,8 @@ class AuthenticationController extends BaseController {
           console.log("error kid is not active");
           return res.status(400).send(ServerErrors.CONTACT_ADMIN);
         } else if (kid.is_register === 1) {
-          console.log("error kid is already registered");
-          return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
+          console.log("200 kid is already registered the app shuld login");
+          return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED);//here the app shuld login
         } else if (
           kid.otp_trys >= 3 &&
           moment(kid.last_otp).isAfter(
