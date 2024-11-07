@@ -20,107 +20,107 @@ class AuthenticationController extends BaseController {
   }
 
   //Post /api/kid/login
-  login = async (req, res) => {
-    try {
-      console.log("at kid login controller...");
-      const { googleToken } = req.body;
-      console.log("googleToken", googleToken);
-      await createSingleLog(
-        "try login kid",
-        this.sequelize,
-        req,
-        `googleToken ${googleToken} `,
-        "/kid/login"
-      );
+  // login = async (req, res) => {
+  //   try {
+  //     console.log("at kid login controller...");
+  //     const { googleToken } = req.body;
+  //     console.log("googleToken", googleToken);
+  //     await createSingleLog(
+  //       "try login kid",
+  //       this.sequelize,
+  //       req,
+  //       `googleToken ${googleToken} `,
+  //       "/kid/login"
+  //     );
 
-      if (!googleToken) {
-        return res.status(400).send(ServerErrors.MISSING_DETAILS);
-      }
-      const { valid, decodedToken, error } = await verifyIdToken(googleToken);
-      const { email } = getUserData(decodedToken);
-      if (!email) {
-        console.log("no email kid login");
-        // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in kid login 1.",
-        });
-      }
-      console.log("valid", valid, "decodedToken", decodedToken, "error", error);
-      await createSingleLog(
-        email,
-        this.sequelize,
-        req,
-        `valid ${valid};error ${error} `,
-        "/kid/login"
-      );
-      if (!valid) {
-        console.log("Failed to verify token:", error.message || error);
-        // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.2",
-        });
-      }
+  //     if (!googleToken) {
+  //       return res.status(400).send(ServerErrors.MISSING_DETAILS);
+  //     }
+  //     const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+  //     const { email } = getUserData(decodedToken);
+  //     if (!email) {
+  //       console.log("no email kid login");
+  //       // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in kid login 1.",
+  //       });
+  //     }
+  //     console.log("valid", valid, "decodedToken", decodedToken, "error", error);
+  //     await createSingleLog(
+  //       email,
+  //       this.sequelize,
+  //       req,
+  //       `valid ${valid};error ${error} `,
+  //       "/kid/login"
+  //     );
+  //     if (!valid) {
+  //       console.log("Failed to verify token:", error.message || error);
+  //       // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in login kid.2",
+  //       });
+  //     }
 
-      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
-      let kid = await this.sequelize.query(SQL, {
-        replacements: { email },
-        type: QueryTypes.SELECT,
-      });
-      console.log("kid data1", kid);
-      if (kid.length === 0) {
-        // return res.status(400).send(ServerErrors.NOT_REGISTERED);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.3",
-        });
-      }
-      kid = kid[0];
-      if (kid.is_active !== 1) {
-        // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.4",
-        });
-      }
-      if (!kid.is_register) {
-        // return res.status(400).send(ServerErrors.NOT_REGISTERED);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.5",
-        });
-      }
-      SQL = `select distinct * from family where id=:family_id and is_active=1`;
-      let family = await this.sequelize.query(SQL, {
-        replacements: { family_id: kid.family_id },
-        type: QueryTypes.SELECT,
-      });
-      if (family.length === 0) {
-        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.6",
-        });
-      }
-      family = family[0];
-      const phoneNumber = family.parent_phone;
-      if (!phoneNumber) {
-        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.7",
-        });
-      }
-      //TODO
-      //change this code to send Email instead of sms in case sms failer
-      // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
-      // singleSmsSender(phoneNumber, messageBody);
-      const token = createJwtToken(kid.email, "kid");
-      return res
-        .setHeader("Authorization", `Bearer ${token}`)
-        .status(200)
-        .send(ServerMessages.AUTHORIZATION_SUCCESS);
-    } catch (err) {
-      console.error(err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in login kid.8",
-      });
-    }
-  };
+  //     let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
+  //     let kid = await this.sequelize.query(SQL, {
+  //       replacements: { email },
+  //       type: QueryTypes.SELECT,
+  //     });
+  //     console.log("kid data1", kid);
+  //     if (kid.length === 0) {
+  //       // return res.status(400).send(ServerErrors.NOT_REGISTERED);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in login kid.3",
+  //       });
+  //     }
+  //     kid = kid[0];
+  //     if (kid.is_active !== 1) {
+  //       // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in login kid.4",
+  //       });
+  //     }
+  //     if (!kid.is_register) {
+  //       // return res.status(400).send(ServerErrors.NOT_REGISTERED);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in login kid.5",
+  //       });
+  //     }
+  //     SQL = `select distinct * from family where id=:family_id and is_active=1`;
+  //     let family = await this.sequelize.query(SQL, {
+  //       replacements: { family_id: kid.family_id },
+  //       type: QueryTypes.SELECT,
+  //     });
+  //     if (family.length === 0) {
+  //       // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in login kid.6",
+  //       });
+  //     }
+  //     family = family[0];
+  //     const phoneNumber = family.parent_phone;
+  //     if (!phoneNumber) {
+  //       // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
+  //       res.createErrorLogAndSend(this.sequelize, {
+  //         err: err.message || "Some error occurred in login kid.7",
+  //       });
+  //     }
+  //     //TODO
+  //     //change this code to send Email instead of sms in case sms failer
+  //     // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
+  //     // singleSmsSender(phoneNumber, messageBody);
+  //     const token = createJwtToken(kid.email, "kid");
+  //     return res
+  //       .setHeader("Authorization", `Bearer ${token}`)
+  //       .status(200)
+  //       .send(ServerMessages.AUTHORIZATION_SUCCESS);
+  //   } catch (err) {
+  //     console.error(err);
+  //     res.createErrorLogAndSend(this.sequelize, {
+  //       err: err.message || "Some error occurred in login kid.8",
+  //     });
+  //   }
+  // };
 
   // POST /api/kid/register
   register = async (req, res) => {
@@ -188,7 +188,7 @@ class AuthenticationController extends BaseController {
           // return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED);//here the app shuld login
           return res.createErrorLogAndSend(this.sequelize, {
             code: "KID_ALREADY_REGISTERED",
-            status: 200,
+            status: 205,
           });
         } else if (
           kid.otp_trys >= 3 &&
