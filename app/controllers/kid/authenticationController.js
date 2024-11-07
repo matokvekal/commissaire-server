@@ -37,6 +37,10 @@ class AuthenticationController extends BaseController {
         return res.status(400).send(ServerErrors.MISSING_DETAILS);
       }
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
+      if (!valid) {
+        console.log("Failed to verify token:", error.message || error);
+        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
+      }
       const { email } = getUserData(decodedToken);
       if (!email) {
         console.log("no email kid login");
@@ -53,10 +57,7 @@ class AuthenticationController extends BaseController {
         `valid ${valid};error ${error} `,
         "/kid/login"
       );
-      if (!valid) {
-        console.log("Failed to verify token:", error.message || error);
-        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
-      }
+
 
       let SQL = `select distinct * from users where  email=:email and user_type="kid" `;
       let kid = await this.sequelize.query(SQL, {
