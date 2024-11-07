@@ -66,25 +66,15 @@ class AuthenticationController extends BaseController {
         replacements: { email },
         type: QueryTypes.SELECT,
       });
-      console.log("kid data1", kid);
       if (kid.length === 0) {
-        // return res.status(400).send(ServerErrors.NOT_REGISTERED);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in login kid.3",
-        });
+        return res.status(400).send(ServerErrors.NOT_REGISTERED);
       }
       kid = kid[0];
       if (kid.is_active !== 1) {
-        // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in login kid.4",
-        });
+        return res.status(400).send(ServerErrors.CONTACT_ADMIN);
       }
       if (!kid.is_register) {
-        // return res.status(400).send(ServerErrors.NOT_REGISTERED);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in login kid.5",
-        });
+        return res.status(400).send(ServerErrors.NOT_REGISTERED);
       }
       SQL = `select distinct * from family where id=:family_id and is_active=1`;
       let family = await this.sequelize.query(SQL, {
@@ -92,18 +82,12 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (family.length === 0) {
-        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in login kid.6",
-        });
+        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       family = family[0];
       const phoneNumber = family.parent_phone;
       if (!phoneNumber) {
-        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in login kid.7",
-        });
+        return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       //TODO
       //change this code to send Email instead of sms in case sms failer
