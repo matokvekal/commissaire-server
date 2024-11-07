@@ -51,7 +51,7 @@ class ControllerParents extends BaseController {
       });
       return res.status(200).send("Token saved successfully");
     } catch (err) {
-      console.error(err);
+      console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in saving token.",
       });
@@ -76,7 +76,7 @@ class ControllerParents extends BaseController {
       });
       return res.status(200).send({ kids });
     } catch (err) {
-      console.error(err);
+      console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in getting kids.",
       });
@@ -127,7 +127,7 @@ class ControllerParents extends BaseController {
       });
       return res.status(200).send({ usage });
     } catch (err) {
-      console.error(err);
+      console.log(err);
       // res.status(500).send({
       //    "Some error occurred in getting usage."
       // });
@@ -187,7 +187,7 @@ class ControllerParents extends BaseController {
       });
       return res.status(200).send({ kids });
     } catch (err) {
-      console.error(err);
+      console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in getting kids.",
       });
@@ -413,7 +413,7 @@ class ControllerParents extends BaseController {
       });
       return res.status(200).send({ usage });
     } catch (err) {
-      console.error(err);
+      console.log(err);
       // res.status(500).send({
       //   message:
       //     "Some error occurred in getting KidsUsageByDevices."
@@ -664,7 +664,7 @@ class ControllerParents extends BaseController {
         daily_left_diamonds: newDailyleftDiamonds,
       });
     } catch (err) {
-      console.error("Error in giveDiamonds:", err);
+      console.log("Error in giveDiamonds:", err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in giveDiamonds.",
       });
