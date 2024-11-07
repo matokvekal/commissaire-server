@@ -42,7 +42,7 @@ class AuthenticationController extends BaseController {
         console.log("no email kid login");
         // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in kid login 1.",
+          err: "Some error occurred in kid login 1.",
         });
       }
       console.log("valid", valid, "decodedToken", decodedToken, "error", error);
@@ -57,7 +57,7 @@ class AuthenticationController extends BaseController {
         console.log("Failed to verify token:", error.message || error);
         // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.2",
+          err: "Some error occurred in login kid.2",
         });
       }
 
@@ -70,20 +70,20 @@ class AuthenticationController extends BaseController {
       if (kid.length === 0) {
         // return res.status(400).send(ServerErrors.NOT_REGISTERED);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.3",
+          err: "Some error occurred in login kid.3",
         });
       }
       kid = kid[0];
       if (kid.is_active !== 1) {
         // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.4",
+          err: "Some error occurred in login kid.4",
         });
       }
       if (!kid.is_register) {
         // return res.status(400).send(ServerErrors.NOT_REGISTERED);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.5",
+          err: "Some error occurred in login kid.5",
         });
       }
       SQL = `select distinct * from family where id=:family_id and is_active=1`;
@@ -94,7 +94,7 @@ class AuthenticationController extends BaseController {
       if (family.length === 0) {
         // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.6",
+          err: "Some error occurred in login kid.6",
         });
       }
       family = family[0];
@@ -102,7 +102,7 @@ class AuthenticationController extends BaseController {
       if (!phoneNumber) {
         // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in login kid.7",
+          err: "Some error occurred in login kid.7",
         });
       }
       //TODO
@@ -140,10 +140,6 @@ class AuthenticationController extends BaseController {
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
-        // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
-        // res.createErrorLogAndSend(this.sequelize, {
-        //   err: err.message || "Some error occurred in register kid.1",
-        // });
         return res.createErrorLogAndSend(this.sequelize, {
           err: error,
           code: "INVALID_GOOGLE_TOKEN",
@@ -289,7 +285,7 @@ class AuthenticationController extends BaseController {
         console.error("Failed to verify token:", error.message || error);
         // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in confirmCode kid.1",
+          err: "Some error occurred in confirmCode kid.1",
         });
       }
       const { email } = getUserData(decodedToken);
@@ -297,7 +293,7 @@ class AuthenticationController extends BaseController {
       if (!email) {
         // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in confirmCode kid.2",
+          err: "Some error occurred in confirmCode kid.2",
         });
       }
 
@@ -323,7 +319,7 @@ class AuthenticationController extends BaseController {
       if (kid.user_type === "kid" && kid.is_register === 1) {
         // return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
         res.createErrorLogAndSend(this.sequelize, {
-          err: err.message || "Some error occurred in confirmCode kid.3",
+          err: "Some error occurred in confirmCode kid.3",
         });
       }
 
