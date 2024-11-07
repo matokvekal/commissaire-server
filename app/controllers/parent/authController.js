@@ -150,7 +150,7 @@ class AuthController extends BaseController {
       const cleanedPhone = getFixedValue(phone);
       // Retrieve the parent user with the given phone and OTP
       let SQL =
-        "SELECT DISTINCT * FROM users WHERE phone=:phone AND user_type='parent' AND otp=:otp";
+        "SELECT  * FROM users WHERE phone=:phone AND user_type='parent' AND otp=:otp";
       let parent = await this.sequelize.query(SQL, {
         replacements: { phone: cleanedPhone, otp: cleanedOtp },
         type: QueryTypes.SELECT,

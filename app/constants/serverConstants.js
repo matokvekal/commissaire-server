@@ -39,11 +39,12 @@ export const appStatus = {
   neutral: "neutral",
   unknown: "unknown",
 };
-export const deviceCategories = {
+export const googleCategories = {
   SYSTEM_APPS: {
     name: "System Apps",
     underscore_name: "system_apps",
-    description: "Pre-installed by the device manufacturer or OS, with elevated privileges.",
+    description:
+      "Pre-installed by the device manufacturer or OS, with elevated privileges.",
   },
   NON_SYSTEM_APPS: {
     name: "Non-System Apps",
@@ -53,21 +54,25 @@ export const deviceCategories = {
   SYSTEM_UPDATE_APPS: {
     name: "System Update Apps",
     underscore_name: "system_update_apps",
-    description: "Specialized apps for OTA updates, often part of Google Play Services.",
+    description:
+      "Specialized apps for OTA updates, often part of Google Play Services.",
   },
   PRE_INSTALLED_APPS: {
     name: "Pre-Installed Apps",
     underscore_name: "pre_installed_apps",
-    description: "Bloatware or carrier/OEM apps that are not critical to the OS.",
+    description:
+      "Bloatware or carrier/OEM apps that are not critical to the OS.",
   },
   GOOGLE_PLAY_SYSTEM_UPDATES: {
     name: "Google Play System Updates",
     underscore_name: "google_play_system_updates",
-    description: "Project Mainline updates, installed via Play Store for core Android modules.",
+    description:
+      "Project Mainline updates, installed via Play Store for core Android modules.",
   },
   PRIVILEGED_APPS: {
     name: "Privileged Apps",
     underscore_name: "privileged_apps",
-    description: "Apps in the privileged system folder with high-level access permissions.",
+    description:
+      "Apps in the privileged system folder with high-level access permissions.",
   },
 };

@@ -8,7 +8,7 @@ import isValidLocation from "../../utils/locationValidator.js";
 import {
   appStatus,
   ServerNumbers,
-  deviceCategories,
+  googleCategories,
 } from "../../constants/serverConstants.js";
 import {
   timeStringToSeconds,
@@ -77,9 +77,11 @@ class ControllerKids extends BaseController {
   // Post /api/kid/updateApp
   updateApp = async (req, res) => {
     //We asume that device_type_id=1 is for All aps
-    const deviceCategories = deviceCategories.map((cat) => cat.underscore_name);
+    const deviceCategories = Object.values(googleCategories).map(
+      (cat) => cat.underscore_name
+    );
 
-    console.log(" at updateAppNew");
+    console.log("deviceCategories:", deviceCategories);
     try {
       const kidId = req.user.userId;
       // const userName = req.user.userName;
@@ -87,7 +89,8 @@ class ControllerKids extends BaseController {
       const appCategory = req.body.appCategory;
       const packageName = req.body.packageName;
       const action = req.body.action;
-      let appDefaultStatus = appStatus.leisure;
+      // const deviceCategory = req.body.device_category;
+      let appDefaultStatus = appStatus.leisure; //HERE we define the default status for the app
 
       if (!packageName || !kidId || !deviceId || !action) {
         return res.status(400).send("Some data is missing");
@@ -183,7 +186,13 @@ class ControllerKids extends BaseController {
           SQL = `insert into kid_apps (kid_id, kid_device_id, app_id, status, is_active, is_exist,parent_has_change,device_category)
           values (:kidId, :deviceId, :appId, :status, 1, 1,0,:deviceCategory)`;
           await this.sequelize.query(SQL, {
-            replacements: { kidId, deviceId, appId, status: appstatus, deviceCategory },
+            replacements: {
+              kidId,
+              deviceId,
+              appId,
+              status: appstatus,
+              deviceCategory,
+            },
             type: QueryTypes.INSERT,
           });
         }
