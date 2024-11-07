@@ -51,7 +51,7 @@ export const singleSmsSender = async (
       if (sendSms) {
         sendSmsResult = await axios.post(url, body, { headers });
       } else {
-        console.log("SMS not sent");
+        console.error("SMS not sent");
         return true;
       }
       const success = sendSmsResult.statusText;

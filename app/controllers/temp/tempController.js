@@ -19,7 +19,7 @@ class tempController extends BaseController {
     try {
       res.status(200).send("Hello from hello1 controller");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in hello parent.",
       });
@@ -39,7 +39,7 @@ class tempController extends BaseController {
       );
       res.status(200).send("Hello from kids controller");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in hello.",
       });
@@ -68,14 +68,12 @@ class tempController extends BaseController {
       });
       res.status(200).send(token);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in simulateJwtToken.",
       });
     }
   };
-
-
 
   //Get /api/temp/add_kid/0542288530
   addKid = async (req, res) => {
@@ -94,7 +92,7 @@ class tempController extends BaseController {
       });
       return res.status(200).send("kid added");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in adding kid.",
       });
@@ -121,7 +119,7 @@ class tempController extends BaseController {
       );
       return res.status(200).send("kid deleted");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in deleting kid.",
       });

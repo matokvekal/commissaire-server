@@ -67,7 +67,7 @@ class ControllerKids extends BaseController {
         return res.status(200).send({ device_id });
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in registerDevice.",
       });
@@ -218,7 +218,7 @@ class ControllerKids extends BaseController {
         return res.status(200).send({ new: 0, status: appstatus });
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in updateAppNew.",
       });
@@ -293,7 +293,7 @@ class ControllerKids extends BaseController {
 
       return res.status(200).send("App usage saved successfully");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in appUsage.",
       });
@@ -401,7 +401,7 @@ class ControllerKids extends BaseController {
       });
       return res.status(200).send({ apps });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in getApps.",
       });
@@ -434,7 +434,7 @@ class ControllerKids extends BaseController {
 
       return res.status(200).send(results[0]);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in getApps.",
       });
@@ -473,7 +473,7 @@ class ControllerKids extends BaseController {
       const limits = results ? results[1][0].week_schedule : [];
       return res.status(200).send(limits);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in limits.",
       });
@@ -624,7 +624,7 @@ class ControllerKids extends BaseController {
       });
       return res.status(200).send("Token saved successfully");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in googleToken.",
       });
@@ -676,7 +676,7 @@ class ControllerKids extends BaseController {
         .status(200)
         .send({ convertedDiamonds: diamonds, totalDiamonds: newDiamonds });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in converminutes.",
       });
@@ -778,7 +778,7 @@ class ControllerKids extends BaseController {
         newPlayTimeRemaining: newPlayTimeFormatted,
       });
     } catch (err) {
-      console.log("Error in convertDiamonds:", err);
+      console.error("Error in convertDiamonds:", err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in convertDiamonds.",
       });

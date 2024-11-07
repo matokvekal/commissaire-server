@@ -115,7 +115,7 @@ class AuthenticationController extends BaseController {
         .status(200)
         .send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in login kid.8",
       });
@@ -177,7 +177,7 @@ class AuthenticationController extends BaseController {
       if (kid.length > 0) {
         kid = kid[0];
         if (kid.is_active === 0) {
-          console.log("error kid is not active");
+          console.error("Error kid is not active");
           // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
           return res.createErrorLogAndSend(this.sequelize, {
             code: "CONTACT_ADMIN",
@@ -214,7 +214,7 @@ class AuthenticationController extends BaseController {
       });
       console.log("family data", family);
       if (family.length === 0) {
-        console.log("error family not exist");
+        console.error("Error family not exist");
         // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
         // res.createErrorLogAndSend(this.sequelize, {
         //   err: err.message || "Some error occurred in register kid.3",
@@ -261,7 +261,7 @@ class AuthenticationController extends BaseController {
         });
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       // res.createErrorLogAndSend(this.sequelize, {
       //   err: err.message || ServerErrors.GENERAL_ERROR,
       // });
@@ -286,7 +286,7 @@ class AuthenticationController extends BaseController {
 
       const { valid, decodedToken, error } = await verifyIdToken(googleToken);
       if (!valid) {
-        console.log("Failed to verify token:", error.message || error);
+        console.error("Failed to verify token:", error.message || error);
         // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
         res.createErrorLogAndSend(this.sequelize, {
           err: err.message || "Some error occurred in confirmCode kid.1",
@@ -359,7 +359,7 @@ class AuthenticationController extends BaseController {
       return res.status(200).json({ devices: devices });
       //return token at header
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || ServerErrors.GENERAL_ERROR,
       });

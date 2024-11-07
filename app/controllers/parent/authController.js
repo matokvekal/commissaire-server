@@ -35,7 +35,7 @@ class AuthController extends BaseController {
   //     });
   //     return res.status(200).send("User deleted successfully");
   //   } catch (err) {
-  //     console.log(err);
+  //     console.error(err);;
   //     res.createErrorLogAndSend(this.sequelize, {
   //       err: err.message || ServerErrors.GENERAL_ERROR,
   //     });
@@ -124,7 +124,7 @@ class AuthController extends BaseController {
   //     const token = createJwtToken(phone, userType);
   //     return res.status(200).send(token);
   //   } catch (err) {
-  //     console.log(err);
+  //     console.error(err);;
   //     res.createErrorLogAndSend(this.sequelize, {
   //       err: err.message || ServerErrors.GENERAL_ERROR,
   //     });
@@ -226,7 +226,7 @@ class AuthController extends BaseController {
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || ServerErrors.GENERAL_ERROR,
       });

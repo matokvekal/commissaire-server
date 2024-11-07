@@ -75,7 +75,7 @@ const authenticationMiddleware = (db) => async (req, res, next) => {
     req.user = { userName, userId, familyId };
     next();
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.status(401).send("Invalid authentication token");
     // res.createErrorLogAndSend(this.sequelize, {
     //   err: err.message || "Invalid authentication token",
