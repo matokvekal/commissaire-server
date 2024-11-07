@@ -67,7 +67,7 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (kid.length === 0) {
-        return res.status(400).send(ServerErrors.NOT_REGISTERED);
+        return res.status(206).send(ServerErrors.NOT_REGISTERED);
       }
       kid = kid[0];
       if (kid.is_active !== 1) {
