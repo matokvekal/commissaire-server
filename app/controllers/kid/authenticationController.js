@@ -55,13 +55,10 @@ class AuthenticationController extends BaseController {
       );
       if (!valid) {
         console.log("Failed to verify token:", error.message || error);
-        // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in login kid.2",
-        });
+        return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
       }
 
-      let SQL = `select distinct * from users where  email=:email and user_type="kid" and is_active=1 `;
+      let SQL = `select distinct * from users where  email=:email and user_type="kid" `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
         type: QueryTypes.SELECT,
@@ -101,7 +98,7 @@ class AuthenticationController extends BaseController {
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in login kid.8",
+        err: err.message || "Some error occurred in login ",
       });
     }
   };
@@ -158,18 +155,14 @@ class AuthenticationController extends BaseController {
         kid = kid[0];
         if (kid.is_active === 0) {
           console.error("Error kid is not active");
-          // return res.status(400).send(ServerErrors.CONTACT_ADMIN);
-          return res.createErrorLogAndSend(this.sequelize, {
-            code: "CONTACT_ADMIN",
-            status: 400,
-          });
-        } else if (kid.is_register === 1) {
+          return res.status(400).send(ServerErrors.CONTACT_ADMIN);
+           } else if (kid.is_register === 1) {
           console.log("200 kid is already registered the app shuld login");
-          // return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED);//here the app shuld login
-          return res.createErrorLogAndSend(this.sequelize, {
-            code: "KID_ALREADY_REGISTERED",
-            status: 205,
-          });
+          return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED);//here the app shuld login
+          // return res.createErrorLogAndSend(this.sequelize, {
+          //   code: "KID_ALREADY_REGISTERED",
+          //   status: 205,
+          // });
         } else if (
           kid.otp_trys >= 3 &&
           moment(kid.last_otp).isAfter(
