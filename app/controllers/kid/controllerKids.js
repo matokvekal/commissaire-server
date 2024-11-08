@@ -683,7 +683,7 @@ class ControllerKids extends BaseController {
     }
   };
 
-  //put /api/kid/converdiamonds?amount=10 but can be also without amount
+  //put /api/kid/convertdiamonds?amount=10 but can be also without amount
   //kid can ask to convert his diamonds to minutes
   convertDiamonds = async (req, res) => {
     console.log("At convertDiamonds");

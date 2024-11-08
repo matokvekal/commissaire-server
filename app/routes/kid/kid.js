@@ -10,10 +10,10 @@ export default (router, app) => {
     kidsController.convertMinutes.bind(kidsController)
   );
 
-  //put /api/kid/converdiamonds?amount=10 but can be also without amount
+  //put /api/kid/convertdiamonds?amount=10 but can be also without amount
   //convertDiamonds = async (req, res) => {
   router.put(
-    `/${modelBase}/converdiamonds`,
+    `/${modelBase}/convertdiamonds`,
     kidsController.convertDiamonds.bind(kidsController)
   );
 
@@ -63,9 +63,9 @@ export default (router, app) => {
     kidsController.updateApp.bind(kidsController)
   );
 
-  //put /api/kid/converdiamonds?amount=10
+  //put /api/kid/convertdiamonds?amount=10
   router.put(
-    `/${modelBase}/converdiamonds`,
+    `/${modelBase}/convertdiamonds`,
     kidsController.convertDiamonds.bind(kidsController)
   );
 };
