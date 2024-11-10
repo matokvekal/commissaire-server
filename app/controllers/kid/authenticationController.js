@@ -153,7 +153,7 @@ class AuthenticationController extends BaseController {
           console.error("Error kid is not active");
           return res.status(400).send(ServerErrors.CONTACT_ADMIN);
         } else if (
-          kid.otp_trys >=MAX_OTP_ATTEMPTS &&
+          kid.otp_trys >= MAX_OTP_ATTEMPTS &&
           moment(kid.last_otp).isAfter(
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
@@ -270,10 +270,11 @@ class AuthenticationController extends BaseController {
         return res.status(405).send("Error, kid not exist");
       }
       kid = kid[0];
-      if(kid.otp !== otp){
+      //check if kid.otp.toString() === otp.toString()
+      if (kid.otp.toString() !== otp.toString()) {
         return res.status(405).send(ServerErrors.INVALID_OTP);
       }
-      
+
       SQL = `update users set is_register=1,otp_trys=0,user_type="kid" where id=${kid.id}`;
       await this.sequelize.query(SQL, {
         type: QueryTypes.UPDATE,
@@ -296,4 +297,3 @@ class AuthenticationController extends BaseController {
   };
 }
 export default AuthenticationController;
-
