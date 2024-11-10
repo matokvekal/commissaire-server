@@ -58,7 +58,6 @@ class AuthenticationController extends BaseController {
         "/kid/login"
       );
 
-
       let SQL = `select distinct * from users where  email=:email and user_type="kid" `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
@@ -157,9 +156,9 @@ class AuthenticationController extends BaseController {
         if (kid.is_active === 0) {
           console.error("Error kid is not active");
           return res.status(400).send(ServerErrors.CONTACT_ADMIN);
-           } else if (kid.is_register === 1) {
+        } else if (kid.is_register === 1) {
           console.log("200 kid is already registered the app shuld login");
-          return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED);//here the app shuld login
+          return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED); //go to main
           // return res.createErrorLogAndSend(this.sequelize, {
           //   code: "KID_ALREADY_REGISTERED",
           //   status: 205,
@@ -291,7 +290,7 @@ class AuthenticationController extends BaseController {
 
       if (kid.length === 0) {
         console.log("Invalid OTP");
-        return res.status(400).send(ServerErrors.INVALID_OTP);
+        return res.status(405).send(ServerErrors.INVALID_OTP);
       }
       kid = kid[0];
       if (kid.user_type === "kid" && kid.is_register === 1) {
