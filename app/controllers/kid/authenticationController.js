@@ -2,8 +2,7 @@ import BaseController from "./baseController.js";
 import { QueryTypes } from "sequelize";
 import { getFixedValue } from "../../utils/getFixedValues.js";
 import config from "../../config/index.js";
-import test from "../../routes/kid/kid.js";
-import { kidRegistrationSMS, singleSmsSender } from "../../utils/smsUtil.js";
+import { kidRegistrationSMS } from "../../utils/smsUtil.js";
 import { verifyIdToken, getUserData } from "../../utils/fireBaseAuthUtil.js"; // Import Firebase utilities
 import { createJwtToken, createOTP } from "../../utils/authenticationUtils.js";
 import { createSingleLog } from "../../utils/apiLoggerUtils.js";
@@ -44,7 +43,6 @@ class AuthenticationController extends BaseController {
       const { email } = getUserData(decodedToken);
       if (!email) {
         console.log("no email kid login");
-        // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
         res.createErrorLogAndSend(this.sequelize, {
           err: "Some error occurred in kid login 1.",
         });
@@ -88,8 +86,6 @@ class AuthenticationController extends BaseController {
       }
       //TODO
       //change this code to send Email instead of sms in case sms failer
-      // const messageBody = `Kid ${kid.f_name} ${kid.l_name} is trying to login to the Koali Time.,`;
-      // singleSmsSender(phoneNumber, messageBody);
       const token = createJwtToken(kid.email, "kid");
       return res
         .setHeader("Authorization", `Bearer ${token}`)
@@ -105,6 +101,7 @@ class AuthenticationController extends BaseController {
 
   // POST /api/kid/register
   register = async (req, res) => {
+    const MAX_OTP_ATTEMPTS = 3;
     console.log("at kid register controller");
     try {
       let { firstName, parentPhone, googleToken, readAndAgreeTerms } = req.body;
@@ -132,7 +129,6 @@ class AuthenticationController extends BaseController {
 
       if (!email) {
         console.log("no email kid register email:", email);
-        // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
         return res.createErrorLogAndSend(this.sequelize, {
           code: "SOME_ERROR_OCCURRED",
           status: 400,
@@ -156,23 +152,12 @@ class AuthenticationController extends BaseController {
         if (kid.is_active === 0) {
           console.error("Error kid is not active");
           return res.status(400).send(ServerErrors.CONTACT_ADMIN);
-        } else if (kid.is_register === 1) {
-          console.log("200 kid is already registered the app shuld login");
-          return res.status(200).send(ServerErrors.KID_ALREADY_REGISTERED); //go to main
-          // return res.createErrorLogAndSend(this.sequelize, {
-          //   code: "KID_ALREADY_REGISTERED",
-          //   status: 205,
-          // });
         } else if (
-          kid.otp_trys >= 3 &&
+          kid.otp_trys >=MAX_OTP_ATTEMPTS &&
           moment(kid.last_otp).isAfter(
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
-          // return res.status(400).send(ServerErrors.TOO_MANY_TRIES);
-          // res.createErrorLogAndSend(this.sequelize, {
-          //   err: err.message || "Some error occurred in register kid.2",
-          // });
           return res.createErrorLogAndSend(this.sequelize, {
             code: "TOO_MANY_TRIES",
             status: 400,
@@ -187,11 +172,7 @@ class AuthenticationController extends BaseController {
       });
       console.log("family data", family);
       if (family.length === 0) {
-        console.error("Error family not exist");
-        // return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
-        // res.createErrorLogAndSend(this.sequelize, {
-        //   err: err.message || "Some error occurred in register kid.3",
-        // });
+        console.error(`ServerErrors.FAMILY_NOT_EXIST`);
         return res.createErrorLogAndSend(this.sequelize, {
           code: "FAMILY_NOT_EXIST",
           status: 400,
@@ -214,7 +195,6 @@ class AuthenticationController extends BaseController {
                   (email,f_name,l_name,user_type,family_id,otp,otp_trys,last_otp,google_uid, google_name, google_picture,read_agree_terms)
                   values 
                   (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,NOW(),'${uid}', '${name}', '${picture}',1)`;
-          console.log("SQL", SQL);
           await this.sequelize.query(SQL, {
             replacements: { email, firstName },
             type: QueryTypes.INSERT,
@@ -235,9 +215,6 @@ class AuthenticationController extends BaseController {
       }
     } catch (err) {
       console.error(err);
-      // res.createErrorLogAndSend(this.sequelize, {
-      //   err: err.message || ServerErrors.GENERAL_ERROR,
-      // });
       return res.createErrorLogAndSend(this.sequelize, {
         err,
         code: "GENERAL_ERROR",
@@ -290,16 +267,13 @@ class AuthenticationController extends BaseController {
 
       if (kid.length === 0) {
         console.log("Invalid OTP");
-        return res.status(405).send(ServerErrors.INVALID_OTP);
+        return res.status(405).send("Error, kid not exist");
       }
       kid = kid[0];
-      if (kid.user_type === "kid" && kid.is_register === 1) {
-        // return res.status(400).send(ServerErrors.KID_ALREADY_REGISTERED);
-        res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in confirmCode kid.3",
-        });
+      if(kid.otp !== otp){
+        return res.status(405).send(ServerErrors.INVALID_OTP);
       }
-
+      
       SQL = `update users set is_register=1,otp_trys=0,user_type="kid" where id=${kid.id}`;
       await this.sequelize.query(SQL, {
         type: QueryTypes.UPDATE,
@@ -310,27 +284,9 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       console.log("devices", devices);
-
-      // SQL = `select distinct * from kid_devices where id=:kid_id`;
-      // let kidDevice = await this.sequelize.query(SQL, {
-      //   replacements: { kid_id: kid.id },
-      //   type: QueryTypes.SELECT,
-      // });
-      // if (kidDevice.length === 0 && req.deviceId) {
-      //   SQL = `insert into kid_devices (kid_id,device_id,device_name) values (:kid_id,:device_id,:device_name)`;
-      //   await this.sequelize.query(SQL, {
-      //     replacements: {
-      //       kid_id: kid.id,
-      //       device_id: req.deviceId || "",
-      //       device_name: req.deviceName || "",
-      //     },
-      //     type: QueryTypes.INSERT,
-      //   });
-      // }
       const token = createJwtToken(kid.email, "kid");
       res.setHeader("Authorization", `Bearer ${token}`);
       return res.status(200).json({ devices: devices });
-      //return token at header
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
@@ -341,41 +297,3 @@ class AuthenticationController extends BaseController {
 }
 export default AuthenticationController;
 
-/* 
-Unit Tests for Individual Functions:
-
-1.1 Test verifyIdToken with valid and invalid tokens.
-1.2 Test getUserData with various decoded token structures.
-1.3 Test createOTP for format, length, and randomness.
-1.4 Test createJwtToken with representative user data.
-Integration Tests for API Endpoints:
-
-POST /api/kid/register
-2.1 POST /api/kid/register with missing googleToken: {"firstName":"John", "lastName":"Doe", "parentPhone":"1234567890"}
-2.2 POST /api/kid/register with invalid googleToken: {"googleToken":"invalidToken", "firstName":"John", "lastName":"Doe", "parentPhone":"1234567890"}
-2.3 POST /api/kid/register with valid googleToken but missing user data fields: {"googleToken":"validToken"}
-2.4 POST /api/kid/register for a successful registration, including all required data: {"googleToken":"validToken", "firstName":"John", "lastName":"Doe", "parentPhone":"1234567890"}
-2.5 POST /api/kid/register to test behavior when the kid or family already exists.
-2.6 POST /api/kid/register to test SMS functionality for different scenarios.
-POST /api/kid/confirmCode
-2.7 POST /api/kid/confirmCode with missing parameters: {"otp":"1234", "email":"test@example.com"}
-2.8 POST /api/kid/confirmCode with incorrect OTP: {"phone":"1234567890", "otp":"wrong", "email":"test@example.com"}
-2.9 POST /api/kid/confirmCode with expired OTP: {"phone":"1234567890", "otp":"expired", "email":"test@example.com"}
-2.10 POST /api/kid/confirmCode for successful confirmation: {"phone":"1234567890", "otp":"1234", "email":"test@example.com"}
-2.11 POST /api/kid/confirmCode testing database interaction for user status update.
-Error Handling Tests:
-
-3.1 Simulate database connection issues to test response.
-3.2 Simulate failure of external services like Firebase or SMS services to test error handling.
-Security Tests:
-
-4.1 Ensure sensitive data is not logged or exposed.
-4.2 Test input validation to prevent SQL injection and XSS attacks.
-Performance Tests:
-
-5.1 Test API endpoint performance under load, particularly for registration.
-5.2 Measure response times to ensure they meet performance benchmarks.
-End-to-End Tests:
-
-6.1 Simulate the full registration process from token validation to database update.
-6.2 Simulate the complete confirm code process to verify flow and database updates. */
