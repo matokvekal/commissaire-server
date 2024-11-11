@@ -212,7 +212,9 @@ class ControllerParents extends BaseController {
       if (!isInSameFamily) {
         return res.status(400).send("Some errors at getKidApps.");
       }
-      ////////////////////////////////to do    fix with unknown and  if is_active = 0 ??????
+      //Parent can see only non system apps
+      let parent_device_category_to_get =
+        googleCategories.NON_SYSTEM_APPS.underscore_name;
       const SQL = `
       SELECT 
         ka.id, 
@@ -236,10 +238,11 @@ class ControllerParents extends BaseController {
         AND ka.is_exist = 1 
         AND ka.is_active = 1
         and a.app_name !="unknown"
+        and ka.device_category = :parent_device_category_to_get
     `;
 
       const kidApps = await this.sequelize.query(SQL, {
-        replacements: { kidId, deviceId },
+        replacements: { kidId, deviceId, parent_device_category_to_get },
         type: QueryTypes.SELECT,
       });
 
