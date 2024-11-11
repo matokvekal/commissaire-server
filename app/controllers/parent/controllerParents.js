@@ -1,10 +1,7 @@
 import BaseController from "../kid/baseController.js";
 // import config from "../../config/index.js";
 import { QueryTypes } from "sequelize";
-// import checkType from "../../utils/checkType.js";
-// import { allowedFields } from "../../constants/serverConstants.js";
-// import SocketManager from "../../handlers/websocketHandler.js";
-// import { createSingleLog } from "../../utils/apiLoggerUtils.js";
+import { googleCategories } from "../../constants/serverConstants.js";
 import { logAppAction } from "../../statistic/apps.js";
 
 async function isKidInSameFamily(sequelize, parent_id, kidId) {
