@@ -68,8 +68,7 @@ export default (router, app) => {
     `/${modelBase}/convertdiamonds`,
     kidsController.convertDiamonds.bind(kidsController)
   );
-  ////Get /api/kid/recomandedapps
-  //getRecommendedApps = async (req, res) => {
+  //Get /api/kid/recomandedapps
   router.get(
     `/${modelBase}/recomandedapps`,
     kidsController.getRecommendedApps.bind(kidsController)

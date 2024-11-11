@@ -795,7 +795,7 @@ class ControllerKids extends BaseController {
   };
   //Get /api/kid/recomandedapps
   getRecommendedApps = async (req, res) => {
-    // console.log("At getRecommendedApps");
+    console.log("At getRecommendedApps 1");
 
     try {
       const kidId = req.user.userId;
