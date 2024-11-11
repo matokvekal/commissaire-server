@@ -26,9 +26,10 @@ class ControllerKids extends BaseController {
   //get user_id,device_type_id ,recive the kid_device_id
 
   registerDevice = async (req, res) => {
-    console.log(" at registerDevice");
+    // console.log(" at registerDevice");
     try {
       const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at registerDevice");
       let deviceTypeId = req.body.deviceTypeId;
       let serial = req.body.serial;
       let deviceName = req.body.deviceName;
@@ -81,9 +82,10 @@ class ControllerKids extends BaseController {
       (cat) => cat.underscore_name
     );
 
-    console.log("deviceCategories:", deviceCategories);
+    // console.log("deviceCategories:", deviceCategories);
     try {
       const kidId = req.user.userId;
+      console.log("kidId: ",kidId," deviceCategories:", deviceCategories);
       // const userName = req.user.userName;
       const deviceId = req.body.kidDeviceId;
       const appCategory = req.body.appCategory;
@@ -375,10 +377,11 @@ class ControllerKids extends BaseController {
   //this api will cal at login or at any time the kid will get notification
   //app status : (>blocked, >always_on, leisure, beneficial, neutral)
   getApps = async (req, res) => {
-    console.log(" at getApps");
+    // console.log(" at getApps");
 
     try {
       const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at getApps");
       const deviceId = req.query.deviceid;
       await createSingleLog(
         kidId,
@@ -410,10 +413,11 @@ class ControllerKids extends BaseController {
   //Get /api/kid/diamonds
   //kid get his total diamonds
   getDiamonds = async (req, res) => {
-    console.log(" at getDiamonds");
+    // console.log(" at getDiamonds");
 
     try {
       const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at getDiamonds");
       await createSingleLog(
         kidId,
         this.sequelize,
@@ -445,12 +449,13 @@ class ControllerKids extends BaseController {
   //kid will get  startDayTime,endDayTime per ech day, and ratio,
   //this api will cal at login or at any time the kid will get notification
   limits = async (req, res) => {
-    console.log("at limits");
+    // console.log("at limits");
     const code = "default-9";
     try {
       const code = 10; //in the future for forst time kid can get default/basic usage time schedule  using code, for now the default code is 1
       const kidId = req.user.userId;
-
+      
+      console.log(" kidId :", kidId, " at limits");
       if (!kidId) {
         return res.status(400).send("Some data is missing");
       }
@@ -487,6 +492,7 @@ class ControllerKids extends BaseController {
     try {
       // const { userId: kidId } = req.user;
       const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at usage");
       const {
         deviceId,
         dateTime,
@@ -633,10 +639,11 @@ class ControllerKids extends BaseController {
   //POST api/kid/convertminutes
   //every night the kids app will convert the remaining playtime to diamonds
   convertMinutes = async (req, res) => {
-    console.log(" at convertminutes");
+    // console.log(" at convertminutes");
     const convertRate = 1;
     try {
       const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at convertminutes");
       if (!kidId) {
         return res.status(400).send("some data is missing");
       }
@@ -686,10 +693,11 @@ class ControllerKids extends BaseController {
   //put /api/kid/convertdiamonds?amount=10 but can be also without amount
   //kid can ask to convert his diamonds to minutes
   convertDiamonds = async (req, res) => {
-    console.log("At convertDiamonds");
+    // console.log("At convertDiamonds");
     const convertRate = 1; // 1 diamond = 1 minute
     try {
       const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at convertDiamonds");
       const requestedAmount = req.query.amount
         ? parseInt(req.query.amount)
         : null;
@@ -786,12 +794,12 @@ class ControllerKids extends BaseController {
   };
   //Get /api/kid/recomandedapps
   getRecommendedApps = async (req, res) => {
-    console.log("At getRecommendedApps");
+    // console.log("At getRecommendedApps");
 
     try {
       const kidId = req.user.userId;
       const deviceType = 2; //TODO LATER WE HAVE TO GET THE KID DEVICE TYPE
-
+      console.log(" kidId :", kidId, " at getRecommendedApps");
       await createSingleLog(
         kidId,
         this.sequelize,
