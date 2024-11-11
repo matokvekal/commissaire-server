@@ -73,4 +73,7 @@ export default (router, app) => {
     `/${modelBase}/recomandedapps`,
     kidsController.getRecommendedApps.bind(kidsController)
   );
+
+  //Get /api/kid/test
+  router.get(`/${modelBase}/test`, kidsController.test.bind(kidsController));
 };
