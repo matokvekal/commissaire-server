@@ -690,7 +690,27 @@ class ControllerKids extends BaseController {
       });
     }
   };
-
+  //get /api/kid/test
+  test = async (req, res) => {
+    console.log("At test");
+    try {
+      const kidId = req.user.userId;
+      console.log(" kidId :", kidId, " at test");
+      await createSingleLog(
+        kidId,
+        this.sequelize,
+        req,
+        `kidId:${kidId} `,
+        `GET/kid/test`
+      );
+      return res.status(200).send("Test is working");
+    } catch (err) {
+      console.error("Error in test:", err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in test.",
+      });
+    }
+  };
   //put /api/kid/convertdiamonds?amount=10 but can be also without amount
   //kid can ask to convert his diamonds to minutes
   convertDiamonds = async (req, res) => {
@@ -793,30 +813,6 @@ class ControllerKids extends BaseController {
       });
     }
   };
-  //test api
-  //get /api/kid/test
-  test = async (req, res) => {
-    console.log("At test");
-    try {
-      const kidId = req.user.userId;
-      console.log(" kidId :", kidId, " at test");
-      await createSingleLog(
-        kidId,
-        this.sequelize,
-        req,
-        `kidId:${kidId} `,
-        `GET/kid/test`
-      );
-      return res.status(200).send("Test is working");
-    } catch (err) {
-      console.error("Error in test:", err);
-      res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in test.",
-      });
-    }
-  };
-
-  
   //Get /api/kid/recomandedapps
   getRecommendedApps = async (req, res) => {
     console.log("At getRecommendedApps 1");
