@@ -85,14 +85,12 @@ class ControllerKids extends BaseController {
     // console.log("deviceCategories:", deviceCategories);
     try {
       const kidId = req.user.userId;
-      console.log("kidId: ",kidId," deviceCategories:", deviceCategories);
-      // const userName = req.user.userName;
+      console.log("kidId: ", kidId, " at updateApp:");
       const deviceId = req.body.kidDeviceId;
       const appCategory = req.body.appCategory;
       const packageName = req.body.packageName;
       const action = req.body.action;
       // const deviceCategory = req.body.device_category;
-      let appDefaultStatus = appStatus.leisure; //HERE we define the default status for the app
 
       if (!packageName || !kidId || !deviceId || !action) {
         return res.status(400).send("Some data is missing");
@@ -159,6 +157,14 @@ class ControllerKids extends BaseController {
         let deviceCategory = deviceCategories.includes(appCategory)
           ? appCategory
           : "no data";
+        //handle Default App status
+        let appDefaultStatus = appStatus.leisure; //HERE we define the default status for the app
+        if (
+          deviceCategory !== googleCategories.NON_SYSTEM_APPS.underscore_name
+        ) {
+          appDefaultStatus = appStatus.alwaysOn;
+        }
+
         if (appResults.length === 0) {
           SQL = `insert into apps (app_name, package_name, device_type_id, default_status,add_by_user,device_category)
             values (:packageName, :packageName, 1, :defaultStatus,:kidId,:deviceCategory )`;
@@ -229,7 +235,7 @@ class ControllerKids extends BaseController {
 
   //POST /api/kid/appusage //TODO FIX
   appUsage = async (req, res) => {
-    return res.status(400).send("This api is nor working ");
+    return res.status(400).send("This api is not working ");
     console.log("at appusage");
     try {
       const kidId = req.user.userId;
@@ -377,8 +383,6 @@ class ControllerKids extends BaseController {
   //this api will cal at login or at any time the kid will get notification
   //app status : (>blocked, >always_on, leisure, beneficial, neutral)
   getApps = async (req, res) => {
-    // console.log(" at getApps");
-
     try {
       const kidId = req.user.userId;
       console.log(" kidId :", kidId, " at getApps");
@@ -413,8 +417,6 @@ class ControllerKids extends BaseController {
   //Get /api/kid/diamonds
   //kid get his total diamonds
   getDiamonds = async (req, res) => {
-    // console.log(" at getDiamonds");
-
     try {
       const kidId = req.user.userId;
       console.log(" kidId :", kidId, " at getDiamonds");
@@ -449,12 +451,11 @@ class ControllerKids extends BaseController {
   //kid will get  startDayTime,endDayTime per ech day, and ratio,
   //this api will cal at login or at any time the kid will get notification
   limits = async (req, res) => {
-    // console.log("at limits");
     const code = "default-9";
     try {
       const code = 10; //in the future for forst time kid can get default/basic usage time schedule  using code, for now the default code is 1
       const kidId = req.user.userId;
-      
+
       console.log(" kidId :", kidId, " at limits");
       if (!kidId) {
         return res.status(400).send("Some data is missing");
