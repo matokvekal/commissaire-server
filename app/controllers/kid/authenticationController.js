@@ -47,7 +47,7 @@ class AuthenticationController extends BaseController {
           err: "Some error occurred in kid login 1.",
         });
       }
-      console.log("valid", valid, "decodedToken", decodedToken, "error", error);
+      console.log('email: ',email," valid", valid, "decodedToken", decodedToken, "error", error);
       await createSingleLog(
         email,
         this.sequelize,
@@ -62,13 +62,16 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (kid.length === 0) {
+        console.log("kid.length === 0");
         return res.status(206).send(ServerErrors.NOT_REGISTERED);
       }
       kid = kid[0];
       if (kid.is_active !== 1) {
+        console.log("kid.is_active !== 1");
         return res.status(400).send(ServerErrors.CONTACT_ADMIN);
       }
       if (!kid.is_register) {
+        console.log("!kid.is_register");
         return res.status(400).send(ServerErrors.NOT_REGISTERED);
       }
       SQL = `select distinct * from family where id=:family_id and is_active=1`;
@@ -77,11 +80,13 @@ class AuthenticationController extends BaseController {
         type: QueryTypes.SELECT,
       });
       if (family.length === 0) {
+        console.log("family.length === 0");
         return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       family = family[0];
       const phoneNumber = family.parent_phone;
       if (!phoneNumber) {
+        console.log("!phoneNumber");
         return res.status(400).send(ServerErrors.FAMILY_NOT_EXIST);
       }
       //TODO
@@ -92,7 +97,7 @@ class AuthenticationController extends BaseController {
         .status(200)
         .send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {
-      console.error(err);
+      console.error("Error: ",err);
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in login ",
       });
@@ -107,6 +112,7 @@ class AuthenticationController extends BaseController {
       let { firstName, parentPhone, googleToken, readAndAgreeTerms } = req.body;
 
       if (!googleToken || !firstName || !parentPhone || !readAndAgreeTerms) {
+        console.log("register MISSING_DETAILS");
         return res.createErrorLogAndSend(this.sequelize, {
           code: "MISSING_DETAILS",
           status: 400,

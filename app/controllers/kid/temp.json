@@ -1,0 +1,112 @@
+{
+  "categories": [
+    {
+      "category": "Education",
+      "order": 1,
+      "apps": [
+        {
+          "id": 1,
+          "package_name": "com.education.english.app1",
+          "app_name": "English Learning",
+          "app_id": 101,
+          "icon": "https://example.com/icon1.png",
+          "score": 4.5,
+          "order": 1
+        },
+        {
+          "id": 2,
+          "package_name": "com.education.english.app2",
+          "app_name": "English Grammar",
+          "app_id": 102,
+          "icon": "https://example.com/icon2.png",
+          "score": 4.3,
+          "order": 2
+        },
+        {
+          "id": 3,
+          "package_name": "com.education.math.app1",
+          "app_name": "Math Mastery",
+          "app_id": 103,
+          "icon": "https://example.com/icon3.png",
+          "score": 4.6,
+          "order": 3
+        },
+        {
+          "id": 4,
+          "package_name": "com.education.history.app1",
+          "app_name": "History Hub",
+          "app_id": 105,
+          "icon": "https://example.com/icon5.png",
+          "score": 4.7,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "category": "Skill Development",
+      "order": 2,
+      "apps": [
+        {
+          "id": 5,
+          "package_name": "com.skill.coding.app1",
+          "app_name": "Code Academy",
+          "app_id": 201,
+          "icon": "https://example.com/icon7.png",
+          "score": 4.8,
+          "order": 1
+        },
+        {
+          "id": 6,
+          "package_name": "com.skill.music.app1",
+          "app_name": "Piano Master",
+          "app_id": 203,
+          "icon": "https://example.com/icon9.png",
+          "score": 4.7,
+          "order": 2
+        },
+        {
+          "id": 7,
+          "package_name": "com.skill.speaking.app1",
+          "app_name": "Speak Confidently",
+          "app_id": 205,
+          "icon": "https://example.com/icon11.png",
+          "score": 4.9,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "category": "Entertainment",
+      "order": 3,
+      "apps": [
+        {
+          "id": 8,
+          "package_name": "com.entertainment.gaming.app1",
+          "app_name": "Fantasy Quest",
+          "app_id": 301,
+          "icon": "https://example.com/icon13.png",
+          "score": 4.5,
+          "order": 1
+        },
+        {
+          "id": 9,
+          "package_name": "com.entertainment.streaming.app1",
+          "app_name": "StreamFlix",
+          "app_id": 303,
+          "icon": "https://example.com/icon15.png",
+          "score": 4.8,
+          "order": 2
+        },
+        {
+          "id": 10,
+          "package_name": "com.entertainment.social.app1",
+          "app_name": "Friend Connect",
+          "app_id": 305,
+          "icon": "https://example.com/icon17.png",
+          "score": 4.3,
+          "order": 3
+        }
+      ]
+    }
+  ]
+}

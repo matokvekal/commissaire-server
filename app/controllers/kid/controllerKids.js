@@ -784,5 +784,99 @@ class ControllerKids extends BaseController {
       });
     }
   };
+  //Get /api/kid/recomandedapps
+  getRecommendedApps = async (req, res) => {
+    console.log("At getRecommendedApps");
+
+    try {
+      const kidId = req.user.userId;
+      const deviceType = 2; //TODO LATER WE HAVE TO GET THE KID DEVICE TYPE
+
+      await createSingleLog(
+        kidId,
+        this.sequelize,
+        req,
+        `kidId:${kidId}`,
+        `Get/kid/recommended_apps`
+      );
+
+      if (!kidId) {
+        return res.status(400).send("Some data is missing");
+      }
+
+      // Execute SQL query to fetch recommended apps based on device_type 2
+      const SQL = `
+          SELECT  ac.id AS category_id,
+          ac.category AS category_name,
+          ac.order AS category_order,
+          a.id AS app_id,
+          a.app_name,
+          a.package_name,
+          a.google_icon AS icon,
+          a.score,
+          a.order_in_category AS app_order
+          FROM 
+            apps_categories ac
+          JOIN 
+            apps a ON a.category = ac.category
+          WHERE 
+            ac.device_type = :deviceType
+          AND 
+            a.is_active = 1
+          ORDER BY 
+            ac.order, a.order_in_category;
+      `;
+
+      const appsData = await this.sequelize.query(SQL, {
+        type: QueryTypes.SELECT,
+        replacements: { deviceType },
+      });
+
+      // Structure the data as categories with apps
+      const categories = {};
+
+      appsData.forEach((app) => {
+        const {
+          category_id,
+          category_name,
+          category_order,
+          app_id,
+          app_name,
+          package_name,
+          icon,
+          score,
+          app_order,
+        } = app;
+        if (!categories[category_id]) {
+          categories[category_id] = {
+            category: category_name || "",
+            order: category_order || "",
+            apps: [],
+          };
+        }
+
+        categories[category_id].apps.push({
+          id: app_id || "",
+          package_name: package_name || "",
+          app_name: app_name || "",
+          icon: icon || "",
+          score: score || "",
+          order: app_order || "",
+        });
+      });
+
+      // Convert categories object to array
+      const response = {
+        categories: Object.values(categories),
+      };
+
+      return res.status(200).send(response);
+    } catch (err) {
+      console.error("Error in getRecommendedApps:", err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred in getRecommendedApps.",
+      });
+    }
+  };
 }
 export default ControllerKids;
