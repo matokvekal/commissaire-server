@@ -3,12 +3,22 @@ import swaggerAutogen from 'swagger-autogen';
 const swagger = swaggerAutogen();
 const doc = {
   info: {
-    title: 'Kids Api',
-    description: 'API Description',
+    title: 'Kids & Parents API',
+    description: 'APIs for managing kids and parents data and interactions.',
   },
   host: "18.199.57.38:5000",
   schemes: ['http'],
   basePath: '/api',
+  tags: [
+    {
+      name: 'Kid APIs',
+      description: 'Endpoints for managing kids data and interactions',
+    },
+    {
+      name: 'Parent APIs',
+      description: 'Endpoints for parent user management and interactions',
+    },
+  ],
   securityDefinitions: {
     bearerAuth: {
       type: 'apiKey',
@@ -17,13 +27,18 @@ const doc = {
       description: 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"',
     },
   },
-  security: [{ bearerAuth: [] }], // Apply to all routes
+  security: [{ bearerAuth: [] }], // Apply security to all routes
 };
 
 const outputFile = './swagger.json'; // Path for the generated JSON file
-const endpointsFiles = ['./app/routes/kid/kid.js','./app/routes/kid/auth.js']; // Path to the file that contains your routes
+const endpointsFiles = [
+  './app/routes/kid/kid.js',      // Kid-specific routes
+  './app/routes/kid/auth.js',     // Kid authentication routes
+  './app/routes/parent/parent.js', // Parent-specific routes
+  './app/routes/parent/auth.js'    // Parent authentication routes
+];
 
-// This will generate a swagger.json file and then you can start your application
-swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
-  import('./app/config/index.js'); // Your entry file that starts the server
+// Generate swagger.json and start the server
+swagger(outputFile, endpointsFiles, doc).then(() => {
+  import('./app/config/index.js'); // Entry file for server startup
 });

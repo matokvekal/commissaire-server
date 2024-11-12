@@ -1,12 +1,22 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Kids Api",
-    "description": "API Description",
+    "title": "Kids & Parents API",
+    "description": "APIs for managing kids and parents data and interactions.",
     "version": "1.0.0"
   },
   "host": "18.199.57.38:5000",
   "basePath": "/api",
+  "tags": [
+    {
+      "name": "Kid APIs",
+      "description": "Endpoints for managing kids data and interactions"
+    },
+    {
+      "name": "Parent APIs",
+      "description": "Endpoints for parent user management and interactions"
+    }
+  ],
   "schemes": [
     "http"
   ],
@@ -19,7 +29,7 @@
     }
   },
   "paths": {
-    "/{modelBase}/apps": {
+    "/${modelBase}/convertminutes": {
       "post": {
         "description": "",
         "parameters": [
@@ -28,21 +38,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "kidDeviceId": {
-                  "example": "any"
-                },
-                "apps": {
-                  "example": "any"
-                }
-              }
-            }
           }
         ],
         "responses": {
@@ -51,10 +46,15 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
-      },
-      "get": {
+      }
+    },
+    "/${modelBase}/convertdiamonds": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -64,7 +64,7 @@
             "type": "string"
           },
           {
-            "name": "deviceid",
+            "name": "amount",
             "in": "query",
             "type": "string"
           }
@@ -75,11 +75,14 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
     },
-    "/{modelBase}/device": {
+    "/${modelBase}/device": {
       "post": {
         "description": "",
         "parameters": [
@@ -118,7 +121,7 @@
         }
       }
     },
-    "/{modelBase}/token": {
+    "/${modelBase}/token": {
       "post": {
         "description": "",
         "parameters": [
@@ -151,7 +154,33 @@
         }
       }
     },
-    "/{modelBase}/limits": {
+    "/${modelBase}/apps": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "deviceid",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/limits": {
       "get": {
         "description": "",
         "parameters": [
@@ -172,7 +201,160 @@
         }
       }
     },
-    "/{modelBase}/usage": {
+    "/${modelBase}/diamonds": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "example": "any"
+                },
+                "kidid": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/${modelBase}/usage": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "deviceId": {
+                  "example": "any"
+                },
+                "dateTime": {
+                  "example": "any"
+                },
+                "dailyTimeLimit": {
+                  "example": "any"
+                },
+                "dailyTimeRemaining": {
+                  "example": "any"
+                },
+                "playTimeRemaining": {
+                  "example": "any"
+                },
+                "dailyTimeUsed": {
+                  "example": "any"
+                },
+                "totalIncrementApps": {
+                  "example": "any"
+                },
+                "totalDecrementApps": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/appUsage": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "length",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "deviceId": {
+                  "example": "any"
+                },
+                "appUsage": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/position": {
       "post": {
         "description": "",
         "parameters": [
@@ -210,14 +392,11 @@
           },
           "400": {
             "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
-    "/{modelBase}/login": {
+    "/${modelBase}/updateapp": {
       "post": {
         "description": "",
         "parameters": [
@@ -233,49 +412,16 @@
             "schema": {
               "type": "object",
               "properties": {
-                "googleToken": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/{modelBase}/register": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "modelBase",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "firstName": {
+                "kidDeviceId": {
                   "example": "any"
                 },
-                "parentPhone": {
+                "appCategory": {
                   "example": "any"
                 },
-                "googleToken": {
+                "packageName": {
                   "example": "any"
                 },
-                "readAndAgreeTerms": {
+                "action": {
                   "example": "any"
                 }
               }
@@ -289,13 +435,154 @@
           "400": {
             "description": "Bad Request"
           },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/${modelBase}/recomandedapps": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/test": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/${modelBase}/login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "googleToken": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "206": {
+            "description": "Partial Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
           "401": {
             "description": "Unauthorized"
           }
         }
       }
     },
-    "/{modelBase}/confirmcode": {
+    "/${modelBase}/register": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "familyName": {
+                  "example": "any"
+                },
+                "parentPhone": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "readAndAgreeTerms": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "0": {
+            "description": ""
+          },
+          "1": {
+            "description": ""
+          },
+          "2": {
+            "description": ""
+          },
+          "3": {
+            "description": ""
+          },
+          "4": {
+            "description": ""
+          },
+          "5": {
+            "description": ""
+          },
+          "200": {
+            "description": "OK"
+          },
+          "205": {
+            "description": "Reset Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/confirmcode": {
       "post": {
         "description": "",
         "parameters": [
@@ -311,12 +598,7 @@
             "type": "string"
           },
           {
-            "name": "user_type",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "is_register",
+            "name": "otp",
             "in": "query",
             "type": "string"
           },
@@ -342,6 +624,292 @@
           }
         ],
         "responses": {
+          "0": {
+            "description": ""
+          },
+          "2": {
+            "description": ""
+          },
+          "4": {
+            "description": ""
+          },
+          "5": {
+            "description": ""
+          },
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "405": {
+            "description": "Method Not Allowed"
+          }
+        }
+      }
+    },
+    "/${modelBase}/kids": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/kidsbydevices": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/kidsusage": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/kidsdeviceusage": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/${modelBase}/kidapps": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "kidId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "deviceId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/${modelBase}/appstatus": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "kidId": {
+                  "example": "any"
+                },
+                "deviceId": {
+                  "example": "any"
+                },
+                "appId": {
+                  "example": "any"
+                },
+                "status": {
+                  "example": "any"
+                },
+                "id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/${modelBase}/schedule/{kidId}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "kidId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/${modelBase}/schedule": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "kidId": {
+                  "example": "any"
+                },
+                "days": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/${modelBase}/confirm": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "modelBase",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "phone": {
+                  "example": "any"
+                },
+                "otp": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
           "200": {
             "description": "OK"
           },
@@ -350,6 +918,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "402": {
+            "description": "Payment Required"
           }
         }
       }
