@@ -48,13 +48,13 @@ export default (router, app) => {
 
   //POST /api/kid/appusage
   router.post(
-    `/${modelBase}/usage`,
+    `/${modelBase}/appUsage`,
     kidsController.appUsage.bind(kidsController)
   );
 
   //POST api/kid/position
   router.post(
-    `/${modelBase}/usage`,
+    `/${modelBase}/position`,
     kidsController.position.bind(kidsController)
   );
   //POST api/kid/updateapp
