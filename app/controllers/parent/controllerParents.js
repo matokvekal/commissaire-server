@@ -218,7 +218,7 @@ class ControllerParents extends BaseController {
         ka.status, 
         a.order,
         IF(
-          TIMESTAMPDIFF(WEEK, ka.update_date, NOW()) > 1, 
+          TIMESTAMPDIFF(WEEK, ka.update_date, UTC_TIMESTAMP()) > 1, 
           0, 
           IF(ka.parent_has_change = 1, 0, 1)
         ) AS last_updated,
@@ -310,7 +310,7 @@ class ControllerParents extends BaseController {
       // Update the status in the kid_apps table
       const SQL = `
       UPDATE kid_apps 
-      SET status = :status, parent_has_change = 1, update_date = NOW() 
+      SET status = :status, parent_has_change = 1, update_date = UTC_TIMESTAMP() 
       WHERE kid_id = :kidId 
         AND kid_device_id = :deviceId 
         AND app_id = :appId
@@ -540,7 +540,7 @@ class ControllerParents extends BaseController {
         if (updateFields.length > 0) {
           const SQL = `
           UPDATE daily_schedule
-          SET ${updateFields.join(", ")}, updated_at = NOW()
+          SET ${updateFields.join(", ")}, updated_at = UTC_TIMESTAMP()
           WHERE kid_id = :kidId AND day = :day AND is_active = 1;
         `;
 

@@ -90,13 +90,13 @@ class AuthController extends BaseController {
 
       // Update or insert parent data
       if (parent) {
-        const updateSql = `UPDATE users SET otp = :OTP, otp_trys = otp_trys + 1,last_otp=now() WHERE phone = :parentPhone AND user_type = "parent"`;
+        const updateSql = `UPDATE users SET otp = :OTP, otp_trys = otp_trys + 1,last_otp=UTC_TIMESTAMP() WHERE phone = :parentPhone AND user_type = "parent"`;
         await this.sequelize.query(updateSql, {
           replacements: { parentPhone, OTP },
           type: QueryTypes.UPDATE,
         });
       } else {
-        const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp,read_agree_terms) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, NOW(),1)`;
+        const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp,read_agree_terms) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, UTC_TIMESTAMP(),1)`;
         await this.sequelize.query(insertSql, {
           replacements: { name, familyName, parentPhone, email, OTP },
           type: QueryTypes.INSERT,

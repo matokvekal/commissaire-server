@@ -555,7 +555,7 @@ class ControllerKids extends BaseController {
         increment_apps = :totalIncrementApps,
         decrement_apps = :totalDecrementApps,
         dailyTimeLimit = :dailyTimeLimit,
-        updateAt = NOW()
+        updateAt = UTC_TIMESTAMP()
       WHERE 
         id = :kidId AND 
         is_register = 1 AND 

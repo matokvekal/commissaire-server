@@ -16,7 +16,7 @@ export const createSingleLog = async (
     const path = req ? req.path : "";
     controller = controller ? controller : path;
     const SQL = `INSERT INTO logs (user_name,date, ip, path,controler, message, createdAt,data )
-					 VALUES (:user_name,:date, :ip, :path,:controller, :message, NOW(), :data)`;
+					 VALUES (:user_name,:date, :ip, :path,:controller, :message, UTC_TIMESTAMP(), :data)`;
     await sequelize.query(SQL, {
       replacements: {
         date,

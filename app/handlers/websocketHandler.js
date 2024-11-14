@@ -58,7 +58,7 @@ class SocketManager {
 
       SQL = `
           UPDATE users 
-          SET socket_id = :socketId, socket_updated = NOW() 
+          SET socket_id = :socketId, socket_updated = UTC_TIMESTAMP()
           WHERE id = :userId AND is_active = 1 AND is_register = 1 `;
       replacements = { socketId, userId };
 

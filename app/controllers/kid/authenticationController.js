@@ -200,14 +200,14 @@ class AuthenticationController extends BaseController {
           SQL = `insert into users 
                   (email,f_name,l_name,user_type,family_id,otp,otp_trys,last_otp,google_uid, google_name, google_picture,read_agree_terms)
                   values 
-                  (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,NOW(),'${uid}', '${name}', '${picture}',1)`;
+                  (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,UTC_TIMESTAMP(),'${uid}', '${name}', '${picture}',1)`;
           await this.sequelize.query(SQL, {
             replacements: { email, firstName },
             type: QueryTypes.INSERT,
           });
           return res.status(205).send(ServerMessages.OTP_SENT_SUCCESS);
         } else {
-          SQL = `update users set otp=${OTP},otp_trys=otp_trys+1,last_otp=NOW() where id=${kid.id}`;
+          SQL = `update users set otp=${OTP},otp_trys=otp_trys+1,last_otp=UTC_TIMESTAMP() where id=${kid.id}`;
           await this.sequelize.query(SQL, {
             type: QueryTypes.UPDATE,
           });
@@ -265,7 +265,7 @@ class AuthenticationController extends BaseController {
         "/kid/confirmCode"
       );
 
-      let SQL = `select distinct * from users where  email=:email and ( user_type="kid" or user_type="kid_temporary") and is_active=1  and otp=${otp} and last_otp > NOW()-interval ${config.otpConfirmationLimitsMinutes} minute`;
+      let SQL = `select distinct * from users where  email=:email and ( user_type="kid" or user_type="kid_temporary") and is_active=1  and otp=${otp} and last_otp > UTC_TIMESTAMP()-interval ${config.otpConfirmationLimitsMinutes} minute`;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
         type: QueryTypes.SELECT,
