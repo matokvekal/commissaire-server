@@ -73,3 +73,12 @@ every 10 seconds call updateApp >the only change is that you will also get the n
 5.after all apps.new=0  keep the same
 
 ====================================
+microservices  
+pm2 at server
+cd microservices/
+pm2 status
+pm2 start server.js --name microservice
+pm2 status
+pm2 restart microservice --watch
+pm2 status
+pm2 log

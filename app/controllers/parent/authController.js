@@ -76,7 +76,7 @@ class AuthController extends BaseController {
             moment().subtract(config.otpConfirmationLimitsMinutes, "minutes")
           )
         ) {
-          return res.status(400).send(ServerErrors.SMS_TRYS);
+          return res.status(429).send(ServerErrors.SMS_TRYS);
         }
       }
 
