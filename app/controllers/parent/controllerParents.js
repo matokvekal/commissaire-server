@@ -567,10 +567,7 @@ class ControllerParents extends BaseController {
       return res.status(200).send("Schedule update process completed.");
     } catch (err) {
       console.error(err);
-      // res.status(500).send({
-      //   message:
-      //     "Some error occurred while updating the schedule."
-      // });
+
       res.createErrorLogAndSend(this.sequelize, {
         err: err.message || "Some error occurred in schedule.",
       });
