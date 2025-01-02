@@ -22,7 +22,7 @@ async function isKidInSameFamily(sequelize, parent_id, kidId) {
   `;
   const familyCheck = await sequelize.query(SQL, {
     replacements: { parent_id, kidId },
-    type: QueryTypes.SELECT,
+    type: QueryTypes.SELECT
   });
   return familyCheck[0].family_check;
 }
@@ -44,13 +44,13 @@ class ControllerParents extends BaseController {
         "update users set firebase_notification_token = :token where id = :parent_id";
       await this.sequelize.query(SQL, {
         replacements: { token, parent_id },
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.UPDATE
       });
       return res.status(200).send("Token saved successfully");
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in saving token.",
+        err: err.message || "Some error occurred in saving token."
       });
     }
   };
@@ -69,13 +69,13 @@ class ControllerParents extends BaseController {
         "select id,f_name,l_name,icon from users where family_id like(select distinct family_id from users where id=:parent_id and is_active=1 and is_register=1 and user_type='parent') and is_register=1 and is_active=1 and user_type='kid'";
       const kids = await this.sequelize.query(SQL, {
         replacements: { parent_id },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       return res.status(200).send({ kids });
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in getting kids.",
+        err: err.message || "Some error occurred in getting kids."
       });
     }
   };
@@ -120,7 +120,7 @@ class ControllerParents extends BaseController {
     `;
       const usage = await this.sequelize.query(SQL, {
         replacements: { familyId },
-        type: this.sequelize.QueryTypes.SELECT,
+        type: this.sequelize.QueryTypes.SELECT
       });
       return res.status(200).send({ usage });
     } catch (err) {
@@ -129,7 +129,7 @@ class ControllerParents extends BaseController {
       //    "Some error occurred in getting usage."
       // });
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in getUsage.",
+        err: err.message || "Some error occurred in getUsage."
       });
     }
   };
@@ -180,13 +180,13 @@ class ControllerParents extends BaseController {
     `;
       const kids = await this.sequelize.query(SQL, {
         replacements: { parent_id },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       return res.status(200).send({ kids });
     } catch (err) {
       console.log(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in getting kids.",
+        err: err.message || "Some error occurred in getting kids."
       });
     }
   };
@@ -235,12 +235,16 @@ class ControllerParents extends BaseController {
         AND ka.is_exist = 1 
         AND ka.is_active = 1
         and a.app_name !="unknown"
-        and ka.device_category = :parent_device_category_to_get
+        and
+        (a.device_category = :parent_device_category_to_get
+        or 
+        a.device_category ="no data");
     `;
+    //nadav ask to change and add no data also 03-1-2025
 
       const kidApps = await this.sequelize.query(SQL, {
         replacements: { kidId, deviceId, parent_device_category_to_get },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (kidApps.length === 0) {
@@ -253,7 +257,7 @@ class ControllerParents extends BaseController {
       //    "Some error occurred in fetching kid apps."
       // });
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in kid apps.",
+        err: err.message || "Some error occurred in kid apps."
       });
     }
   }
@@ -281,7 +285,7 @@ class ControllerParents extends BaseController {
         "always_on",
         "leisure",
         "beneficial",
-        "neutral",
+        "neutral"
       ];
       if (!allowedStatuses.includes(status)) {
         return res.status(400).send("Invalid status provided.");
@@ -298,7 +302,7 @@ class ControllerParents extends BaseController {
         `;
       const [kidAppData] = await this.sequelize.query(getKidAppStatusQuery, {
         replacements: { kidId, deviceId, appId },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (!kidAppData || !kidAppData.status) {
@@ -320,7 +324,7 @@ class ControllerParents extends BaseController {
 
       const [updatedRows] = await this.sequelize.query(SQL, {
         replacements: { kidId, deviceId, appId, status },
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.UPDATE
       });
       //just for testing
       console.log("SQL:", SQL);
@@ -348,7 +352,7 @@ class ControllerParents extends BaseController {
   `;
       await this.sequelize.query(incrementSQL, {
         replacements: { appId, status },
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.UPDATE
       });
 
       return res.status(200).send("App status updated successfully.");
@@ -359,7 +363,7 @@ class ControllerParents extends BaseController {
       //      "Some error occurred while updating app status."
       // });
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in app status.",
+        err: err.message || "Some error occurred in app status."
       });
     }
   }
@@ -409,7 +413,7 @@ class ControllerParents extends BaseController {
     `;
       const usage = await this.sequelize.query(SQL, {
         replacements: { familyId },
-        type: this.sequelize.QueryTypes.SELECT,
+        type: this.sequelize.QueryTypes.SELECT
       });
       return res.status(200).send({ usage });
     } catch (err) {
@@ -419,7 +423,7 @@ class ControllerParents extends BaseController {
       //     "Some error occurred in getting KidsUsageByDevices."
       // });
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in KidsUsageByDevices.",
+        err: err.message || "Some error occurred in KidsUsageByDevices."
       });
     }
   };
@@ -450,7 +454,7 @@ class ControllerParents extends BaseController {
 
       const schedule = await this.sequelize.query(SQL, {
         replacements: { kidId },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (!schedule.length) {
@@ -467,7 +471,7 @@ class ControllerParents extends BaseController {
       //     "Some error occurred in fetching the kid's schedule."
       // });
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in kid's schedule.",
+        err: err.message || "Some error occurred in kid's schedule."
       });
     }
   }
@@ -502,7 +506,7 @@ class ControllerParents extends BaseController {
       `,
         {
           replacements: { kidId },
-          type: QueryTypes.SELECT,
+          type: QueryTypes.SELECT
         }
       );
 
@@ -527,7 +531,7 @@ class ControllerParents extends BaseController {
           "quality_control",
           "initial_play_time",
           "total_usage_time",
-          "is_active",
+          "is_active"
         ];
 
         const updateFields = Object.keys(fields)
@@ -548,9 +552,9 @@ class ControllerParents extends BaseController {
             replacements: {
               kidId,
               day,
-              ...fields,
+              ...fields
             },
-            type: QueryTypes.UPDATE,
+            type: QueryTypes.UPDATE
           });
         }
       });
@@ -569,7 +573,7 @@ class ControllerParents extends BaseController {
       console.error(err);
 
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in schedule.",
+        err: err.message || "Some error occurred in schedule."
       });
     }
   }
@@ -599,7 +603,7 @@ class ControllerParents extends BaseController {
     `;
       const kidData = await this.sequelize.query(SQL, {
         replacements: { kidid },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (!kidData.length) {
@@ -639,7 +643,7 @@ class ControllerParents extends BaseController {
     `;
       await this.sequelize.query(updateSQL, {
         replacements: { newDailyleftDiamonds, kidid, amount },
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.UPDATE
       });
       // Insert the diamond transaction into the give_diamonds table
       const insertSQL = `
@@ -651,19 +655,19 @@ class ControllerParents extends BaseController {
           parent_id,
           kidid,
           amount,
-          total_diamonds,
+          total_diamonds
         },
-        type: QueryTypes.INSERT,
+        type: QueryTypes.INSERT
       });
 
       return res.status(200).send({
         message: "Diamonds awarded successfully",
-        daily_left_diamonds: newDailyleftDiamonds,
+        daily_left_diamonds: newDailyleftDiamonds
       });
     } catch (err) {
       console.log("Error in giveDiamonds:", err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in giveDiamonds.",
+        err: err.message || "Some error occurred in giveDiamonds."
       });
     }
   };

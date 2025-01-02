@@ -658,7 +658,7 @@ class ControllerKids extends BaseController {
         return res.status(404).send("Kid not found");
       }
       const { total_diamonds, playTimeRemaining } = kidData[0];
-
+///////some error here
       const remainSecondsToPlay = timeStringToSeconds(playTimeRemaining);
       if (remainSecondsToPlay <= 0) {
         return res.status(400).send("No playtime left");
