@@ -4,11 +4,8 @@ export default (router, app) => {
   const modelBase = "temp";
   const tempController = new TempController(app, modelBase);
 
-  // GET /api/temp/hello1
-  // router.get(
-  //   `/${modelBase}/hello1`,
-  //   tempController.hello1.bind(tempController)
-  // );
+  GET / api / temp / log;
+  router.get(`/${modelBase}/log`, tempController.hello1.bind(tempController));
   // GET /api/temp/hello2
   router.get(
     `/${modelBase}/hello2`,

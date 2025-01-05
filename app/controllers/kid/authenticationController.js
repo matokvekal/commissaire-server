@@ -9,7 +9,7 @@ import { createSingleLog } from "../../utils/apiLoggerUtils.js";
 import {
   ServerMessages,
   ServerErrors,
-  ServerLoginMessages,
+  ServerLoginMessages
 } from "../../constants/constantMessages.js";
 
 import moment from "moment";
@@ -44,10 +44,19 @@ class AuthenticationController extends BaseController {
       if (!email) {
         console.log("no email kid login");
         res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in kid login 1.",
+          err: "Some error occurred in kid login 1."
         });
       }
-      console.log('email: ',email," valid", valid, "decodedToken", decodedToken, "error", error);
+      console.log(
+        "email: ",
+        email,
+        " valid",
+        valid,
+        "decodedToken",
+        decodedToken,
+        "error",
+        error
+      );
       await createSingleLog(
         email,
         this.sequelize,
@@ -59,7 +68,7 @@ class AuthenticationController extends BaseController {
       let SQL = `select distinct * from users where  email=:email and user_type="kid" `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       if (kid.length === 0) {
         console.log("kid.length === 0");
@@ -72,12 +81,12 @@ class AuthenticationController extends BaseController {
       }
       if (!kid.is_register) {
         console.log("!kid.is_register");
-        return res.status(400).send(ServerErrors.NOT_REGISTERED);
+        return res.status(206).send(ServerErrors.NOT_REGISTERED);
       }
       SQL = `select distinct * from family where id=:family_id and is_active=1`;
       let family = await this.sequelize.query(SQL, {
         replacements: { family_id: kid.family_id },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       if (family.length === 0) {
         console.log("family.length === 0");
@@ -97,9 +106,9 @@ class AuthenticationController extends BaseController {
         .status(200)
         .send(ServerMessages.AUTHORIZATION_SUCCESS);
     } catch (err) {
-      console.error("Error: ",err);
+      console.error("Error: ", err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in login ",
+        err: err.message || "Some error occurred in login "
       });
     }
   };
@@ -115,7 +124,7 @@ class AuthenticationController extends BaseController {
         console.log("register MISSING_DETAILS");
         return res.createErrorLogAndSend(this.sequelize, {
           code: "MISSING_DETAILS",
-          status: 400,
+          status: 400
         });
       }
       firstName = getFixedValue(firstName);
@@ -127,7 +136,7 @@ class AuthenticationController extends BaseController {
         return res.createErrorLogAndSend(this.sequelize, {
           err: error,
           code: "INVALID_GOOGLE_TOKEN",
-          status: 401,
+          status: 401
         });
       }
       const { email, uid, name, picture, phone_number } =
@@ -137,7 +146,7 @@ class AuthenticationController extends BaseController {
         console.log("no email kid register email:", email);
         return res.createErrorLogAndSend(this.sequelize, {
           code: "SOME_ERROR_OCCURRED",
-          status: 400,
+          status: 400
         });
       }
       await createSingleLog(
@@ -150,7 +159,7 @@ class AuthenticationController extends BaseController {
       let SQL = `select  * from users where  email=:email and ( user_type="kid" or user_type="kid_temporary") `;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email: email },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (kid.length > 0) {
@@ -166,7 +175,7 @@ class AuthenticationController extends BaseController {
         ) {
           return res.createErrorLogAndSend(this.sequelize, {
             code: "TOO_MANY_TRIES",
-            status: 400,
+            status: 400
           });
         }
       }
@@ -174,14 +183,14 @@ class AuthenticationController extends BaseController {
       SQL = `select distinct  * from family where  parent_phone=:parentPhone and is_active=1  `;
       let family = await this.sequelize.query(SQL, {
         replacements: { parentPhone },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       console.log("family data", family);
       if (family.length === 0) {
         console.error(`ServerErrors.FAMILY_NOT_EXIST`);
         return res.createErrorLogAndSend(this.sequelize, {
           code: "FAMILY_NOT_EXIST",
-          status: 400,
+          status: 400
         });
       }
 
@@ -203,20 +212,20 @@ class AuthenticationController extends BaseController {
                   (:email,:firstName,'${family.name}','kid_temporary',${family.id},${OTP},1,UTC_TIMESTAMP(),'${uid}', '${name}', '${picture}',1)`;
           await this.sequelize.query(SQL, {
             replacements: { email, firstName },
-            type: QueryTypes.INSERT,
+            type: QueryTypes.INSERT
           });
           return res.status(205).send(ServerMessages.OTP_SENT_SUCCESS);
         } else {
           SQL = `update users set otp=${OTP},otp_trys=otp_trys+1,last_otp=UTC_TIMESTAMP() where id=${kid.id}`;
           await this.sequelize.query(SQL, {
-            type: QueryTypes.UPDATE,
+            type: QueryTypes.UPDATE
           });
           return res.status(205).send(ServerMessages.OTP_SENT_SUCCESS);
         }
       } else {
         return res.createErrorLogAndSend(this.sequelize, {
           code: "SMS_FAILED",
-          status: 400,
+          status: 400
         });
       }
     } catch (err) {
@@ -224,7 +233,7 @@ class AuthenticationController extends BaseController {
       return res.createErrorLogAndSend(this.sequelize, {
         err,
         code: "GENERAL_ERROR",
-        status: 500,
+        status: 500
       });
     }
   };
@@ -245,7 +254,7 @@ class AuthenticationController extends BaseController {
         console.error("Failed to verify token:", error.message || error);
         // return res.status(401).send(ServerErrors.INVALID_GOOGLE_TOKEN);
         res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in confirmCode kid.1",
+          err: "Some error occurred in confirmCode kid.1"
         });
       }
       const { email } = getUserData(decodedToken);
@@ -253,7 +262,7 @@ class AuthenticationController extends BaseController {
       if (!email) {
         // return res.status(400).send(ServerErrors.SOME_ERROR_OCCURRED);
         res.createErrorLogAndSend(this.sequelize, {
-          err: "Some error occurred in confirmCode kid.2",
+          err: "Some error occurred in confirmCode kid.2"
         });
       }
 
@@ -268,7 +277,7 @@ class AuthenticationController extends BaseController {
       let SQL = `select distinct * from users where  email=:email and ( user_type="kid" or user_type="kid_temporary") and is_active=1  and otp=${otp} and last_otp > UTC_TIMESTAMP()-interval ${config.otpConfirmationLimitsMinutes} minute`;
       let kid = await this.sequelize.query(SQL, {
         replacements: { email },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (kid.length === 0) {
@@ -283,12 +292,12 @@ class AuthenticationController extends BaseController {
 
       SQL = `update users set is_register=1,otp_trys=0,user_type="kid" where id=${kid.id}`;
       await this.sequelize.query(SQL, {
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.UPDATE
       });
 
       SQL = "select id,type from device_types where is_active=1";
       const devices = await this.sequelize.query(SQL, {
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       console.log("devices", devices);
       const token = createJwtToken(kid.email, "kid");
@@ -297,7 +306,7 @@ class AuthenticationController extends BaseController {
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
+        err: err.message || ServerErrors.GENERAL_ERROR
       });
     }
   };

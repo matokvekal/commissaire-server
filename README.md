@@ -82,3 +82,13 @@ pm2 status
 pm2 restart microservice --watch
 pm2 status
 pm2 log
+
+------------------------------------
+# Option 1: Directly run your swagger file 
+node swagger.js
+
+# Option 2: Add a script in package.json and run via npm
+"scripts": {
+  "generate-swagger": "node swagger.js"
+}
+npm run generate-swagger

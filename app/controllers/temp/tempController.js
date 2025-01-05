@@ -14,14 +14,16 @@ class tempController extends BaseController {
     super(app, modelName, sequelize);
   }
 
-  // GET /api/temp/hello1
-  hello1 = async (req, res) => {
+  // GET /api/temp/log?data=
+  log = async (req, res) => {
     try {
-      res.status(200).send("Hello from hello1 controller");
+      const data = req.query.data;
+      console.log(" at log data:", data);
+      res.status(200).send("Hello from temp/log controller");
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in hello parent.",
+        err: err.message || "Some error occurred in hello parent."
       });
     }
   };
@@ -41,7 +43,7 @@ class tempController extends BaseController {
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in hello.",
+        err: err.message || "Some error occurred in hello."
       });
     }
   };
@@ -54,7 +56,7 @@ class tempController extends BaseController {
       let SQL = `select * from users where id = :id`;
       const user = await this.sequelize.query(SQL, {
         replacements: { id },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
       if (user.length === 0) {
         return res.status(400).send("User not found");
@@ -64,13 +66,13 @@ class tempController extends BaseController {
       SQL = "insert into demo_tokens (user_id,token) values (:user_id,:token)";
       await this.sequelize.query(SQL, {
         replacements: { user_id: id, token },
-        type: QueryTypes.INSERT,
+        type: QueryTypes.INSERT
       });
       res.status(200).send(token);
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in simulateJwtToken.",
+        err: err.message || "Some error occurred in simulateJwtToken."
       });
     }
   };
@@ -86,15 +88,15 @@ class tempController extends BaseController {
       }
       await this.sequelize.query(`CALL add_kid(:phone)`, {
         replacements: {
-          phone,
+          phone
         },
-        type: QueryTypes.INSERT,
+        type: QueryTypes.INSERT
       });
       return res.status(200).send("kid added");
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in adding kid.",
+        err: err.message || "Some error occurred in adding kid."
       });
     }
   };
@@ -112,16 +114,16 @@ class tempController extends BaseController {
         `delete from users where id = (select id from (select id from users where family_id = (select family_id from users where user_type = "parent" and phone = :phone) and user_type = "kid" and is_active = 1 order by id desc limit 1) as temp_table)`,
         {
           replacements: {
-            phone,
+            phone
           },
-          type: QueryTypes.DELETE,
+          type: QueryTypes.DELETE
         }
       );
       return res.status(200).send("kid deleted");
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || "Some error occurred in deleting kid.",
+        err: err.message || "Some error occurred in deleting kid."
       });
     }
   };

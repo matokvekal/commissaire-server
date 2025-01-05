@@ -14,13 +14,13 @@ const bypassPathsWhiteList = new Set([
   "/parent/login",
   "/parent/register",
   "/parent/confirm",
-  "/temp/hello1",
+  "/temp/log",
   "/temp/hello2",
   "/temp/simulatejwttoken",
   "/temp/conectavioldkids",
   "/temp/delete_kid",
   "/temp/add_kid",
-  "/temp/token",
+  "/temp/token"
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
@@ -98,14 +98,14 @@ const getUserDataFromDB = async (sequelize, userName, userType) => {
     }
     const user = await sequelize.query(SQL, {
       replacements: { userName },
-      type: QueryTypes.SELECT,
+      type: QueryTypes.SELECT
     });
 
     return {
       isValidUser: true,
       userName: user[0].email,
       userId: user[0].id,
-      familyId: user[0].family_id,
+      familyId: user[0].family_id
     };
   } catch (err) {
     return { isValidUser: false, userName: "", userId: 0 };
