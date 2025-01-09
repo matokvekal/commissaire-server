@@ -258,14 +258,14 @@ class tempController extends BaseController {
       let html = `<table border="1" style="border-collapse: collapse; width: 100%;">`;
       if (results.length > 0) {
         html +=
-          "<tr style='font-size: 14px; margin: 3px,padding:5px 0;'>" +
+          "<tr style='font-size: 12px; margin: 3px,padding:5px 0;'>" +
           Object.keys(results[0])
             .map((key) => `<th>${key}</th>`)
             .join("") +
           "</tr>";
         results.forEach((row) => {
           html +=
-            "<tr style='font-size: 14px; margin: 3px,padding:5px 0;'>" +
+            "<tr style='font-size: 12px; margin: 3px,padding:5px ;'>" +
             Object.values(row)
               .map((value) => `<td>${value}</td>`)
               .join("") +
