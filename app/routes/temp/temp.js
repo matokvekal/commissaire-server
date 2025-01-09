@@ -27,5 +27,9 @@ export default (router, app) => {
     tempController.deleteKid.bind(tempController)
   );
 
+  router.get(
+    `/${modelBase}/loger`,
+    tempController.getUserData.bind(tempController)
+  );
   return router;
 };

@@ -127,5 +127,162 @@ class tempController extends BaseController {
       });
     }
   };
+
+  // GET /api/temp/loger?username=...&data=...
+  getUserData = async (req, res) => {
+    try {
+      const username = req.query.username;
+      const data = req.query.data;
+
+      if (!username || !data) {
+        return res
+          .status(400)
+          .send("Missing required parameters: username and data.");
+      }
+
+      let SQL;
+      if (data === "log") {
+        SQL = `
+          SELECT 
+            l.id, l.date, l.controler 
+          FROM logs l 
+          LEFT JOIN users u ON l.user_name = u.id 
+          WHERE u.user_type = 'kid' 
+            AND u.user_name = :username 
+            AND l.controler LIKE 'POST/kid/usage%' 
+          ORDER BY l.id DESC 
+          LIMIT 500;
+        `;
+      } else if (data === "apps") {
+        SQL = `
+          SELECT 
+            app_name, package_name, category AS google_cat, 
+            default_status, status_computed, a.device_category AS google_devise_cat, 
+            kid_apps.status AS Final_kid_status 
+          FROM apps a 
+          LEFT JOIN kid_apps ON a.id = kid_apps.app_id 
+          LEFT JOIN users ON kid_apps.kid_id = users.id 
+          WHERE users.user_name = :username 
+          LIMIT 500;
+        `;
+      } else {
+        return res
+          .status(400)
+          .send("Invalid data parameter. Use 'log' or 'apps'.");
+      }
+
+      const results = await this.sequelize.query(SQL, {
+        replacements: { username },
+        type: QueryTypes.SELECT
+      });
+
+      // Convert results to HTML table
+      let html = `<table border="1" style="border-collapse: collapse; width: 100%; font-size: 14px; margin: 3px;">`;
+      if (results.length > 0) {
+        html +=
+          "<tr style='font-size: 16px; margin: 6px;'>" +
+          Object.keys(results[0])
+            .map((key) => `<th>${key}</th>`)
+            .join("") +
+          "</tr>";
+        results.forEach((row) => {
+          html +=
+            "<tr style='font-size: 16px; margin: 6px;'>" +
+            Object.values(row)
+              .map((value) => `<td>${value}</td>`)
+              .join("") +
+            "</tr>";
+        });
+      } else {
+        html += "<tr><td colspan='100%'>No data found</td></tr>";
+      }
+      html += "</table>";
+
+      res.status(200).send(html);
+    } catch (err) {
+      console.error(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred while fetching user data."
+      });
+    }
+  };
+  // GET /api/temp/log?username=...&data=...
+  getUserData = async (req, res) => {
+    try {
+      const username = req.query.username;
+      const data = req.query.data;
+
+      if (!username || !data) {
+        return res
+          .status(400)
+          .send("Missing required parameters: username and data.");
+      }
+
+      let SQL;
+      if (data === "log") {
+        SQL = `
+          SELECT 
+            l.id, l.date, l.controler 
+          FROM logs l 
+          LEFT JOIN users u ON l.user_name = u.id 
+          WHERE u.user_type = 'kid' 
+            AND u.email LIKE :username 
+            AND l.controler LIKE 'POST/kid/usage%' 
+          ORDER BY l.id DESC 
+          LIMIT 500;
+        `;
+      } else if (data === "apps") {
+        SQL = `
+          SELECT 
+            app_name, package_name, category AS google_cat, 
+            default_status, status_computed, a.device_category AS google_devise_cat, 
+            kid_apps.status AS Final_kid_status 
+          FROM apps a 
+          LEFT JOIN kid_apps ON a.id = kid_apps.app_id 
+          LEFT JOIN users ON kid_apps.kid_id = users.id 
+          WHERE users.email LIKE :username 
+          LIMIT 500;
+        `;
+      } else {
+        return res
+          .status(400)
+          .send("Invalid data parameter. Use 'log' or 'apps'.");
+      }
+
+      const results = await this.sequelize.query(SQL, {
+        replacements: { username: `${username}%` },
+        type: QueryTypes.SELECT
+      });
+
+      // Convert results to HTML table
+      let html = `<table border="1" style="border-collapse: collapse; width: 100%;">`;
+      if (results.length > 0) {
+        html +=
+          "<tr style='font-size: 14px; margin: 3px,padding:5px 0;'>" +
+          Object.keys(results[0])
+            .map((key) => `<th>${key}</th>`)
+            .join("") +
+          "</tr>";
+        results.forEach((row) => {
+          html +=
+            "<tr style='font-size: 14px; margin: 3px,padding:5px 0;'>" +
+            Object.values(row)
+              .map((value) => `<td>${value}</td>`)
+              .join("") +
+            "</tr>";
+        });
+      } else {
+        html += "<tr><td colspan='100%'>No data found</td></tr>";
+      }
+      html += "</table>";
+
+      res.status(200).send(html);
+    } catch (err) {
+      console.error(err);
+      res.createErrorLogAndSend(this.sequelize, {
+        err: err.message || "Some error occurred while fetching user data."
+      });
+    }
+  };
 }
 export default tempController;

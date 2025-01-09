@@ -20,7 +20,8 @@ const bypassPathsWhiteList = new Set([
   "/temp/conectavioldkids",
   "/temp/delete_kid",
   "/temp/add_kid",
-  "/temp/token"
+  "/temp/token",
+  "/temp/loger"
 ]);
 
 const isPathCanBypass = (path) => bypassPathsWhiteList.has(path);
