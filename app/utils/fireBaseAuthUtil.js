@@ -1,11 +1,17 @@
+import fs from "fs";
+
+const serviceAccount = JSON.parse(
+  fs.readFileSync(new URL("../../serviceAccountKey.json", import.meta.url))
+);
+
 import admin from "firebase-admin";
 
-import serviceAccount from "../../serviceAccountKey.json" assert { type: "json" };
 const project_id = "upwize-app";
+
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: `https://${project_id}.firebaseio.com`,
+  databaseURL: `https://${project_id}.firebaseio.com`
 });
 
 /**

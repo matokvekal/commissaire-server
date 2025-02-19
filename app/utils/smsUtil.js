@@ -9,6 +9,9 @@ export const kidRegistrationSMS = async (
   otp,
   isLogin = false
 ) => {
+  //this is petch from 19-2-25 remove it  if you manage the sms support see also at autenticationcontroller line 200 and at authcontroler line 85
+  return true;
+  //end of petch
   const action = isLogin ? "login" : "register";
   otp = otp ? `Your OTP is ${otp}.` : "";
   const messageBody = ` Hi,  ${otp}  is the Otp for ${kidName} to KoaliTime app `;
@@ -18,6 +21,10 @@ export const kidRegistrationSMS = async (
 };
 
 export const parentRegistrationSMS = async (phoneNumber, otp) => {
+  //this is petch from 19-2-25 remove it  if you manage the sms support
+  return true;
+  //end of petch
+
   const messageBody = `Your OTP :${otp}  welcome to  Koali Time `;
   const smsSender = config.smsSenderName;
   const result = await singleSmsSender(phoneNumber, messageBody, smsSender);
@@ -39,14 +46,14 @@ export const singleSmsSender = async (
       const Users = [{ Phone: phoneNumber }];
       const headers = {
         "Content-Type": "application/json",
-        Authorization: `Basic  ${token}`,
+        Authorization: `Basic  ${token}`
       };
       const body = {
         Message: messageBody,
         Recipients: Users,
         Settings: {
-          Sender: sender,
-        },
+          Sender: sender
+        }
       };
       if (sendSms) {
         sendSmsResult = await axios.post(url, body, { headers });

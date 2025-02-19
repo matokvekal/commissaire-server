@@ -11,7 +11,7 @@ import moment from "moment";
 import {
   ServerLoginMessages,
   ServerErrors,
-  ServerMessages,
+  ServerMessages
 } from "../../constants/constantMessages.js";
 
 class AuthController extends BaseController {
@@ -80,7 +80,10 @@ class AuthController extends BaseController {
         }
       }
 
-      const OTP = createOTP();
+      let OTP = createOTP();
+      //this is petch from 19-2-25 remove it  if you manage the sms support
+      OTP = "1234";
+      //end of petch
       const smsSent = await parentRegistrationSMS(parentPhone, OTP);
 
       // Handle failed SMS sending
@@ -93,13 +96,13 @@ class AuthController extends BaseController {
         const updateSql = `UPDATE users SET otp = :OTP, otp_trys = otp_trys + 1,last_otp=UTC_TIMESTAMP() WHERE phone = :parentPhone AND user_type = "parent"`;
         await this.sequelize.query(updateSql, {
           replacements: { parentPhone, OTP },
-          type: QueryTypes.UPDATE,
+          type: QueryTypes.UPDATE
         });
       } else {
         const insertSql = `INSERT INTO users (f_name, l_name, phone, email, user_type, otp, last_otp,read_agree_terms) VALUES (:name, :familyName, :parentPhone, :email, 'parent', :OTP, UTC_TIMESTAMP(),1)`;
         await this.sequelize.query(insertSql, {
           replacements: { name, familyName, parentPhone, email, OTP },
-          type: QueryTypes.INSERT,
+          type: QueryTypes.INSERT
         });
       }
       return res.status(200).send(ServerMessages.OTP_SENT_SUCCESS);
@@ -107,7 +110,7 @@ class AuthController extends BaseController {
       console.error("Error during registration:", err);
       // return res.status(500).send("An error occurred during registration.");
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
+        err: err.message || ServerErrors.GENERAL_ERROR
       });
     }
   };
@@ -153,7 +156,7 @@ class AuthController extends BaseController {
         "SELECT  * FROM users WHERE phone=:phone AND user_type='parent' AND otp=:otp";
       let parent = await this.sequelize.query(SQL, {
         replacements: { phone: cleanedPhone, otp: cleanedOtp },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       if (parent.length === 0) {
@@ -177,14 +180,14 @@ class AuthController extends BaseController {
       SQL = "UPDATE users SET is_register=1, otp_trys=0 WHERE id=:id";
       await this.sequelize.query(SQL, {
         replacements: { id: parent[0].id },
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.UPDATE
       });
 
       SQL =
         "SELECT DISTINCT * FROM family WHERE parent_phone=:cleanedPhone AND is_active=1";
       let family = await this.sequelize.query(SQL, {
         replacements: { cleanedPhone },
-        type: QueryTypes.SELECT,
+        type: QueryTypes.SELECT
       });
 
       console.log("family data", family);
@@ -196,9 +199,9 @@ class AuthController extends BaseController {
           replacements: {
             name: parent[0].l_name,
             parentPhone: cleanedPhone,
-            userId: parent[0].id,
+            userId: parent[0].id
           },
-          type: QueryTypes.INSERT,
+          type: QueryTypes.INSERT
         });
         console.log("results", results);
       }
@@ -211,7 +214,7 @@ class AuthController extends BaseController {
         const lastInsertId = await this.sequelize.query(
           "SELECT LAST_INSERT_ID() as id",
           {
-            type: QueryTypes.SELECT,
+            type: QueryTypes.SELECT
           }
         );
         const familyId = lastInsertId[0].id;
@@ -219,7 +222,7 @@ class AuthController extends BaseController {
         SQL = `update users set family_id=:familyId where id=${parent[0].id}`;
         await this.sequelize.query(SQL, {
           replacements: { familyId: family[0] ? family[0].id : familyId },
-          type: QueryTypes.UPDATE,
+          type: QueryTypes.UPDATE
         });
       }
       const token = createJwtToken(parent[0].phone, "parent");
@@ -228,7 +231,7 @@ class AuthController extends BaseController {
     } catch (err) {
       console.error(err);
       res.createErrorLogAndSend(this.sequelize, {
-        err: err.message || ServerErrors.GENERAL_ERROR,
+        err: err.message || ServerErrors.GENERAL_ERROR
       });
     }
   };
@@ -237,7 +240,7 @@ class AuthController extends BaseController {
     const SQL = `SELECT * FROM users WHERE phone = :parentPhone AND user_type = "parent"`;
     const [parent] = await this.sequelize.query(SQL, {
       replacements: { parentPhone },
-      type: QueryTypes.SELECT,
+      type: QueryTypes.SELECT
     });
     return parent;
   }

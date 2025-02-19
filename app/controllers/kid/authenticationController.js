@@ -195,7 +195,10 @@ class AuthenticationController extends BaseController {
       }
 
       family = family[0];
-      const OTP = createOTP();
+      let OTP = createOTP();
+        //this is petch from 19-2-25 remove it  if you manage the sms support
+        OTP="1234";
+      //end of petch
       const smsSent = await kidRegistrationSMS(
         family.name,
         parentPhone,
