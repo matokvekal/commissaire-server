@@ -12,7 +12,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   if (err instanceof ApiError) {
     return res.status(err.status).json({ error: err.message });
   }
-
+  ////////
   logger.error({ err, path: req.path }, "Unhandled error");
   res.status(500).json({ error: "Internal server error" });
 }
