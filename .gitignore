@@ -1,23 +1,14 @@
 node_modules/
 dist/
-# Compiled Java class files
-*.class
-env.json
-# Compiled Python bytecode
-*.py[cod]
 
-# Log files
+# Logs
 *.log
 /logs/
-app.log
-# Package files
-*.jar
-/config/
+
+# Environment and credentials — never commit secrets
 .env
-README.md
-API.md
-/logs/log
+.env.*
+!.env.example
 serviceAccountKey.json
-/__tests__/
-babel.config.js
-swagger.json
+*.credentials.json
+*.md

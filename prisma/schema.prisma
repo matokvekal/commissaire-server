@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RIDER
+  COMMISSAIRE
+}
+
+// Mechanism behind a specific identity record. Distinct from the higher-level
+// AUTH_PROVIDERS config (GOOGLE/SMS/EMAIL, see src/config/env.ts) that controls which
+// login methods are exposed to clients — EMAIL_PASSWORD is the concrete mechanism
+// behind the "EMAIL" config option, once that flow is implemented.
+enum AuthProviderType {
+  GOOGLE
+  SMS
+  EMAIL_PASSWORD
+}
+
+enum EventType {
+  RACE
+  RIDE
+}
+
+model User {
+  id             String    @id @default(uuid())
+  firstName      String?   @map("first_name")
+  lastName       String?   @map("last_name")
+  nickname       String?
+  emergencyPhone String?   @map("emergency_phone")
+  role           Role      @default(RIDER)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastLoginAt    DateTime? @map("last_login_at")
+
+  identities   AuthIdentity[]
+  sessions     Session[]
+  participants EventParticipant[]
+
+  @@map("users")
+}
+
+model AuthIdentity {
+  id             String           @id @default(uuid())
+  userId         String           @map("user_id")
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       AuthProviderType
+  providerUserId String           @map("provider_user_id")
+  email          String?
+  phone          String?
+  passwordHash   String?          @map("password_hash")
+  verifiedAt     DateTime?        @map("verified_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  lastUsedAt     DateTime?        @map("last_used_at")
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("auth_identities")
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  lastUsedAt       DateTime? @map("last_used_at")
+  deviceInfo       String?   @map("device_info")
+  ipAddress        String?   @map("ip_address")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// A ride or race a rider can join with a short code (or QR code encoding a join URL
+// containing that code). `code` is what the transmitter app looks up before the rider
+// is even authenticated, so it must stay short and human-enterable.
+model Event {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  name        String
+  type        EventType @default(RIDE)
+  requiresBib Boolean   @default(false) @map("requires_bib")
+  startsAt    DateTime? @map("starts_at")
+  endsAt      DateTime? @map("ends_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  participants EventParticipant[]
+
+  @@map("events")
+}
+
+// One rider's membership in one event. Display identity (name/nickname/emergency phone)
+// intentionally lives on User, not here — the rider sets that up once, not per event.
+model EventParticipant {
+  id       String    @id @default(uuid())
+  eventId  String    @map("event_id")
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId   String    @map("user_id")
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bib      String?
+  joinedAt DateTime  @default(now()) @map("joined_at")
+  leftAt   DateTime? @map("left_at")
+
+  locations LocationPoint[]
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_participants")
+}
+
+model LocationPoint {
+  id            String           @id @default(uuid())
+  participantId String           @map("participant_id")
+  participant   EventParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  lat           Float
+  lng           Float
+  accuracy      Float?
+  recordedAt    DateTime         @map("recorded_at")
+  receivedAt    DateTime         @default(now()) @map("received_at")
+  emergency     Boolean          @default(false)
+
+  @@index([participantId, recordedAt])
+  @@map("location_points")
+}
+
+model OtpChallenge {
+  id           String    @id @default(uuid())
+  phone        String
+  codeHash     String    @map("code_hash")
+  attemptCount Int       @default(0) @map("attempt_count")
+  maxAttempts  Int       @default(5) @map("max_attempts")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expiresAt    DateTime  @map("expires_at")
+  consumedAt   DateTime? @map("consumed_at")
+  requestIp    String?   @map("request_ip")
+
+  @@index([phone])
+  @@index([expiresAt])
+  @@map("otp_challenges")
+}

@@ -1,94 +1,146 @@
-connect to server
-ssh -i "C:\\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com
+# Commissaire Server
 
-at aws the server at :
-/home/ubuntu/actions-runner-api/\_work/apis/apis
+Backend API for the Commissaire app and the Transmiter Android app. TypeScript, Express 5,
+PostgreSQL/Prisma, Google + SMS sign-in. See [`PLAN.md`](./PLAN.md) for the original rewrite
+rationale and [`SETUP.md`](./SETUP.md) for the full Google OAuth + Postgres setup runbook — this
+README only covers day-to-day dev commands.
 
-MONGO DB -
-the code is redy to use mongo db, we just have to install it at aws (prffer to use it at other dick since it take resources
-) the update the config use mongo to true; and run
-mongo -u "admin" -p "Aa1234567" --authenticationDatabase "admin"
+**Architecture in one sentence:** Google and SMS are identity *providers* that only answer "who is
+this person" — after a successful provider check, the server issues its own short-lived
+Commissaire access token + rotating refresh token, and every other route only ever accepts that
+token, never a Google ID token or an OTP code.
 
-/etc/mongod.conf
-security:
-authorization: enabled
-then run
-sudo systemctl restart mongod
-at comaps connect with:
-mongodb://admin:Aa1234567@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com:27017/?authSource=admin&authMechanism=SCRAM-SHA-256&tls=false
+## Requirements
 
-To create an administrative user in MongoDB, you'll need to use the MongoDB shell to execute the command you mentioned, with some modifications to include your actual username and password. Here's a step-by-step guide on how to do it:
+- Node.js 24+
+- PostgreSQL (only needed once you start hitting `/api/v1/auth/*` — `/health` and
+  `/api/v1/auth/config` work without it)
 
-Step 1: Access MongoDB Shell
-First, you need to access the MongoDB shell. You can do this by entering the following command in your terminal:
+## Setup
 
-bash
-Copy code
-mongo
-Step 2: Switch to the Admin Database
-Once in the MongoDB shell, switch to the admin database, which is the default database for storing system-wide information like users and roles:
+```bash
+npm install
+cp .env.example .env   # fill in real values, never commit .env
+```
 
-use admin
-db.createUser({
-user: "<username>",
-pwd: "<password>",
-roles: [{role: "root", db: "admin"}]
-}
+Then follow [`SETUP.md`](./SETUP.md) to create the Google OAuth client and Postgres database.
 
-show users
+### Environment variables
 
-.env
-this file shuld be at /home/ubuntu/env./env , the ci will make simblic link to project
+| Variable                | Required        | Notes                                                                 |
+| ------------------------ | ---------------- | ------------------------------------------------------------------------ |
+| `PORT`                   | no               | Defaults to `5000`                                                       |
+| `DATABASE_URL`           | no*              | Postgres connection string. *Required for any `/api/v1/auth/*` or `/api/v1/users/*` route to work. |
+| `JWT_ACCESS_SECRET`      | yes in production | Min 32 chars. Insecure dev default used automatically outside production. Signs the access token only — refresh tokens are opaque random values, not JWTs, so there's no `JWT_REFRESH_SECRET`. |
+| `JWT_ACCESS_EXPIRES_IN`  | no               | Defaults to `15m`.                                                       |
+| `JWT_REFRESH_EXPIRES_IN` | no               | Defaults to `30d`. Controls session lifetime (`sessions.expires_at`).    |
+| `GOOGLE_CLIENT_IDS`      | yes (if GOOGLE enabled) | Comma-separated OAuth client IDs accepted as token audience. See SETUP.md. |
+| `SMS_PROVIDER`           | no               | `MOCK` (default, logs codes locally) or `TWILIO` (not implemented yet).  |
+| `AUTH_PROVIDERS`         | no               | Comma-separated, defaults to `GOOGLE`. Controls both `GET /auth/config` and which providers' endpoints accept requests. |
+| `CORS_ORIGINS`           | yes              | Comma-separated allowed browser origins for the web dashboard.           |
+| `LOG_LEVEL`              | no               | Pino level, defaults to `info`.                                          |
 
-log error
-import { createErrorLog } from "../utils/apiLoggerUtils.js";
-await createErrorLog(db, req, error);
+Startup fails fast (`process.exit(1)`) on invalid config: unknown `AUTH_PROVIDERS` values, or
+missing/short `JWT_*_SECRET` in production.
 
-test to be done
-1.register with i agree parent
-2.register with i agree kid
-3.POST /api/parent/token
-4.POST /api/kid/token 5. POST /api/kid/apps 5. POST /api/kid/device
-///////////////////
-NGINX
-sudo apt search nginx
-sudo systemctl enable nginx
-sudo systemctl status nginx
-cd /etc/nginx/sites-available
-at AWS open port 80/443 with http https
-https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04
+## Running
 
-lidor 9 00:46:15 remove \_ for all file and insert domain
-//////this is the version to build the PWA
+```bash
+npm run dev          # tsx watch, hot reload
+npm run build         # tsc -> dist/
+npm start              # node dist/server.js (after build)
+```
 
-//////////////////////
-hadle Apps problem
-at kids:
-1.remove kid post apps
-2.addcolumn new defaullt = 1 to  kid_aps
-3.at first kid registration all aps status=neutral and all new=1
-4.run loop until  all apps.new = 0 
-every 10 seconds call updateApp >the only change is that you will also get the new. if new=0 then its on the loop else remove it
+`GET /health` returns `{ "status": "ok" }` and never touches the database.
 
-5.after all apps.new=0  keep the same
+## Database
 
-====================================
-microservices  
-pm2 at server
-cd microservices/
-pm2 status
-pm2 start server.js --name microservice
-pm2 status
-pm2 restart microservice --watch
-pm2 status
-pm2 log
+`prisma/schema.prisma` defines four tables: `users`, `auth_identities`, `sessions`,
+`otp_challenges` — identity (Google/SMS/email+password) is deliberately kept off the `users` table
+itself, see the schema comments. A migration is already committed at
+`prisma/migrations/20260809164652_init/` (generated via `prisma migrate diff`, no live database
+was needed to produce it). Once `DATABASE_URL` is set and Postgres is reachable:
 
-------------------------------------
-# Option 1: Directly run your swagger file 
-node swagger.js
+```bash
+npx prisma migrate deploy   # applies the committed migration as-is
+npm run db:generate          # regenerate the Prisma client after any future schema change
+```
 
-# Option 2: Add a script in package.json and run via npm
-"scripts": {
-  "generate-swagger": "node swagger.js"
-}
-npm run generate-swagger
+Use `npm run db:migrate` (`prisma migrate dev`) instead of `migrate deploy` only when you're
+actively changing `schema.prisma` yourself and want Prisma to generate a *new* migration.
+
+## Auth flow
+
+Google/SMS only establish identity; they are never accepted by any other route.
+
+1. `GET /api/v1/auth/config` — public. Returns `{ "providers": ["GOOGLE", "SMS"] }` (whatever's
+   enabled via `AUTH_PROVIDERS`). Clients call this before rendering the login screen and only
+   show the returned methods.
+2. `POST /api/v1/auth/google` — body `{ "idToken": "<google-id-token>" }`. Verifies the token once,
+   finds-or-creates the user, returns `{ user, accessToken, refreshToken, requiresProfile }`.
+3. `POST /api/v1/auth/sms/request` — body `{ "phone": "+15551234567" }` (E.164). Returns
+   `{ challengeId }`; the code itself is only ever sent via the configured `SmsProvider`, never in
+   the response.
+4. `POST /api/v1/auth/sms/verify` — body `{ "challengeId", "code" }`. Same response shape as
+   `/google` on success.
+5. Every other route requires `Authorization: Bearer <accessToken>` (the Commissaire token from
+   step 2/4, not a Google ID token). `requireAuth` middleware verifies it statelessly (signature +
+   expiry only, no DB/network call) and sets `req.auth = { userId, role, sessionId }`.
+6. `POST /api/v1/auth/refresh` — body `{ "refreshToken" }`. The refresh token is an opaque random
+   value; the server only ever stores `sha256(refreshToken)` in `sessions.refresh_token_hash` and
+   looks sessions up by that hash. A successful refresh rotates it in place (new token issued, old
+   hash overwritten, so reusing an already-rotated token no longer matches any session and is
+   rejected). Returns a fresh `{ accessToken, refreshToken }`.
+7. `POST /api/v1/auth/logout` — requires an access token; revokes that session. The access token
+   itself stays valid until its own short natural expiry (stateless verification tradeoff), but no
+   further refresh is possible once revoked.
+8. `POST /api/v1/auth/logout-all` — requires an access token; revokes every session belonging to
+   that user (all devices).
+9. `PATCH /api/v1/users/me` — requires an access token. Body: any of `firstName`, `lastName`,
+   `nickname`, `emergencyPhone` (all optional; `emergencyPhone` is never required for
+   `requiresProfile` to resolve `false` — the other three are).
+10. A provider disabled via `AUTH_PROVIDERS` rejects its endpoints with
+   `403 { "error": "AUTH_PROVIDER_DISABLED" }` rather than 404 — the implementation stays in place,
+   only exposure/acceptance is toggled.
+
+New users always get `role: "RIDER"`; there's no client-controlled path to `COMMISSAIRE` — promote
+a user by editing the database directly until a real admin flow exists. A disabled account
+(`users.is_active = false`) is rejected at sign-in and at refresh time.
+
+## Testing and quality
+
+```bash
+npm test         # vitest — Google/SMS calls and Prisma are mocked, no live network/DB needed
+npm run typecheck
+npm run lint
+```
+
+Tests cover: Google sign-in (new user, duplicate identity, invalid token, unverified email),
+SMS OTP (happy path, wrong code, attempt lockout, expiry, resend cooldown), refresh rotation and
+reuse rejection, deactivated-user refresh, multi-session isolation, logout and logout-all
+revocation, tampered/expired tokens, the `AUTH_PROVIDERS` enable/disable behavior, and profile
+completion.
+
+## Deploying
+
+CI (`.github/workflows/node.js.yml`) runs on a self-hosted runner on push to `staging`: installs
+deps, generates the Prisma client, builds, and restarts the process under PM2 as `api`.
+
+Manual access to the box:
+
+```bash
+ssh -i "C:\ssh\koali-key-24.pem" ubuntu@ec2-18-199-57-38.eu-central-1.compute.amazonaws.com
+```
+
+The runtime `.env` lives at `/home/ubuntu/env/.env` on the host; CI symlinks it into the project
+directory on each deploy. Reverse proxy is nginx with Let's Encrypt (see DigitalOcean's Ubuntu
+nginx/Let's Encrypt guide for the general steps used originally).
+
+## What changed from the old backend
+
+This replaces the legacy Kids/Parents product (MySQL/Sequelize, MongoDB, Socket.IO, local JWT, SMS
+OTP with a hardcoded bypass code). That code is preserved at the git tag `legacy-koali-backup` if
+anything needs to be recovered. `serviceAccountKey.json`, which was previously committed, is no
+longer used at all — auth verifies Google ID tokens directly instead of going through Firebase
+Admin. **That credential should still be rotated/revoked in Google Cloud Console**, since it was
+exposed in git history.

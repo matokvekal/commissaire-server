@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [24.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
     - uses: actions/checkout@v3
@@ -24,15 +24,21 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    
+
     - name: Create symbolic link to .env file
       run: ln -sf /home/ubuntu/env/.env .env
 
+    - name: Generate Prisma client
+      run: npx prisma generate
+
+    - name: Build
+      run: npm run build
+
     - name: Stop existing PM2 process (if any)
       run: pm2 stop api || true
-      
+
     - name: Start application with PM2
-      run: pm2 start server.js --name api
+      run: pm2 start dist/server.js --name api
 
     - name: Save PM2 process list
       run: pm2 save
