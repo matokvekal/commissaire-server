@@ -18,6 +18,6 @@ export const locationPointSchema = z.object({
 });
 
 export const locationBatchSchema = z.object({
-  participantId: z.uuid(),
+  participantId: z.number().int().positive(),
   points: z.array(locationPointSchema).min(1).max(200),
 });

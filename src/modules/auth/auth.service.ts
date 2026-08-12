@@ -22,7 +22,7 @@ import {
 import { issueTokenPair, type TokenPair } from "./token.service.js";
 
 export interface AuthResult {
-  user: { id: string; role: User["role"] };
+  user: { id: number; role: User["role"] };
   accessToken: string;
   refreshToken: string;
   requiresProfile: boolean;
@@ -80,12 +80,12 @@ export async function authenticateWithGoogle(
 export async function requestSmsOtp(
   phone: string,
   requestIp: string | null,
-): Promise<{ challengeId: string }> {
+): Promise<{ challengeId: number }> {
   return requestOtp(phone, requestIp);
 }
 
 export async function verifySmsOtp(
-  challengeId: string,
+  challengeId: number,
   code: string,
   context: SessionContext,
 ): Promise<AuthResult> {
@@ -112,15 +112,19 @@ export async function refreshTokens(
   }
 
   const newRefreshToken = await rotateSession(session.id, context);
-  const accessToken = await signAccessToken({ sub: user.id, role: user.role, sid: session.id });
+  const accessToken = await signAccessToken({
+    sub: String(user.id),
+    role: user.role,
+    sid: String(session.id),
+  });
 
   return { accessToken, refreshToken: newRefreshToken };
 }
 
-export async function logout(sessionId: string): Promise<void> {
+export async function logout(sessionId: number): Promise<void> {
   await revokeSession(sessionId);
 }
 
-export async function logoutAll(userId: string): Promise<void> {
+export async function logoutAll(userId: number): Promise<void> {
   await revokeAllSessions(userId);
 }

@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 // A minimal in-memory stand-in for the slice of PrismaClient our services call. Real business
 // logic (hashing, expiry, attempt counting, rotation, revocation) lives in the service files and
 // runs for real against this store — only the DB itself is faked, not the logic under test.
@@ -8,7 +6,7 @@ type Role = "RIDER" | "COMMISSAIRE";
 type AuthProviderType = "GOOGLE" | "SMS" | "EMAIL_PASSWORD";
 
 interface UserRow {
-  id: string;
+  id: number;
   role: Role;
   isActive: boolean;
   firstName: string | null;
@@ -21,8 +19,8 @@ interface UserRow {
 }
 
 interface AuthIdentityRow {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
   provider: AuthProviderType;
   providerUserId: string;
   email: string | null;
@@ -35,8 +33,8 @@ interface AuthIdentityRow {
 }
 
 interface SessionRow {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
   refreshTokenHash: string;
   createdAt: Date;
   expiresAt: Date;
@@ -47,7 +45,7 @@ interface SessionRow {
 }
 
 interface OtpChallengeRow {
-  id: string;
+  id: number;
   phone: string;
   codeHash: string;
   attemptCount: number;
@@ -58,23 +56,27 @@ interface OtpChallengeRow {
   requestIp: string | null;
 }
 
-const users = new Map<string, UserRow>();
+const users = new Map<number, UserRow>();
 const identities = new Map<string, AuthIdentityRow>(); // key: `${provider}:${providerUserId}`
-const sessions = new Map<string, SessionRow>();
-const otpChallenges = new Map<string, OtpChallengeRow>();
+const sessions = new Map<number, SessionRow>();
+const otpChallenges = new Map<number, OtpChallengeRow>();
+
+let nextUserId = 1;
+let nextIdentityId = 1;
+let nextSessionId = 1;
+let nextOtpChallengeId = 1;
 
 function identityKey(provider: string, providerUserId: string) {
   return `${provider}:${providerUserId}`;
 }
 
 export const fakePrisma = {
+  async $transaction<T>(fn: (tx: typeof fakePrisma) => Promise<T>): Promise<T> {
+    return fn(fakePrisma);
+  },
   user: {
-    async create({
-      data,
-    }: {
-      data: Partial<UserRow> & { identities?: { create: Partial<AuthIdentityRow> } };
-    }) {
-      const id = randomUUID();
+    async create({ data }: { data: Partial<UserRow> }) {
+      const id = nextUserId++;
       const now = new Date();
       const user: UserRow = {
         id,
@@ -89,59 +91,52 @@ export const fakePrisma = {
         lastLoginAt: data.lastLoginAt ?? null,
       };
       users.set(id, user);
-
-      if (data.identities?.create) {
-        const idData = data.identities.create;
-        const identity: AuthIdentityRow = {
-          id: randomUUID(),
-          userId: id,
-          provider: idData.provider as AuthProviderType,
-          providerUserId: idData.providerUserId as string,
-          email: idData.email ?? null,
-          phone: idData.phone ?? null,
-          passwordHash: idData.passwordHash ?? null,
-          verifiedAt: idData.verifiedAt ?? null,
-          createdAt: now,
-          updatedAt: now,
-          lastUsedAt: idData.lastUsedAt ?? null,
-        };
-        identities.set(identityKey(identity.provider, identity.providerUserId), identity);
-      }
       return user;
     },
-    async update({ where, data }: { where: { id: string }; data: Partial<UserRow> }) {
+    async update({ where, data }: { where: { id: number }; data: Partial<UserRow> }) {
       const user = users.get(where.id);
       if (!user) throw new Error("User not found");
       Object.assign(user, data, { updatedAt: new Date() });
       return user;
     },
-    async findUnique({ where }: { where: { id: string } }) {
+    async findUnique({ where }: { where: { id: number } }) {
       return users.get(where.id) ?? null;
     },
-    async findUniqueOrThrow({ where }: { where: { id: string } }) {
+    async findUniqueOrThrow({ where }: { where: { id: number } }) {
       const user = users.get(where.id);
       if (!user) throw new Error("User not found");
       return user;
     },
   },
   authIdentity: {
+    async create({ data }: { data: Partial<AuthIdentityRow> & { userId: number } }) {
+      const now = new Date();
+      const identity: AuthIdentityRow = {
+        id: nextIdentityId++,
+        userId: data.userId,
+        provider: data.provider as AuthProviderType,
+        providerUserId: data.providerUserId as string,
+        email: data.email ?? null,
+        phone: data.phone ?? null,
+        passwordHash: data.passwordHash ?? null,
+        verifiedAt: data.verifiedAt ?? null,
+        createdAt: now,
+        updatedAt: now,
+        lastUsedAt: data.lastUsedAt ?? null,
+      };
+      identities.set(identityKey(identity.provider, identity.providerUserId), identity);
+      return identity;
+    },
     async findUnique({
       where,
-      include,
     }: {
       where: { provider_providerUserId: { provider: AuthProviderType; providerUserId: string } };
-      include?: { user?: boolean };
     }) {
       const key = identityKey(
         where.provider_providerUserId.provider,
         where.provider_providerUserId.providerUserId,
       );
-      const identity = identities.get(key);
-      if (!identity) return null;
-      if (include?.user) {
-        return { ...identity, user: users.get(identity.userId) ?? null };
-      }
-      return identity;
+      return identities.get(key) ?? null;
     },
     async update({
       where,
@@ -164,11 +159,11 @@ export const fakePrisma = {
     async create({
       data,
     }: {
-      data: Pick<SessionRow, "id" | "userId" | "refreshTokenHash" | "expiresAt"> &
+      data: Pick<SessionRow, "userId" | "refreshTokenHash" | "expiresAt"> &
         Partial<Pick<SessionRow, "lastUsedAt" | "deviceInfo" | "ipAddress">>;
     }) {
       const session: SessionRow = {
-        id: data.id,
+        id: nextSessionId++,
         userId: data.userId,
         refreshTokenHash: data.refreshTokenHash,
         createdAt: new Date(),
@@ -181,7 +176,7 @@ export const fakePrisma = {
       sessions.set(session.id, session);
       return session;
     },
-    async update({ where, data }: { where: { id: string }; data: Partial<SessionRow> }) {
+    async update({ where, data }: { where: { id: number }; data: Partial<SessionRow> }) {
       const session = sessions.get(where.id);
       if (!session) throw new Error("Session not found");
       Object.assign(session, data);
@@ -191,7 +186,7 @@ export const fakePrisma = {
       where,
       data,
     }: {
-      where: { id?: string; userId?: string; revokedAt?: null };
+      where: { id?: number; userId?: number; revokedAt?: null };
       data: Partial<SessionRow>;
     }) {
       const candidates =
@@ -208,7 +203,7 @@ export const fakePrisma = {
       }
       return { count };
     },
-    async findUnique({ where }: { where: { id?: string; refreshTokenHash?: string } }) {
+    async findUnique({ where }: { where: { id?: number; refreshTokenHash?: string } }) {
       if (where.id !== undefined) return sessions.get(where.id) ?? null;
       if (where.refreshTokenHash !== undefined) {
         return (
@@ -222,11 +217,11 @@ export const fakePrisma = {
     async create({
       data,
     }: {
-      data: Pick<OtpChallengeRow, "id" | "phone" | "codeHash" | "expiresAt"> &
+      data: Pick<OtpChallengeRow, "phone" | "codeHash" | "expiresAt"> &
         Partial<Pick<OtpChallengeRow, "maxAttempts" | "requestIp">>;
     }) {
       const challenge: OtpChallengeRow = {
-        id: data.id,
+        id: nextOtpChallengeId++,
         phone: data.phone,
         codeHash: data.codeHash,
         expiresAt: data.expiresAt,
@@ -243,8 +238,10 @@ export const fakePrisma = {
       where,
       data,
     }: {
-      where: { id: string };
-      data: { attemptCount?: { increment: number } } & Partial<Pick<OtpChallengeRow, "consumedAt">>;
+      where: { id: number };
+      data: { attemptCount?: { increment: number } } & Partial<
+        Pick<OtpChallengeRow, "consumedAt" | "codeHash">
+      >;
     }) {
       const challenge = otpChallenges.get(where.id);
       if (!challenge) throw new Error("Challenge not found");
@@ -252,9 +249,10 @@ export const fakePrisma = {
         challenge.attemptCount += data.attemptCount.increment;
       }
       if ("consumedAt" in data) challenge.consumedAt = data.consumedAt ?? null;
+      if ("codeHash" in data && data.codeHash !== undefined) challenge.codeHash = data.codeHash;
       return challenge;
     },
-    async findUnique({ where }: { where: { id: string } }) {
+    async findUnique({ where }: { where: { id: number } }) {
       return otpChallenges.get(where.id) ?? null;
     },
     async count({ where }: { where: { phone: string; createdAt: { gte: Date } } }) {
@@ -281,4 +279,8 @@ export function resetFakePrisma() {
   identities.clear();
   sessions.clear();
   otpChallenges.clear();
+  nextUserId = 1;
+  nextIdentityId = 1;
+  nextSessionId = 1;
+  nextOtpChallengeId = 1;
 }

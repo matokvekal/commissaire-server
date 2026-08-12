@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type { Session } from "@prisma/client";
 import { env } from "../../config/env.js";
 import { prisma } from "../../db/prisma.js";
@@ -15,14 +14,13 @@ function refreshTokenExpiry(): Date {
 }
 
 export async function createSession(
-  userId: string,
+  userId: number,
   context: SessionContext,
 ): Promise<{ session: Session; refreshToken: string }> {
   const refreshToken = generateOpaqueToken();
   const now = new Date();
   const session = await prisma.session.create({
     data: {
-      id: randomUUID(),
       userId,
       refreshTokenHash: sha256Hex(refreshToken),
       expiresAt: refreshTokenExpiry(),
@@ -35,7 +33,7 @@ export async function createSession(
 }
 
 /** Rotates the refresh token in place on the same session row and returns the new token. */
-export async function rotateSession(sessionId: string, context: SessionContext): Promise<string> {
+export async function rotateSession(sessionId: number, context: SessionContext): Promise<string> {
   const refreshToken = generateOpaqueToken();
   await prisma.session.update({
     where: { id: sessionId },
@@ -61,7 +59,7 @@ export async function findSessionByRefreshToken(refreshToken: string): Promise<S
   return session;
 }
 
-export async function revokeSession(sessionId: string): Promise<void> {
+export async function revokeSession(sessionId: number): Promise<void> {
   await prisma.session.updateMany({
     where: { id: sessionId, revokedAt: null },
     data: { revokedAt: new Date() },
@@ -69,7 +67,7 @@ export async function revokeSession(sessionId: string): Promise<void> {
 }
 
 /** Revokes every active session for a user — used by logout-all. */
-export async function revokeAllSessions(userId: string): Promise<void> {
+export async function revokeAllSessions(userId: number): Promise<void> {
   await prisma.session.updateMany({
     where: { userId, revokedAt: null },
     data: { revokedAt: new Date() },

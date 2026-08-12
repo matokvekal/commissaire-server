@@ -1,11 +1,11 @@
 import type { Role } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
-import { verifyAccessToken } from "../lib/jwt.js";
+import { InvalidTokenError, verifyAccessToken } from "../lib/jwt.js";
 
 export interface AuthContext {
-  userId: string;
+  userId: number;
   role: Role;
-  sessionId: string;
+  sessionId: number;
 }
 
 declare global {
@@ -36,7 +36,12 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
   try {
     const claims = await verifyAccessToken(token);
-    req.auth = { userId: claims.sub, role: claims.role, sessionId: claims.sid };
+    const userId = Number(claims.sub);
+    const sessionId = Number(claims.sid);
+    if (!Number.isInteger(userId) || !Number.isInteger(sessionId)) {
+      throw new InvalidTokenError("Malformed access token payload");
+    }
+    req.auth = { userId, role: claims.role, sessionId };
     next();
   } catch {
     res.status(401).json({ error: "Invalid or expired access token" });

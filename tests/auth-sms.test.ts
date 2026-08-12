@@ -41,7 +41,7 @@ describe("SMS OTP flow", () => {
 
     const requestRes = await request(app).post("/api/v1/auth/sms/request").send({ phone: PHONE });
     expect(requestRes.status).toBe(200);
-    expect(requestRes.body.challengeId).toEqual(expect.any(String));
+    expect(requestRes.body.challengeId).toEqual(expect.any(Number));
     expect(mocks.sendOtp).toHaveBeenCalledTimes(1);
 
     const code = lastSentCode();

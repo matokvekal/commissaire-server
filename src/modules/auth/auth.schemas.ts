@@ -9,7 +9,7 @@ export const smsRequestSchema = z.object({
 });
 
 export const smsVerifySchema = z.object({
-  challengeId: z.uuid(),
+  challengeId: z.number().int().positive(),
   code: z.string().regex(/^\d{6}$/, "Code must be 6 digits"),
 });
 

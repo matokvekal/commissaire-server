@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { prisma } from "../../db/prisma.js";
 import { ApiError } from "../../lib/api-error.js";
 import { generateOtpCode, sha256Hex } from "../../lib/crypto.js";
@@ -11,14 +10,14 @@ import {
 import { normalizePhoneE164 } from "./phone.js";
 import { getSmsProvider } from "./sms-provider.js";
 
-function hashOtp(challengeId: string, code: string): string {
+function hashOtp(challengeId: number, code: string): string {
   return sha256Hex(`${challengeId}:${code}`);
 }
 
 export async function requestOtp(
   rawPhone: string,
   requestIp: string | null,
-): Promise<{ challengeId: string }> {
+): Promise<{ challengeId: number }> {
   const phone = normalizePhoneE164(rawPhone);
   if (!phone) {
     throw new ApiError(400, "Phone number must be in E.164 format, e.g. +15551234567");
@@ -44,27 +43,31 @@ export async function requestOtp(
     throw new ApiError(429, "Please wait before requesting another code");
   }
 
-  const challengeId = randomUUID();
   const code = generateOtpCode();
 
-  await prisma.otpChallenge.create({
+  // codeHash embeds the row's own id as a per-challenge salt, so the id has to come from the
+  // DB (autoincrement) before the hash can be computed — hence create, then hash, then update.
+  const challenge = await prisma.otpChallenge.create({
     data: {
-      id: challengeId,
       phone,
-      codeHash: hashOtp(challengeId, code),
+      codeHash: "",
       expiresAt: new Date(now.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000),
       maxAttempts: OTP_MAX_ATTEMPTS,
       requestIp,
     },
   });
+  await prisma.otpChallenge.update({
+    where: { id: challenge.id },
+    data: { codeHash: hashOtp(challenge.id, code) },
+  });
 
   await getSmsProvider().sendOtp(phone, code);
 
-  return { challengeId };
+  return { challengeId: challenge.id };
 }
 
 /** Returns the verified, normalized phone number on success. */
-export async function verifyOtp(challengeId: string, code: string): Promise<string> {
+export async function verifyOtp(challengeId: number, code: string): Promise<string> {
   const challenge = await prisma.otpChallenge.findUnique({ where: { id: challengeId } });
   if (!challenge) {
     throw new ApiError(404, "OTP challenge not found");

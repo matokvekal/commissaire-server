@@ -27,7 +27,7 @@ async function signIn(app: ReturnType<typeof createApp>) {
     name: "Rider One",
   });
   const res = await request(app).post("/api/v1/auth/google").send({ idToken: "good-token" });
-  return res.body as { accessToken: string; refreshToken: string; user: { id: string } };
+  return res.body as { accessToken: string; refreshToken: string; user: { id: number } };
 }
 
 beforeEach(() => {

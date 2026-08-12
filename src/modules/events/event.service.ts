@@ -1,9 +1,29 @@
 import type { Event, EventParticipant } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import { ApiError } from "../../lib/api-error.js";
+import { datePrefix, letterSuffix } from "./event-code.js";
 
 export async function findActiveEventByCode(code: string): Promise<Event | null> {
   return prisma.event.findFirst({ where: { code, isActive: true } });
+}
+
+/**
+ * Next event code for `now`: today's date (DDMMYYYY) plus the first unused letter suffix
+ * (A, B, ... Z, AA, AB, ...) among events already created today.
+ */
+export async function generateEventCode(now = new Date()): Promise<string> {
+  const prefix = datePrefix(now);
+  const todaysEvents = await prisma.event.findMany({
+    where: { code: { startsWith: prefix } },
+    select: { code: true },
+  });
+  const usedSuffixes = new Set(todaysEvents.map((e) => e.code.slice(prefix.length).toUpperCase()));
+
+  let index = 0;
+  while (usedSuffixes.has(letterSuffix(index))) {
+    index++;
+  }
+  return `${prefix}${letterSuffix(index)}`;
 }
 
 export function toEventConfig(event: Event) {
@@ -20,7 +40,7 @@ export function toEventConfig(event: Event) {
  * (e.g. bib updated) rather than erroring, since the app may retry after a network drop.
  */
 export async function joinEvent(
-  userId: string,
+  userId: number,
   eventCode: string,
   bib: string | undefined,
 ): Promise<{ event: Event; participant: EventParticipant }> {
@@ -43,14 +63,14 @@ export async function joinEvent(
 }
 
 export async function findParticipantForUser(
-  participantId: string,
-  userId: string,
+  participantId: number,
+  userId: number,
 ): Promise<EventParticipant | null> {
   return prisma.eventParticipant.findFirst({ where: { id: participantId, userId } });
 }
 
 export async function saveLocationBatch(
-  participantId: string,
+  participantId: number,
   points: Array<{
     lat: number;
     lng: number;

@@ -28,7 +28,7 @@ enum EventType {
 }
 
 model User {
-  id             String    @id @default(uuid())
+  id             Int       @id @default(autoincrement())
   firstName      String?   @map("first_name")
   lastName       String?   @map("last_name")
   nickname       String?
@@ -39,17 +39,12 @@ model User {
   updatedAt      DateTime  @updatedAt @map("updated_at")
   lastLoginAt    DateTime? @map("last_login_at")
 
-  identities   AuthIdentity[]
-  sessions     Session[]
-  participants EventParticipant[]
-
   @@map("users")
 }
 
 model AuthIdentity {
-  id             String           @id @default(uuid())
-  userId         String           @map("user_id")
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             Int              @id @default(autoincrement())
+  userId         Int              @map("user_id")
   provider       AuthProviderType
   providerUserId String           @map("provider_user_id")
   email          String?
@@ -66,9 +61,8 @@ model AuthIdentity {
 }
 
 model Session {
-  id               String    @id @default(uuid())
-  userId           String    @map("user_id")
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               Int       @id @default(autoincrement())
+  userId           Int       @map("user_id")
   refreshTokenHash String    @unique @map("refresh_token_hash")
   createdAt        DateTime  @default(now()) @map("created_at")
   expiresAt        DateTime  @map("expires_at")
@@ -97,24 +91,18 @@ model Event {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  participants EventParticipant[]
-
   @@map("events")
 }
 
 // One rider's membership in one event. Display identity (name/nickname/emergency phone)
 // intentionally lives on User, not here — the rider sets that up once, not per event.
 model EventParticipant {
-  id       String    @id @default(uuid())
+  id       Int       @id @default(autoincrement())
   eventId  String    @map("event_id")
-  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId   String    @map("user_id")
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int       @map("user_id")
   bib      String?
   joinedAt DateTime  @default(now()) @map("joined_at")
   leftAt   DateTime? @map("left_at")
-
-  locations LocationPoint[]
 
   @@unique([eventId, userId])
   @@index([eventId])
@@ -123,9 +111,8 @@ model EventParticipant {
 }
 
 model LocationPoint {
-  id            String           @id @default(uuid())
-  participantId String           @map("participant_id")
-  participant   EventParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  id            Int              @id @default(autoincrement())
+  participantId Int              @map("participant_id")
   lat           Float
   lng           Float
   accuracy      Float?
@@ -138,7 +125,7 @@ model LocationPoint {
 }
 
 model OtpChallenge {
-  id           String    @id @default(uuid())
+  id           Int       @id @default(autoincrement())
   phone        String
   codeHash     String    @map("code_hash")
   attemptCount Int       @default(0) @map("attempt_count")

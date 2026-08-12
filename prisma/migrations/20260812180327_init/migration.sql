@@ -1,15 +1,15 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('RIDER', 'COMMISSAIRE');
 
 -- CreateEnum
 CREATE TYPE "AuthProviderType" AS ENUM ('GOOGLE', 'SMS', 'EMAIL_PASSWORD');
 
+-- CreateEnum
+CREATE TYPE "EventType" AS ENUM ('RACE', 'RIDE');
+
 -- CreateTable
 CREATE TABLE "users" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "first_name" TEXT,
     "last_name" TEXT,
     "nickname" TEXT,
@@ -25,8 +25,8 @@ CREATE TABLE "users" (
 
 -- CreateTable
 CREATE TABLE "auth_identities" (
-    "id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
     "provider" "AuthProviderType" NOT NULL,
     "provider_user_id" TEXT NOT NULL,
     "email" TEXT,
@@ -42,8 +42,8 @@ CREATE TABLE "auth_identities" (
 
 -- CreateTable
 CREATE TABLE "sessions" (
-    "id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
     "refresh_token_hash" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expires_at" TIMESTAMP(3) NOT NULL,
@@ -56,8 +56,50 @@ CREATE TABLE "sessions" (
 );
 
 -- CreateTable
-CREATE TABLE "otp_challenges" (
+CREATE TABLE "events" (
     "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" "EventType" NOT NULL DEFAULT 'RIDE',
+    "requires_bib" BOOLEAN NOT NULL DEFAULT false,
+    "starts_at" TIMESTAMP(3),
+    "ends_at" TIMESTAMP(3),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "events_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "event_participants" (
+    "id" SERIAL NOT NULL,
+    "event_id" TEXT NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "bib" TEXT,
+    "joined_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "left_at" TIMESTAMP(3),
+
+    CONSTRAINT "event_participants_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "location_points" (
+    "id" SERIAL NOT NULL,
+    "participant_id" INTEGER NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
+    "accuracy" DOUBLE PRECISION,
+    "recorded_at" TIMESTAMP(3) NOT NULL,
+    "received_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "emergency" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "location_points_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "otp_challenges" (
+    "id" SERIAL NOT NULL,
     "phone" TEXT NOT NULL,
     "code_hash" TEXT NOT NULL,
     "attempt_count" INTEGER NOT NULL DEFAULT 0,
@@ -86,13 +128,22 @@ CREATE INDEX "sessions_user_id_idx" ON "sessions"("user_id");
 CREATE INDEX "sessions_expires_at_idx" ON "sessions"("expires_at");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "events_code_key" ON "events"("code");
+
+-- CreateIndex
+CREATE INDEX "event_participants_event_id_idx" ON "event_participants"("event_id");
+
+-- CreateIndex
+CREATE INDEX "event_participants_user_id_idx" ON "event_participants"("user_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "event_participants_event_id_user_id_key" ON "event_participants"("event_id", "user_id");
+
+-- CreateIndex
+CREATE INDEX "location_points_participant_id_recorded_at_idx" ON "location_points"("participant_id", "recorded_at");
+
+-- CreateIndex
 CREATE INDEX "otp_challenges_phone_idx" ON "otp_challenges"("phone");
 
 -- CreateIndex
 CREATE INDEX "otp_challenges_expires_at_idx" ON "otp_challenges"("expires_at");
-
--- AddForeignKey
-ALTER TABLE "auth_identities" ADD CONSTRAINT "auth_identities_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
