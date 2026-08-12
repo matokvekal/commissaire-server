@@ -1,6 +1,7 @@
 import type { Event, EventParticipant } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import { ApiError } from "../../lib/api-error.js";
+import { logger } from "../../lib/logger.js";
 import { datePrefix, letterSuffix } from "./event-code.js";
 
 export async function findActiveEventByCode(code: string): Promise<Event | null> {
@@ -46,10 +47,12 @@ export async function joinEvent(
 ): Promise<{ event: Event; participant: EventParticipant }> {
   const event = await findActiveEventByCode(eventCode);
   if (!event) {
+    logger.warn({ eventCode, userId }, "joinEvent: event not found");
     throw new ApiError(404, "Event not found");
   }
 
   if (event.requiresBib && !bib) {
+    logger.warn({ eventId: event.id, userId }, "joinEvent: missing required bib");
     throw new ApiError(400, "This event requires a bib number");
   }
 
@@ -58,6 +61,10 @@ export async function joinEvent(
     create: { eventId: event.id, userId, bib },
     update: { bib: bib ?? undefined, leftAt: null },
   });
+  logger.info(
+    { eventId: event.id, userId, participantId: participant.id },
+    "user joined event",
+  );
 
   return { event, participant };
 }
@@ -82,5 +89,6 @@ export async function saveLocationBatch(
   const result = await prisma.locationPoint.createMany({
     data: points.map((point) => ({ participantId, ...point })),
   });
+  logger.info({ participantId, saved: result.count }, "location batch saved");
   return result.count;
 }

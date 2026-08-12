@@ -3,6 +3,7 @@ import { env } from "../../config/env.js";
 import { prisma } from "../../db/prisma.js";
 import { generateOpaqueToken, sha256Hex } from "../../lib/crypto.js";
 import { parseDurationMs } from "../../lib/duration.js";
+import { logger } from "../../lib/logger.js";
 
 export interface SessionContext {
   deviceInfo: string | null;
@@ -29,6 +30,7 @@ export async function createSession(
       ipAddress: context.ipAddress,
     },
   });
+  logger.info({ userId, sessionId: session.id }, "session created");
   return { session, refreshToken };
 }
 
@@ -45,6 +47,7 @@ export async function rotateSession(sessionId: number, context: SessionContext):
       ipAddress: context.ipAddress,
     },
   });
+  logger.info({ sessionId }, "session rotated");
   return refreshToken;
 }
 
@@ -64,12 +67,14 @@ export async function revokeSession(sessionId: number): Promise<void> {
     where: { id: sessionId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+  logger.info({ sessionId }, "session revoked");
 }
 
 /** Revokes every active session for a user — used by logout-all. */
 export async function revokeAllSessions(userId: number): Promise<void> {
-  await prisma.session.updateMany({
+  const { count } = await prisma.session.updateMany({
     where: { userId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+  logger.info({ userId, count }, "all sessions revoked");
 }

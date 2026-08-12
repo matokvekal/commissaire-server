@@ -1,6 +1,7 @@
 import { prisma } from "../../db/prisma.js";
 import { ApiError } from "../../lib/api-error.js";
 import { generateOtpCode, sha256Hex } from "../../lib/crypto.js";
+import { logger } from "../../lib/logger.js";
 import {
   OTP_EXPIRY_MINUTES,
   OTP_MAX_ATTEMPTS,
@@ -29,6 +30,7 @@ export async function requestOtp(
     where: { phone, createdAt: { gte: new Date(now.getTime() - 60 * 60 * 1000) } },
   });
   if (requestsInLastHour >= OTP_MAX_REQUESTS_PER_HOUR) {
+    logger.warn({ phone }, "requestOtp: hourly request limit exceeded");
     throw new ApiError(429, "Too many OTP requests for this phone number — try again later");
   }
 
@@ -40,6 +42,7 @@ export async function requestOtp(
     orderBy: { createdAt: "desc" },
   });
   if (recentChallenge) {
+    logger.warn({ phone }, "requestOtp: resend cooldown still active");
     throw new ApiError(429, "Please wait before requesting another code");
   }
 
@@ -62,6 +65,7 @@ export async function requestOtp(
   });
 
   await getSmsProvider().sendOtp(phone, code);
+  logger.info({ phone, challengeId: challenge.id }, "otp challenge created and sent");
 
   return { challengeId: challenge.id };
 }
@@ -70,15 +74,19 @@ export async function requestOtp(
 export async function verifyOtp(challengeId: number, code: string): Promise<string> {
   const challenge = await prisma.otpChallenge.findUnique({ where: { id: challengeId } });
   if (!challenge) {
+    logger.warn({ challengeId }, "verifyOtp: challenge not found");
     throw new ApiError(404, "OTP challenge not found");
   }
   if (challenge.consumedAt) {
+    logger.warn({ challengeId }, "verifyOtp: challenge already consumed");
     throw new ApiError(400, "This code has already been used");
   }
   if (challenge.expiresAt < new Date()) {
+    logger.warn({ challengeId }, "verifyOtp: challenge expired");
     throw new ApiError(400, "This code has expired");
   }
   if (challenge.attemptCount >= challenge.maxAttempts) {
+    logger.warn({ challengeId }, "verifyOtp: max attempts exceeded");
     throw new ApiError(429, "Too many incorrect attempts for this code");
   }
 
@@ -88,6 +96,7 @@ export async function verifyOtp(challengeId: number, code: string): Promise<stri
   });
 
   if (hashOtp(challengeId, code) !== challenge.codeHash) {
+    logger.warn({ challengeId, attempt: challenge.attemptCount + 1 }, "verifyOtp: incorrect code");
     throw new ApiError(401, "Incorrect code");
   }
 
@@ -95,6 +104,7 @@ export async function verifyOtp(challengeId: number, code: string): Promise<stri
     where: { id: challengeId },
     data: { consumedAt: new Date() },
   });
+  logger.info({ challengeId, phone: challenge.phone }, "otp verified");
 
   return challenge.phone;
 }

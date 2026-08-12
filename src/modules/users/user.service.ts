@@ -1,5 +1,6 @@
 import type { AuthProviderType, User } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
+import { logger } from "../../lib/logger.js";
 
 export async function findUserByIdentity(
   provider: AuthProviderType,
@@ -52,11 +53,13 @@ export function needsProfile(user: User): boolean {
   return !user.firstName || !user.lastName || !user.nickname;
 }
 
-export function updateProfile(
+export async function updateProfile(
   userId: number,
   input: Partial<Pick<User, "firstName" | "lastName" | "nickname" | "emergencyPhone">>,
 ): Promise<User> {
-  return prisma.user.update({ where: { id: userId }, data: input });
+  const user = await prisma.user.update({ where: { id: userId }, data: input });
+  logger.info({ userId, fields: Object.keys(input) }, "profile updated");
+  return user;
 }
 
 export function findUserById(userId: number): Promise<User | null> {

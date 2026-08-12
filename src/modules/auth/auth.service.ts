@@ -66,10 +66,12 @@ export async function authenticateWithGoogle(
   let identity: Awaited<ReturnType<typeof verifyGoogleIdToken>>;
   try {
     identity = await verifyGoogleIdToken(idToken);
-  } catch {
+  } catch (err) {
+    logger.warn({ err }, "authenticateWithGoogle: token verification failed");
     throw new ApiError(401, "Invalid or expired Google ID token");
   }
   if (!identity.emailVerified) {
+    logger.warn({ email: identity.email }, "authenticateWithGoogle: email not verified");
     throw new ApiError(401, "Google account email is not verified");
   }
 
