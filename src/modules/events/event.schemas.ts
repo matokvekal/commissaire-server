@@ -6,7 +6,12 @@ export const eventCodeParamSchema = z.object({
 
 export const joinEventSchema = z.object({
   eventCode: z.string().min(1).max(32),
-  bib: z.string().min(1).max(16).optional(),
+  bib: z
+    .string()
+    .min(1)
+    .max(16)
+    .transform((v) => v.trim().toUpperCase())
+    .optional(),
 });
 
 export const locationPointSchema = z.object({
